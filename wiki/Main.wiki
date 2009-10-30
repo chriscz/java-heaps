@@ -1,5 +1,3 @@
-#summary One-sentence summary of this page.
-
 = Introduction =
 OK, so back in undergrad I did a project on maximum flows/minimum cuts and decided (for some reason) that the heap was favorite data structure. This project contains several different flavors of heap: Binary, binomial, pairing, leftist, Fibonacci, and Skew. 
 
