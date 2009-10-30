@@ -1,0 +1,156 @@
+<project name="teneighty heap" default="image" basedir=".">
+	<description>The teneighty heap project.</description>
+
+
+	<!-- Set global properties for this build -->
+	<property name="src" location="src/java" />
+	<property name="doc" location="src/doc" />
+	<property name="build" location="build" />
+	<property name="build.project" location="${build}/project" />
+	<property name="build.test" location="${build}/test" />
+	<property name="test" location="test" />
+	<property name="testpackage" value="org.teneighty.heap.test"/>
+	<property name="image" location="image" />
+	<property name="javadocs" location="docs" />
+	<property name="junit" location="src/junit" />
+	<property name="version" value="R15" />
+	<property name="jar" value="teneighty-heap_${version}.jar" />
+
+	
+	<!-- Generate timestamp property -->
+	<tstamp>
+	       <format property="current.time" pattern="MM/dd/yyyy hh:mm aa" />
+	</tstamp>
+
+
+	<!-- Initialize the build and image directories -->
+	<target name="init" description="Make build, test, image, and doc directories">
+		<mkdir dir="${image}" />
+		<mkdir dir="${build}" />
+		<mkdir dir="${build.project}" />
+		<mkdir dir="${build.test}" />
+		<mkdir dir="${test}" />
+		<mkdir dir="${javadocs}" />
+	</target>
+
+
+	<!-- Compile the java files -->
+	<target name="compile" description="Compile the source" depends="init">
+		<javac srcdir="${src}" destdir="${build.project}" fork="true" memoryInitialSize="50m" memoryMaximumSize="300m" debug="true">
+			<compilerarg value="-Xlint" />
+		</javac>
+	</target>
+
+
+	<!-- Build the image jar -->
+	<target name="image" description="Build the image jars" depends="compile">
+		<jar jarfile="${image}/${jar}" basedir="${build.project}">
+			<manifest>
+			      <attribute name="Built-By" value="${user.name}"/>
+			      <attribute name="Specification-Title" value="teneighty heap"/>
+			      <attribute name="Specification-Version" value="${version}"/>
+			      <attribute name="Implementation-Title" value="teneighty heap"/>
+			      <attribute name="Implementation-Version" value="${version} ${current.time}"/>
+			</manifest>
+		</jar>
+	</target>
+
+
+	<!-- Clean the image and build directories-->
+	<target name="clean" description="Clear the image and build directories">
+		<delete dir="${image}" />
+		<delete dir="${build.project}" />		
+		<delete dir="${build.test}" />
+		<delete dir="${build}" />
+		<delete dir="${test}" />
+		<delete dir="${javadocs}" />
+	</target>
+
+
+	<!-- Run the javadocs -->
+	<target name="doc" description="Run the JavaDocs" depends="init">
+		<javadoc destdir="${javadocs}" author="true" use="true" protected="true" additionalparam="-breakiterator" maxmemory="500m" windowtitle="teneighty heap API ${version}">
+			<fileset dir="${src}" defaultexcludes="yes">
+				<include name="**/*.java" />
+			</fileset>
+			<link offline="true" href="http://java.sun.com/javase/6/docs/api/" packageListLoc="${doc}" />
+			<doctitle><![CDATA[<h1>teneighty heap API ${version}</h1>]]></doctitle>
+			<bottom><![CDATA[<i>Copyright &#169; 2005, 2006, 2007, 2008 Fran Lattanzio. All Rights Reserved.</i><br>Generated on ${current.time}]]></bottom>
+		</javadoc>
+	</target>
+
+
+	<!-- Clean the javadocs -->
+	<target name="cleanDoc" description="Remove the JavaDocs">
+	</target>
+
+
+	<!-- Compile the tests -->
+	<target name="compileTest" depends="image">
+		<javac srcdir="${junit}" destdir="${build.test}" fork="true" memoryInitialSize="50m" memoryMaximumSize="300m" debug="true" classpath="${image}/${jar}" />
+	</target>	
+
+	
+	<!-- Run the performance test -->
+	<target name="performanceTest" description="Run the performance test" depends="compileTest">
+
+		<junit printsummary="yes" haltonfailure="yes" fork="yes" showoutput="true">
+
+		        <!-- Set the classpath appropiately -->
+			<classpath>
+				<pathelement path="${build.test}" />
+				<pathelement path="${build.project}" />
+			</classpath>
+
+			<formatter type="plain" />			
+
+			<!-- Run only the performance test. -->
+			<test name="${testpackage}.PerformanceTest" haltOnFailure="no" outFile="Performance" />
+
+		</junit>
+
+		<!-- Move all test output to the test directory -->
+		<move file="Performance.txt" toDir="${test}" />
+
+	</target>
+
+
+	<!-- Run the unit tests -->
+	<target name="unitTest" description="Run JUnit tests." depends="compileTest">
+		
+		<junit printsummary="yes" haltonfailure="yes" fork="yes" showoutput="true">
+		
+		        <!-- Set the class path and stuff -->
+			<classpath>
+				<pathelement path="${build.test}" />
+				<pathelement path="${build.project}" />
+			</classpath>
+
+			<formatter type="plain" />
+			
+			<!-- Run the test for the individual implementations -->
+			<test name="${testpackage}.BinaryHeapTest" haltOnFailure="no" outFile="BinaryHeap"/>
+			<test name="${testpackage}.BinomialHeapTest" haltOnFailure="no" outFile="BinomialHeap" />
+			<test name="${testpackage}.FibonacciHeapTest" haltOnFailure="no" outFile="FibonacciHeap" />
+			<test name="${testpackage}.LeftistHeapTest" haltOnFailure="no" outFile="LeftistHeap" />
+			<test name="${testpackage}.PairingHeapMultiPassTest" haltOnFailure="no" outFile="PairingHeapMultiPass" />
+			<test name="${testpackage}.PairingHeapTwoPassTest" haltOnFailure="no" outFile="PairingHeapTwoPass" />
+
+			<!-- Run the equality test -->
+			<test name="${testpackage}.EqualityTest" haltOnFailure="no" outFile="Equality" />			
+
+		</junit>
+
+		<!-- Move all test output to the test directory -->
+		<move file="BinaryHeap.txt" toDir="${test}" />
+		<move file="BinomialHeap.txt" toDir="${test}" />
+		<move file="FibonacciHeap.txt" toDir="${test}" />
+		<move file="LeftistHeap.txt" toDir="${test}" />
+		<move file="PairingHeapMultiPass.txt" toDir="${test}" />
+		<move file="PairingHeapTwoPass.txt" toDir="${test}" />
+		<move file="Equality.txt" toDir="${test}" />
+		
+	</target>
+
+
+</project>
