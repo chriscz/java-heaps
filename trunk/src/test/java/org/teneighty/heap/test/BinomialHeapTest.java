@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
+ * Copyright (c) 2005-2009 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,19 +37,6 @@ import org.teneighty.heap.Heap;
 public final class BinomialHeapTest
 	extends AbstractHeapTest
 {
-
-
-	/**
-	 * Constructor.
-	 * <p>
-	 * Here only keep JUnit happy.
-	 * 
-	 * @param name the test name.
-	 */
-	public BinomialHeapTest( final String name )
-	{
-		super( name );
-	}
 
 
 	/**
