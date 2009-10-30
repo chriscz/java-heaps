@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
+ * Copyright (c) 2005-2009 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import junit.framework.TestCase;
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 
 import org.teneighty.heap.Heap;
@@ -51,7 +50,6 @@ import org.teneighty.heap.NaturalOrderComparator;
  * @version $Revision$ $Date$
  */
 public abstract class AbstractHeapTest
-	extends TestCase
 {
 
 
@@ -369,15 +367,9 @@ public abstract class AbstractHeapTest
 
 	/**
 	 * Constructor.
-	 * <p>
-	 * Does nothing; here only to keep JUnit happy.
-	 * 
-	 * @param name the test case name.
 	 */
-	protected AbstractHeapTest( final String name )
+	protected AbstractHeapTest()
 	{
-		super( name );
-
 		// create our source 'o' randomness.
 		this.random = new Random( System.currentTimeMillis() );
 	}
@@ -390,7 +382,7 @@ public abstract class AbstractHeapTest
 	 * We do many, many more checks to ensure the integrity of the heap along the
 	 * way.
 	 */
-	@Test( )
+	@Test
 	public final void testInsert()
 	{
 		// get a new heap.
@@ -412,7 +404,7 @@ public abstract class AbstractHeapTest
 	 * heap are equal, and that both the original and cloned heap contain the same
 	 * set of entries.
 	 */
-	@Test( )
+	@Test
 	public final void testSerialization()
 	{
 		// create a new heap and stuff.
@@ -436,7 +428,7 @@ public abstract class AbstractHeapTest
 	/**
 	 * Test the delete method.
 	 */
-	@Test( )
+	@Test
 	public final void testDelete()
 	{
 		// first, create a new heap.
