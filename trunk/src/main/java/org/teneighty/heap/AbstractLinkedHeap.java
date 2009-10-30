@@ -1,5 +1,5 @@
 /*
- * $Id: AbstractLinkedHeap.java,v 1.3.4.9 2008/11/22 22:32:19 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -54,7 +54,7 @@ import java.lang.ref.WeakReference;
  * @param <K> the key type.
  * @param <V> the value type.
  * @author Fran Lattanzio
- * @version $Revision: 1.3.4.9 $ $Date: 2008/11/22 22:32:19 $
+ * @version $Revision$ $Date$
  */
 public abstract class AbstractLinkedHeap<K, V>
 	extends AbstractHeap<K, V>
@@ -120,7 +120,7 @@ public abstract class AbstractLinkedHeap<K, V>
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.3.4.9 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	protected static abstract class AbstractLinkedHeapEntry<K, V>
 		extends AbstractHeap.AbstractHeapEntry<K, V>
@@ -210,7 +210,7 @@ public abstract class AbstractLinkedHeap<K, V>
 	 * considered "orphaned" and no longer a member of the heap.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.3.4.9 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	@SuppressWarnings( "unchecked" )
 	protected static final class HeapReference

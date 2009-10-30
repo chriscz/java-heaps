@@ -1,5 +1,5 @@
 /*
- * $Id: Heap.java,v 1.6.4.9 2008/05/15 23:59:59 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -71,7 +71,7 @@ import java.util.NoSuchElementException;
  * @param <K> the key type.
  * @param <V> the value type.
  * @author Fran Lattanzio
- * @version $Revision: 1.6.4.9 $ $Date: 2008/05/15 23:59:59 $
+ * @version $Revision$ $Date$
  * @see org.teneighty.heap.Heaps
  */
 public interface Heap<K, V>
@@ -394,7 +394,7 @@ public interface Heap<K, V>
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.9 $ $Date: 2008/05/15 23:59:59 $
+	 * @version $Revision$ $Date$
 	 */
 	public static interface Entry<K, V>
 	{

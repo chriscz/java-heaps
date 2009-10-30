@@ -1,5 +1,5 @@
 /*
- * $Id: AbstractHeapTest.java,v 1.1.2.5 2008/06/24 01:59:49 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -48,7 +48,7 @@ import org.teneighty.heap.NaturalOrderComparator;
  * probably extend.
  * 
  * @author Fran Lattanzio
- * @version $Revision: 1.1.2.5 $ $Date: 2008/06/24 01:59:49 $
+ * @version $Revision$ $Date$
  */
 public abstract class AbstractHeapTest
 	extends TestCase

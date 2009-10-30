@@ -1,5 +1,5 @@
 /*
- * $Id: LeftistHeap.java,v 1.6.4.8 2008/11/22 22:32:19 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -109,7 +109,7 @@ import java.io.Serializable;
  * @param <K> the key type.
  * @param <V> the value type.
  * @author Fran Lattanzio
- * @version $Revision: 1.6.4.8 $ $Date: 2008/11/22 22:32:19 $
+ * @version $Revision$ $Date$
  */
 public class LeftistHeap<K, V>
 	extends AbstractLinkedHeap<K, V>
@@ -770,7 +770,7 @@ public class LeftistHeap<K, V>
 	 * <code>UnsupportedOperationException</code>.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.8 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private class EntryIterator
 		extends Object
@@ -915,7 +915,7 @@ public class LeftistHeap<K, V>
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.8 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class LeftistHeapEntry<K, V>
 		extends AbstractLinkedHeap.AbstractLinkedHeapEntry<K, V>

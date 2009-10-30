@@ -1,5 +1,5 @@
 /*
- * $Id: SkewHeap.java,v 1.1.2.6 2009/10/30 02:23:33 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -95,7 +95,7 @@ import java.io.Serializable;
  * @param <K> The key type.
  * @param <V> The value type.
  * @author Fran Lattanzio
- * @version $Revision: 1.1.2.6 $ $Date: 2009/10/30 02:23:33 $
+ * @version $Revision$ $Date$
  */
 public class SkewHeap<K, V>
 	extends AbstractLinkedHeap<K, V>
@@ -789,7 +789,7 @@ public class SkewHeap<K, V>
 	 * Skew heap entry iterator.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.1.2.6 $ $Date: 2009/10/30 02:23:33 $
+	 * @version $Revision$ $Date$
 	 */
 	private final class EntryIterator
 		extends Object
@@ -950,7 +950,7 @@ public class SkewHeap<K, V>
 	 * @param <K> The key type.
 	 * @param <V> The value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.1.2.6 $ $Date: 2009/10/30 02:23:33 $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class SkewHeapEntry<K, V>
 		extends AbstractLinkedHeapEntry<K, V>

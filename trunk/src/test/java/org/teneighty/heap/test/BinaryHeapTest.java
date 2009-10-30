@@ -1,5 +1,5 @@
 /*
- * $Id: BinaryHeapTest.java,v 1.1.2.2 2008/02/18 02:45:02 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -32,7 +32,7 @@ import org.teneighty.heap.Heap;
  * Test harness for the <code>BinaryHeap</code> implementation.
  * 
  * @author Fran Lattanzio
- * @version $Revision: 1.1.2.2 $ $Date: 2008/02/18 02:45:02 $
+ * @version $Revision$ $Date$
  */
 public final class BinaryHeapTest
 	extends AbstractHeapTest

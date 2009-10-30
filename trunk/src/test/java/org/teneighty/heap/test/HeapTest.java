@@ -1,5 +1,5 @@
 /*
- * $Id: HeapTest.java,v 1.1.2.2 2008/02/18 02:45:02 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006 Fran Lattanzio
  * 
@@ -52,7 +52,7 @@ import java.io.IOException;
  * <code>PerformanceTest</code>.
  * 
  * @author Fran Lattanzio
- * @version $Revision: 1.1.2.2 $ $Date: 2008/02/18 02:45:02 $
+ * @version $Revision$ $Date$
  */
 @SuppressWarnings( "unchecked" )
 public class HeapTest

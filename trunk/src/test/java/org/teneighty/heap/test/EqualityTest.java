@@ -1,5 +1,5 @@
 /*
- * $Id: EqualityTest.java,v 1.1.2.3 2008/11/08 22:53:36 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -44,7 +44,7 @@ import org.teneighty.heap.LeftistHeap;
  * <code>O(n<sup>2</sup>)</code> in supplied in <code>AbstractHeap</code>.
  * 
  * @author Fran Lattanzio
- * @version $Revision: 1.1.2.3 $ $Date: 2008/11/08 22:53:36 $
+ * @version $Revision$ $Date$
  */
 public final class EqualityTest
 	extends TestCase

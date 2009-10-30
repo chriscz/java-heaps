@@ -1,5 +1,5 @@
 /*
- * $Id: NaturalOrderComparator.java,v 1.4.4.6 2008/11/22 22:32:19 fran Exp $
+ * $Id$
  *
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -33,7 +33,7 @@ import java.io.Serializable;
  * 
  * @param <T> the comparator type.
  * @author Fran Lattanzio
- * @version $Revision: 1.4.4.6 $ $Date: 2008/11/22 22:32:19 $
+ * @version $Revision$ $Date$
  */
 public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	extends Object

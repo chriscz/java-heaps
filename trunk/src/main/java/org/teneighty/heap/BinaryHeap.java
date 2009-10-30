@@ -1,5 +1,5 @@
 /*
- * $Id: BinaryHeap.java,v 1.5.4.12 2008/11/22 22:32:18 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -111,7 +111,7 @@ import java.io.IOException;
  * @param <K> the key type.
  * @param <V> the value type.
  * @author Fran Lattanzio
- * @version $Revision: 1.5.4.12 $ $Date: 2008/11/22 22:32:18 $
+ * @version $Revision$ $Date$
  */
 public class BinaryHeap<K, V>
 	extends AbstractHeap<K, V>
@@ -885,7 +885,7 @@ public class BinaryHeap<K, V>
 	 * the enclosing heap.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.5.4.12 $ $Date: 2008/11/22 22:32:18 $
+	 * @version $Revision$ $Date$
 	 */
 	private final class EntryIterator
 		extends Object
@@ -984,7 +984,7 @@ public class BinaryHeap<K, V>
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.5.4.12 $ $Date: 2008/11/22 22:32:18 $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class BinaryHeapEntry<K, V>
 		extends AbstractHeap.AbstractHeapEntry<K, V>

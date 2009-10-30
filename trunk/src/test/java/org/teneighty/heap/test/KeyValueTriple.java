@@ -1,5 +1,5 @@
 /*
- * $Id: KeyValueTriple.java,v 1.1.2.2 2008/02/18 02:45:02 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -34,7 +34,7 @@ package org.teneighty.heap.test;
  * @param <V> the first value type.
  * @param <W> the second value type.
  * @author Fran Lattanzio
- * @version $Revision: 1.1.2.2 $ $Date: 2008/02/18 02:45:02 $
+ * @version $Revision$ $Date$
  */
 final class KeyValueTriple<K, V, W>
 	extends Object

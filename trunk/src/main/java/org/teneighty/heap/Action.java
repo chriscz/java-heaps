@@ -1,5 +1,5 @@
 /*
- * $Id: Action.java,v 1.1.2.2 2008/06/25 11:04:46 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -31,7 +31,7 @@ package org.teneighty.heap;
  *
  * @param <T> the input type.
  * @author Fran Lattanzio
- * @version $Revision: 1.1.2.2 $ $Date: 2008/06/25 11:04:46 $
+ * @version $Revision$ $Date$
  */
 public interface Action<T>
 {

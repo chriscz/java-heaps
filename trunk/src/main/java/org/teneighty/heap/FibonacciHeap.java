@@ -1,5 +1,5 @@
 /*
- * $Id: FibonacciHeap.java,v 1.6.4.12 2008/11/22 22:32:19 fran Exp $
+ * $Id$
  *
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -109,7 +109,7 @@ import java.io.IOException;
  * @param <K> the key type.
  * @param <V> the value type.
  * @author Fran Lattanzio
- * @version $Revision: 1.6.4.12 $ $Date: 2008/11/22 22:32:19 $
+ * @version $Revision$ $Date$
  * @see "Cormen, T. H.; Leiserson C. E.; Rivest R. L.; &amp; Stein, C (2001)
  *      <i>Introduction to Algorithms</i>. MIT Press."
  */
@@ -898,7 +898,7 @@ public class FibonacciHeap<K, V>
 	 * <code>UnsupportedOperationException</code>.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.12 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private class EntryIterator
 		extends Object
@@ -1033,7 +1033,7 @@ public class FibonacciHeap<K, V>
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.12 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class FibonacciHeapEntry<K, V>
 		extends AbstractLinkedHeap.AbstractLinkedHeapEntry<K, V>
