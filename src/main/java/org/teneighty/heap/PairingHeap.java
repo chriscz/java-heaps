@@ -1,5 +1,5 @@
 /*
- * $Id: PairingHeap.java,v 1.6.4.14 2009/10/30 02:23:33 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -133,7 +133,7 @@ import java.util.Iterator;
  * @param <K> the key type.
  * @param <V> the value type.
  * @author Fran Lattanzio
- * @version $Revision: 1.6.4.14 $ $Date: 2009/10/30 02:23:33 $
+ * @version $Revision$ $Date$
  * @see "<i>The pairing heap: A new form of self-adjusting heap</i>,
  *      <u>Algorithmica</u>, 1, March 1986, 111-129, by M. Fredman, R.
  *      Sedgewick, R. Sleator, and R. Tarjan"
@@ -959,7 +959,7 @@ public class PairingHeap<K, V>
 	 * <code>UnsupportedOperationException</code>.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.14 $ $Date: 2009/10/30 02:23:33 $
+	 * @version $Revision$ $Date$
 	 */
 	private class EntryIterator
 		extends Object
@@ -1114,7 +1114,7 @@ public class PairingHeap<K, V>
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.14 $ $Date: 2009/10/30 02:23:33 $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class PairingHeapEntry<K, V>
 		extends AbstractLinkedHeap.AbstractLinkedHeapEntry<K, V>
@@ -1170,7 +1170,7 @@ public class PairingHeap<K, V>
 	 * Pairing heap merge strategy enumeration.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.14 $ $Date: 2009/10/30 02:23:33 $
+	 * @version $Revision$ $Date$
 	 */
 	public static enum MergeStrategy
 		implements Serializable

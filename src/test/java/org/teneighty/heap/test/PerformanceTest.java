@@ -1,5 +1,5 @@
 /*
- * $Id: PerformanceTest.java,v 1.1.2.3 2008/06/24 01:59:49 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006 Fran Lattanzio
  * 
@@ -65,7 +65,7 @@ import org.teneighty.heap.SkewHeap;
  * make anyone implementation look the best.
  * 
  * @author Fran Lattanzio
- * @version $Revision: 1.1.2.3 $ $Date: 2008/06/24 01:59:49 $
+ * @version $Revision$ $Date$
  */
 @SuppressWarnings( "unchecked" )
 public class PerformanceTest

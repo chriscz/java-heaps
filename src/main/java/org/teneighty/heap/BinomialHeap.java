@@ -1,5 +1,5 @@
 /*
- * $Id: BinomialHeap.java,v 1.6.4.13 2008/11/22 22:53:37 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -112,7 +112,7 @@ import java.io.Serializable;
  * @param <K> the key type.
  * @param <V> the value type.
  * @author Fran Lattanzio
- * @version $Revision: 1.6.4.13 $ $Date: 2008/11/22 22:53:37 $
+ * @version $Revision$ $Date$
  * @see "Cormen, T. H.; Leiserson C. E.; Rivest R. L. & C. Stein (2001)
  *      <i>Introduction to Algorithms</i>. MIT Press."
  */
@@ -873,7 +873,7 @@ public class BinomialHeap<K, V>
 	 * <code>UnsupportedOperationException</code>.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.13 $ $Date: 2008/11/22 22:53:37 $
+	 * @version $Revision$ $Date$
 	 */
 	private class EntryIterator
 		extends Object
@@ -1005,7 +1005,7 @@ public class BinomialHeap<K, V>
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.13 $ $Date: 2008/11/22 22:53:37 $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class HeapEntryProxy<K, V>
 		extends Object
@@ -1146,7 +1146,7 @@ public class BinomialHeap<K, V>
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.13 $ $Date: 2008/11/22 22:53:37 $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class BinomialHeapEntry<K, V>
 		extends AbstractLinkedHeapEntry<K, V>

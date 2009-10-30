@@ -1,5 +1,5 @@
 /*
- * $Id: Heaps.java,v 1.6.4.12 2008/11/22 22:32:19 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -47,7 +47,7 @@ import java.io.IOException;
  * This is a stateless class that cannot be instantiated.
  * 
  * @author Fran Lattanzio
- * @version $Revision: 1.6.4.12 $ $Date: 2008/11/22 22:32:19 $
+ * @version $Revision$ $Date$
  * @see org.teneighty.heap.Heap
  */
 public final class Heaps
@@ -164,7 +164,7 @@ public final class Heaps
 	 * 
 	 * @param <T> the comparator type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.12 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class InvertedComparator<T>
 		extends Object
@@ -276,7 +276,7 @@ public final class Heaps
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.12 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class EmptyHeap<K, V>
 		extends Object
@@ -658,7 +658,7 @@ public final class Heaps
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.12 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class UnmodifiableHeap<K, V>
 		extends Object
@@ -1020,7 +1020,7 @@ public final class Heaps
 		 * @param <K> the key type.
 		 * @param <V> the value type.
 		 * @author Fran Lattanzio
-		 * @version $Revision: 1.6.4.12 $ $Date: 2008/11/22 22:32:19 $
+		 * @version $Revision$ $Date$
 		 */
 		private static final class ImmutableHeapEntryIterator<K, V>
 			extends Object
@@ -1097,7 +1097,7 @@ public final class Heaps
 		 * @param <K> the key type.
 		 * @param <V> the value type.
 		 * @author Fran Lattanzio
-		 * @version $Revision: 1.6.4.12 $ $Date: 2008/11/22 22:32:19 $
+		 * @version $Revision$ $Date$
 		 */
 		private static final class ImmutableHeapEntry<K, V>
 			extends Object
@@ -1226,7 +1226,7 @@ public final class Heaps
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.6.4.12 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class SynchronizedHeap<K, V>
 		extends Object

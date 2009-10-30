@@ -1,5 +1,5 @@
 /*
- * $Id: AbstractHeap.java,v 1.5.4.13 2008/11/22 22:32:19 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -55,7 +55,7 @@ import java.util.List;
  * @param <K> the key type.
  * @param <V> the value type.
  * @author Fran Lattanzio
- * @version $Revision: 1.5.4.13 $ $Date: 2008/11/22 22:32:19 $
+ * @version $Revision$ $Date$
  */
 public abstract class AbstractHeap<K, V>
 	extends Object
@@ -524,7 +524,7 @@ public abstract class AbstractHeap<K, V>
 	 * 
 	 * @param <T> the collection type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.5.4.13 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private abstract class AbstractHeapCollection<T>
 		extends AbstractCollection<T>
@@ -816,7 +816,7 @@ public abstract class AbstractHeap<K, V>
 	 * <code>holdsEntry</code>.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.5.4.13 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private final class EntryCollection
 		extends AbstractHeapCollection<Heap.Entry<K, V>>
@@ -884,7 +884,7 @@ public abstract class AbstractHeap<K, V>
 	 * Instances of this class are readonly (readonly collections, that is).
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.5.4.13 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private final class KeyCollection
 		extends AbstractHeapCollection<K>
@@ -919,7 +919,7 @@ public abstract class AbstractHeap<K, V>
 		 * Iterator over the keys in enclosing heap.
 		 * 
 		 * @author Fran Lattanzio
-		 * @version $Revision: 1.5.4.13 $ $Date: 2008/11/22 22:32:19 $
+		 * @version $Revision$ $Date$
 		 */
 		private final class KeyIterator
 			extends Object
@@ -982,7 +982,7 @@ public abstract class AbstractHeap<K, V>
 	 * Collection view over the values in this heap.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.5.4.13 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	private final class ValueCollection
 		extends AbstractHeapCollection<V>
@@ -1018,7 +1018,7 @@ public abstract class AbstractHeap<K, V>
 		 * Iterates over the values in this heap.
 		 * 
 		 * @author Fran Lattanzio
-		 * @version $Revision: 1.5.4.13 $ $Date: 2008/11/22 22:32:19 $
+		 * @version $Revision$ $Date$
 		 */
 		private final class ValueIterator
 			extends Object
@@ -1093,7 +1093,7 @@ public abstract class AbstractHeap<K, V>
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision: 1.5.4.13 $ $Date: 2008/11/22 22:32:19 $
+	 * @version $Revision$ $Date$
 	 */
 	protected static abstract class AbstractHeapEntry<K, V>
 		extends Object

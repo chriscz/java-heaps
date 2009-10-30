@@ -1,5 +1,5 @@
 /*
- * $Id: KeyValueTripleComparator.java,v 1.1.2.2 2008/02/18 02:45:01 fran Exp $
+ * $Id$
  * 
  * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
  * 
@@ -35,7 +35,7 @@ import java.util.Comparator;
  * 
  * @param <K> the key type.
  * @author Fran Lattanzio
- * @version $Revision: 1.1.2.2 $ $Date: 2008/02/18 02:45:01 $
+ * @version $Revision$ $Date$
  */
 final class KeyValueTripleComparator<K>
 	extends Object
