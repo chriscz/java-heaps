@@ -1,20 +1,25 @@
 <project name="teneighty heap" default="image" basedir=".">
-	<description>The teneighty heap project.</description>
+	<description>The teneighty java heap project.</description>
 
 
 	<!-- Set global properties for this build -->
-	<property name="src" location="src/java" />
-	<property name="doc" location="src/doc" />
+	<property name="src" location="src/main/java" />
 	<property name="build" location="build" />
 	<property name="build.project" location="${build}/project" />
 	<property name="build.test" location="${build}/test" />
 	<property name="test" location="test" />
-	<property name="testpackage" value="org.teneighty.heap.test"/>
+	<property name="testpackage" value="org.teneighty.heap"/>
 	<property name="image" location="image" />
 	<property name="javadocs" location="docs" />
-	<property name="junit" location="src/junit" />
-	<property name="version" value="R15" />
-	<property name="jar" value="teneighty-heap_${version}.jar" />
+	<property name="junit" location="src/test/java" />
+
+	<!-- Set the version to "snapshot" unless specified externally -->
+	<condition property="version" value="snapshot">
+		<not>
+			<isset property="version" />
+		</not>
+	</condition>
+	<property name="jar" value="java-heap-${version}.jar" />
 
 	
 	<!-- Generate timestamp property -->
@@ -50,7 +55,7 @@
 			      <attribute name="Specification-Title" value="teneighty heap"/>
 			      <attribute name="Specification-Version" value="${version}"/>
 			      <attribute name="Implementation-Title" value="teneighty heap"/>
-			      <attribute name="Implementation-Version" value="${version} ${current.time}"/>
+			      <attribute name="Implementation-Version" value="${version}"/>
 			</manifest>
 		</jar>
 	</target>
@@ -73,7 +78,7 @@
 			<fileset dir="${src}" defaultexcludes="yes">
 				<include name="**/*.java" />
 			</fileset>
-			<link offline="true" href="http://java.sun.com/javase/6/docs/api/" packageListLoc="${doc}" />
+			<link href="http://java.sun.com/javase/6/docs/api/" />
 			<doctitle><![CDATA[<h1>teneighty heap API ${version}</h1>]]></doctitle>
 			<bottom><![CDATA[<i>Copyright &#169; 2005, 2006, 2007, 2008 Fran Lattanzio. All Rights Reserved.</i><br>Generated on ${current.time}]]></bottom>
 		</javadoc>
