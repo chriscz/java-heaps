@@ -1,6 +1,6 @@
 This package contains a free, open source implementation of 
 various heap data structures, including a binary, binomial, pairing,
-leftist, and Fibonacci flavors.
+leftist, skew, and Fibonacci flavors.
 
 
 CONTACT INFO
