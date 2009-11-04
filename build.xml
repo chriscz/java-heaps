@@ -3,23 +3,27 @@
 
 
 	<!-- Set global properties for this build -->
-	<property name="src" location="src/main/java" />
-	<property name="build" location="build" />
-	<property name="build.project" location="${build}/project" />
-	<property name="build.test" location="${build}/test" />
-	<property name="test" location="test" />
-	<property name="testpackage" value="org.teneighty.heap"/>
-	<property name="image" location="image" />
-	<property name="javadocs" location="docs" />
-	<property name="junit" location="src/test/java" />
+	<property name="base.compile.bin" location="bin"/>
+	<property name="base.image" location="image"/>
+
+	<property name="main.code.src" location="src/main/java" />
+	<property name="main.compile.bin" location="${base.compile.bin}/main" />
+	<property name="main.image" location="${base.image}" />
+	<property name="main.javadocs" location="docs"/>
+
+	<property name="test.code.src" location="src/test/java" />
+	<property name="test.compile.bin" location="${base.compile.bin}/test" />
+ 	<property name="test.output" location="test" />
 
 	<!-- Set the version to "snapshot" unless specified externally -->
-	<condition property="version" value="snapshot">
+	<condition property="main.version" value="snapshot">
 		<not>
-			<isset property="version" />
+			<isset property="main.version" />
 		</not>
 	</condition>
-	<property name="jar" value="java-heap-${version}.jar" />
+
+	<!-- Build the JAR name. -->
+	<property name="main.image.jar" value="${main.image}/java-heap-${main.version}.jar" />
 
 	
 	<!-- Generate timestamp property -->
@@ -30,132 +34,115 @@
 
 	<!-- Initialize the build and image directories -->
 	<target name="init" description="Make build, test, image, and doc directories">
-		<mkdir dir="${image}" />
-		<mkdir dir="${build}" />
-		<mkdir dir="${build.project}" />
-		<mkdir dir="${build.test}" />
-		<mkdir dir="${test}" />
-		<mkdir dir="${javadocs}" />
+	       <mkdir dir="${main.image}" />
+	       <mkdir dir="${main.compile.bin}" />
+	       <mkdir dir="${main.javadocs}" />
+	       <mkdir dir="${test.compile.bin}" />
+	       <mkdir dir="${test.output}" />	       
 	</target>
 
+	<!-- Clean the image and build directories-->
+	<target name="clean" description="Clear the image and build directories">
+	       <delete dir="${base.image}" />
+	       <delete dir="${base.compile.bin}" />
+	       <delete dir="${main.javadocs}" />
+	       <delete dir="${test.compile.bin}" />
+	       <delete dir="${test.output}" />
+	</target>
 
 	<!-- Compile the java files -->
 	<target name="compile" description="Compile the source" depends="init">
-		<javac srcdir="${src}" destdir="${build.project}" fork="true" memoryInitialSize="50m" memoryMaximumSize="300m" debug="true">
+		<javac srcdir="${main.code.src}" destdir="${main.compile.bin}" fork="false" debug="true">
 			<compilerarg value="-Xlint" />
 		</javac>
 	</target>
 
-
-	<!-- Build the image jar -->
-	<target name="image" description="Build the image jars" depends="compile">
-		<jar jarfile="${image}/${jar}" basedir="${build.project}">
-			<manifest>
-			      <attribute name="Built-By" value="${user.name}"/>
-			      <attribute name="Specification-Title" value="teneighty heap"/>
-			      <attribute name="Specification-Version" value="${version}"/>
-			      <attribute name="Implementation-Title" value="teneighty heap"/>
-			      <attribute name="Implementation-Version" value="${version}"/>
-			</manifest>
-		</jar>
-	</target>
-
-
-	<!-- Clean the image and build directories-->
-	<target name="clean" description="Clear the image and build directories">
-		<delete dir="${image}" />
-		<delete dir="${build.project}" />		
-		<delete dir="${build.test}" />
-		<delete dir="${build}" />
-		<delete dir="${test}" />
-		<delete dir="${javadocs}" />
-	</target>
-
-
-	<!-- Run the javadocs -->
-	<target name="doc" description="Run the JavaDocs" depends="init">
-		<javadoc destdir="${javadocs}" author="true" use="true" protected="true" additionalparam="-breakiterator" maxmemory="500m" windowtitle="teneighty heap API ${version}">
-			<fileset dir="${src}" defaultexcludes="yes">
-				<include name="**/*.java" />
-			</fileset>
-			<link href="http://java.sun.com/javase/6/docs/api/" />
-			<doctitle><![CDATA[<h1>teneighty heap API ${version}</h1>]]></doctitle>
-			<bottom><![CDATA[<i>Copyright &#169; 2005, 2006, 2007, 2008 Fran Lattanzio. All Rights Reserved.</i><br>Generated on ${current.time}]]></bottom>
-		</javadoc>
-	</target>
-
-
-	<!-- Clean the javadocs -->
-	<target name="cleanDoc" description="Remove the JavaDocs">
-	</target>
-
-
 	<!-- Compile the tests -->
-	<target name="compileTest" depends="image">
-		<javac srcdir="${junit}" destdir="${build.test}" fork="true" memoryInitialSize="50m" memoryMaximumSize="300m" debug="true" classpath="${image}/${jar}" />
+	<target name="compileTest" depends="compile">
+		<javac srcdir="${test.code.src}" destdir="${test.compile.bin}" fork="false" debug="true">
+		     <classpath>
+		         <dirset dir="${main.compile.bin}"/>
+		     </classpath>
+		</javac>
 	</target>	
-
-	
-	<!-- Run the performance test -->
-	<target name="performanceTest" description="Run the performance test" depends="compileTest">
-
-		<junit printsummary="yes" haltonfailure="yes" fork="yes" showoutput="true">
-
-		        <!-- Set the classpath appropiately -->
-			<classpath>
-				<pathelement path="${build.test}" />
-				<pathelement path="${build.project}" />
-			</classpath>
-
-			<formatter type="plain" />			
-
-			<!-- Run only the performance test. -->
-			<test name="${testpackage}.PerformanceTest" haltOnFailure="no" outFile="Performance" />
-
-		</junit>
-
-		<!-- Move all test output to the test directory -->
-		<move file="Performance.txt" toDir="${test}" />
-
-	</target>
-
 
 	<!-- Run the unit tests -->
 	<target name="unitTest" description="Run JUnit tests." depends="compileTest">
 		
-		<junit printsummary="yes" haltonfailure="yes" fork="yes" showoutput="true">
+		<junit printsummary="yes" haltonfailure="yes" haltonerror="yes" fork="no" showoutput="true">
 		
 		        <!-- Set the class path and stuff -->
 			<classpath>
-				<pathelement path="${build.test}" />
-				<pathelement path="${build.project}" />
+				<pathelement location="${main.compile.bin}" />
+				<pathelement location="${test.compile.bin}" />
 			</classpath>
 
-			<formatter type="plain" />
-			
-			<!-- Run the test for the individual implementations -->
-			<test name="${testpackage}.BinaryHeapTest" haltOnFailure="no" outFile="BinaryHeap"/>
-			<test name="${testpackage}.BinomialHeapTest" haltOnFailure="no" outFile="BinomialHeap" />
-			<test name="${testpackage}.FibonacciHeapTest" haltOnFailure="no" outFile="FibonacciHeap" />
-			<test name="${testpackage}.LeftistHeapTest" haltOnFailure="no" outFile="LeftistHeap" />
-			<test name="${testpackage}.PairingHeapMultiPassTest" haltOnFailure="no" outFile="PairingHeapMultiPass" />
-			<test name="${testpackage}.PairingHeapTwoPassTest" haltOnFailure="no" outFile="PairingHeapTwoPass" />
 
-			<!-- Run the equality test -->
-			<test name="${testpackage}.EqualityTest" haltOnFailure="no" outFile="Equality" />			
+			<formatter type="xml" />
+
+			<!-- Run everything but perf test -->
+			<batchtest todir="${test.output}">
+			        <fileset dir="${test.compile.bin}">
+				      <include name="**/*.class" />
+				      <exclude name="**/AbstractHeapTest.class"/>
+				      <exclude name="**/PerformanceTest.class"/>
+				      <exclude name="**/KeyValueTriple.class"/>
+				      <exclude name="**/KeyValueTripleComparator.class"/>
+				</fileset>
+		        </batchtest>
 
 		</junit>
 
-		<!-- Move all test output to the test directory -->
-		<move file="BinaryHeap.txt" toDir="${test}" />
-		<move file="BinomialHeap.txt" toDir="${test}" />
-		<move file="FibonacciHeap.txt" toDir="${test}" />
-		<move file="LeftistHeap.txt" toDir="${test}" />
-		<move file="PairingHeapMultiPass.txt" toDir="${test}" />
-		<move file="PairingHeapTwoPass.txt" toDir="${test}" />
-		<move file="Equality.txt" toDir="${test}" />
-		
 	</target>
 
+	
+	<!-- Build the image jar -->
+	<target name="image" description="Build the image jars" depends="compile, unitTest">
+		<jar jarfile="${main.image.jar}" basedir="${main.compile.bin}">
+			<manifest>
+			      <attribute name="Built-By" value="${user.name}"/>
+			      <attribute name="Specification-Title" value="teneighty heap"/>
+			      <attribute name="Specification-Version" value="${main.version}"/>
+			      <attribute name="Implementation-Title" value="teneighty heap"/>
+			      <attribute name="Implementation-Version" value="${main.version}"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<!-- Run the javadocs -->
+	<target name="javadoc" description="Run the JavaDocs" depends="init">
+		<javadoc destdir="${main.javadocs}" author="true" use="true" protected="true" additionalparam="-breakiterator" maxmemory="500m" windowtitle="teneighty heap API ${main.version}">
+			<fileset dir="${main.code.src}" defaultexcludes="yes">
+				<include name="**/*.java" />
+			</fileset>
+			<link href="http://java.sun.com/javase/6/docs/api/" />
+			<doctitle><![CDATA[<h1>teneighty heap API ${main.version}</h1>]]></doctitle>
+			<bottom><![CDATA[<i>Copyright &#169; 2005-2009 Fran Lattanzio. All Rights Reserved.</i><br>Generated on ${current.time}]]></bottom>
+		</javadoc>
+	</target>
+
+
+	<!-- Run the performance test -->
+	<target name="performanceTest" description="Run the performance test" depends="compileTest">
+
+		<junit printsummary="yes" haltonfailure="yes" haltonerror="yes" fork="no" showoutput="true">
+
+		        <!-- Set the classpath appropiately -->
+			<classpath>
+				<pathelement location="${main.compile.bin}" />
+				<pathelement location="${test.compile.bin}" />
+			</classpath>
+
+			<formatter type="xml" />			
+
+			<!-- Run only the performance test. -->
+			<test name="org.teneighty.heap.PerformanceTest" haltOnFailure="no" todir="${test.output}" />
+
+		</junit>
+
+	</target>
+
+	<!-- Do everything -->
+	<target name="deploy" description="Build the JAR and generate the JavaDocs" depends="image, javadoc"/>
 
 </project>
