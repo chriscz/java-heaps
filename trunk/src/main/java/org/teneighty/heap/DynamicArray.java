@@ -26,7 +26,6 @@ package org.teneighty.heap;
 
 import java.io.Serializable;
 
-
 /**
  * A lame little helper class: Provides a real dynamic array functionality,
  * unlike the POS known as <code>Vector</code>.
@@ -35,41 +34,37 @@ import java.io.Serializable;
  * <code>BinaryHeap</code>, since that's the only class that needs
  * <code>DynamicArray</code>.
  * 
- * @param <E> the element type.
+ * @param <TElement> the element type.
  * @author Fran Lattanzio
  * @version $Revision$ $Date$
  */
-final class DynamicArray<E>
+final class DynamicArray<TElement>
 	extends Object
 	implements Serializable
 {
-
 
 	/**
 	 * Serial version UID.
 	 */
 	private static final long serialVersionUID = 874234L;
 
-
 	/**
 	 * Backing array of schmutz.
 	 */
 	private Object[] data;
-
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param cap the capacity.
 	 */
-	DynamicArray( final int cap )
+	DynamicArray(final int cap)
 	{
 		super();
 
 		// Create data array
-		this.data = new Object[ cap ];
+		this.data = new Object[cap];
 	}
-
 
 	/**
 	 * Get the capacity of this array.
@@ -78,31 +73,29 @@ final class DynamicArray<E>
 	 */
 	int capacity()
 	{
-		return ( this.data.length );
+		return this.data.length;
 	}
-
 
 	/**
 	 * Ensure the specified capacity.
 	 * 
 	 * @param new_capacity the capacity to ensure.
 	 */
-	@SuppressWarnings( "unchecked" )
-	void ensureCapacity( final int new_capacity )
+	void ensureCapacity(final int new_capacity)
 	{
-		if( new_capacity != this.capacity() )
+		if (new_capacity != this.capacity())
 		{
 			// Re-alloc all the crap.
-			Object[] new_data = new Object[ new_capacity ];
+			Object[] new_data = new Object[new_capacity];
 
 			// Copy everything, except 0th index.
-			System.arraycopy( this.data, 1, new_data, 1, Math.min( new_data.length, this.data.length ) - 1 );
+			System.arraycopy(this.data, 1, new_data, 1, Math.min(
+					new_data.length, this.data.length) - 1);
 
 			// Set new stuff.
 			this.data = new_data;
 		}
 	}
-
 
 	/**
 	 * Get the element at the specified index.
@@ -110,14 +103,13 @@ final class DynamicArray<E>
 	 * @param index the index to get.
 	 * @return the element at <code>index</code>.
 	 * @throws ArrayIndexOutOfBoundsException If <code>index</code> is out of
-	 *         bounds.
+	 *             bounds.
 	 */
-	@SuppressWarnings( "unchecked" )
-	E get( final int index )
+	@SuppressWarnings("unchecked")
+	TElement get(final int index)
 	{
-		return ( (E)this.data[ index ] );
+		return (TElement) this.data[index];
 	}
-
 
 	/**
 	 * Set the value at the specified index.
@@ -125,13 +117,12 @@ final class DynamicArray<E>
 	 * @param index the index.
 	 * @param val the new value.
 	 * @throws ArrayIndexOutOfBoundsException If <code>index</code> is out of
-	 *         bounds.
+	 *             bounds.
 	 */
-	void set( final int index, final E val )
+	void set(final int index, final TElement val)
 	{
-		this.data[ index ] = val;
+		this.data[index] = val;
 	}
-
 
 	/**
 	 * Clear this object.
@@ -140,10 +131,9 @@ final class DynamicArray<E>
 	 * 
 	 * @param cap the new capacity.
 	 */
-	void reallocate( int cap )
+	void reallocate(int cap)
 	{
-		this.data = new Object[ cap ];
+		this.data = new Object[cap];
 	}
-
 
 }

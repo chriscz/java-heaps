@@ -35,7 +35,6 @@ import java.io.ObjectOutputStream;
 import java.io.InvalidObjectException;
 import java.io.IOException;
 
-
 /**
  * This class contains various static methods which operate on heaps. The
  * methods are all polymorphic and will operate on any heap implementation.
@@ -54,241 +53,112 @@ public final class Heaps
 	extends Object
 {
 
-
-	/**
-	 * Invert the action of the specified comparator.
-	 * 
-	 * @param <T> the type of the comparator.
-	 * @param comp the comparator.
-	 * @return an inverted comparator.
-	 * @throws NullPointerException If <code>code</code> is <code>null</code>.
-	 */
-	public <T> Comparator<T> invertComparator( final Comparator<T> comp )
-		throws NullPointerException
-	{
-		if( comp == null )
-		{
-			throw new NullPointerException();
-		}
-
-		return ( new InvertedComparator<T>( comp ) );
-	}
-
-
 	/**
 	 * Create and return a threadsafe view around the specified heap.
 	 * <p>
-	 * In order to guarantee serial access, it is critical that <strong>all</strong>
-	 * access to the backing heap is accomplished through the returned heap.
+	 * In order to guarantee serial access, it is critical that
+	 * <strong>all</strong> access to the backing heap is accomplished through
+	 * the returned heap.
 	 * <p>
 	 * The decorated/returned heap uses itself as a mutex; it acts much the
 	 * corresponding method in <code>java.util.Collections</code> in this
 	 * respect.
 	 * 
-	 * @param <K> the key type.
-	 * @param <V> the value type.
+	 * @param <TKey> the key type.
+	 * @param <TValue> the value type.
 	 * @param heap the heap to wrap in a threadsafe view.
 	 * @return a synchronized view of the specified heap.
 	 * @throws NullPointerException if <code>heap</code> is <code>null</code>.
 	 */
-	public static <K, V> Heap<K, V> synchronizedHeap( final Heap<K, V> heap )
+	public static <TKey, TValue> Heap<TKey, TValue> synchronizedHeap(
+			final Heap<TKey, TValue> heap)
 		throws NullPointerException
 	{
-		if( heap == null )
+		if (heap == null)
 		{
 			throw new NullPointerException();
 		}
 
-		return ( new SynchronizedHeap<K, V>( heap ) );
+		return new SynchronizedHeap<TKey, TValue>(heap);
 	}
 
-
 	/**
-	 * Create and return an unmodifiable heap view , backed by the specified heap.
+	 * Create and return an unmodifiable heap view , backed by the specified
+	 * heap.
 	 * <p>
-	 * In order to guarantee unmodifiability, it is critical that <strong>all</strong>
-	 * access to the backing heap is accomplished through the returned heap.
+	 * In order to guarantee unmodifiability, it is critical that
+	 * <strong>all</strong> access to the backing heap is accomplished through
+	 * the returned heap.
 	 * 
-	 * @param <K> the key type.
-	 * @param <V> the value type.
+	 * @param <TKey> the key type.
+	 * @param <TValue> the value type.
 	 * @param heap the heap to make unmodifiable.
 	 * @return an unmodifiable view of the specified heap.
 	 * @throws NullPointerException if <code>heap</code> is <code>null</code>.
 	 */
-	public static <K, V> Heap<K, V> unmodifiableHeap( final Heap<K, V> heap )
+	public static <TKey, TValue> Heap<TKey, TValue> unmodifiableHeap(
+			final Heap<TKey, TValue> heap)
 		throws NullPointerException
 	{
-		if( heap == null )
+		if (heap == null)
 		{
 			throw new NullPointerException();
 		}
 
-		return ( new UnmodifiableHeap<K, V>( heap ) );
+		return new UnmodifiableHeap<TKey, TValue>(heap);
 	}
-
 
 	/**
 	 * Return an empty heap.
 	 * <p>
 	 * The returned heap is not modifiable.
 	 * 
-	 * @param <K> the key type.
-	 * @param <V> the value type.
+	 * @param <TKey> the key type.
+	 * @param <TValue> the value type.
 	 * @return an empty, unmodifiable heap.
 	 */
-	public static <K, V> Heap<K, V> emptyHeap()
+	public static <TKey, TValue> Heap<TKey, TValue> emptyHeap()
 	{
-		return ( new EmptyHeap<K, V>() );
+		return new EmptyHeap<TKey, TValue>();
 	}
-
 
 	/**
 	 * Check for reference equality.
 	 * <p>
-	 * Lame hack for getting around the fact that the Java compiler will not let me
-	 * reference-compare a <code>{@literal Heap<K,V>}</code> and a
+	 * Lame hack for getting around the fact that the Java compiler will not let
+	 * me reference-compare a <code>{@literal Heap<K,V>}</code> and a
 	 * <code>{@literal Heap<? extends K, ? extends V>}</code>.
 	 * 
 	 * @param one the first object.
 	 * @param two the second object.
 	 * @return true if reference equal; false otherwise.
 	 */
-	static boolean ReferenceEquals( final Object one, final Object two )
+	static boolean ReferenceEquals(final Object one, final Object two)
 	{
-		return ( one == two );
+		return (one == two);
 	}
-
-
-	/**
-	 * An inverted comparator.
-	 * 
-	 * @param <T> the comparator type.
-	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
-	 */
-	private static final class InvertedComparator<T>
-		extends Object
-		implements Comparator<T>, Serializable
-	{
-
-
-		/**
-		 * Serial version UID.
-		 */
-		private static final long serialVersionUID = 238473L;
-
-
-		/**
-		 * The backing comparator.
-		 */
-		private Comparator<T> comp;
-
-
-		/**
-		 * Constructor.
-		 * 
-		 * @param comp the comparator.
-		 */
-		InvertedComparator( final Comparator<T> comp )
-		{
-			super();
-
-			// Store comparator.
-			this.comp = comp;
-		}
-
-
-		/**
-		 * Compare the specified objects.
-		 * 
-		 * @param o1 the first object
-		 * @param o2 the second object.
-		 * @return the opposite of what the underlying comparator does.
-		 */
-		public int compare( final T o1, final T o2 )
-		{
-			return ( this.comp.compare( o2, o1 ) );
-		}
-
-
-		/**
-		 * Compare for equality.
-		 * 
-		 * @param other the other object.
-		 * @return true if equal.
-		 */
-		@SuppressWarnings( "unchecked" )
-		@Override
-		public boolean equals( final Object other )
-		{
-			if( other == null )
-			{
-				return ( false );
-			}
-
-			if( other == this )
-			{
-				return ( true );
-			}
-
-			if( other.getClass().equals( InvertedComparator.class ) )
-			{
-				InvertedComparator<T> that = (InvertedComparator<T>)other;
-				return ( this.comp.equals( that.comp ) );
-			}
-
-			return ( false );
-		}
-
-
-		/**
-		 * Get a hashcode, inline with equals.
-		 * 
-		 * @return the hashcode.
-		 */
-		@Override
-		public int hashCode()
-		{
-			return ( this.comp.hashCode() );
-		}
-
-
-		/**
-		 * Produce a happy string version of this class.
-		 * 
-		 * @return a string.
-		 */
-		@Override
-		public String toString()
-		{
-			return ( "Inverse of " + this.comp.toString() );
-		}
-
-
-	}
-
 
 	/**
 	 * Empty heap class.
 	 * <p>
 	 * Instances of this class are not modifiable.
 	 * 
-	 * @param <K> the key type.
-	 * @param <V> the value type.
+	 * @param <TKey> the key type.
+	 * @param <TValue> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
-	private static final class EmptyHeap<K, V>
+	private static final class EmptyHeap<TKey, TValue>
 		extends Object
-		implements Heap<K, V>, Iterable<Heap.Entry<K, V>>, Serializable
+		implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
+		Serializable
 	{
-
 
 		/**
 		 * Serialization nonsense.
 		 */
 		private static final long serialVersionUID = 476893L;
-
 
 		/**
 		 * Constructor.
@@ -298,22 +168,20 @@ public final class Heaps
 			super();
 		}
 
-
 		/**
 		 * Get the comparator used for decision in this heap.
 		 * <p>
-		 * If this method returns <code>null</code> then this heap uses the keys'
-		 * <i>natural ordering</i>.
+		 * If this method returns <code>null</code> then this heap uses the
+		 * keys' <i>natural ordering</i>.
 		 * 
 		 * @return the comparator or <code>null</code>.
 		 * @see java.util.Comparator
 		 * @see java.lang.Comparable
 		 */
-		public Comparator<? super K> getComparator()
+		public Comparator<? super TKey> getComparator()
 		{
-			return ( null );
+			return null;
 		}
-
 
 		/**
 		 * Clear this heap.
@@ -325,7 +193,6 @@ public final class Heaps
 			throw new UnsupportedOperationException();
 		}
 
-
 		/**
 		 * Add a mapping to this heap.
 		 * 
@@ -334,43 +201,44 @@ public final class Heaps
 		 * @return the entry created.
 		 * @throws UnsupportedOperationException Always.
 		 */
-		public Entry<K, V> insert( final K key, final V value )
+		public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 			throws UnsupportedOperationException
 		{
 			throw new UnsupportedOperationException();
 		}
 
-
 		/**
 		 * Insert all the entries of the specified heap into this heap.
 		 * <p>
-		 * The other heap will not be cleared, and this heap will simply <i>hold</i>
-		 * the entries of <code>other</code>, not <i>contain</i> them.
+		 * The other heap will not be cleared, and this heap will simply
+		 * <i>hold</i> the entries of <code>other</code>, not <i>contain</i>
+		 * them.
 		 * 
 		 * @param other the other heap.
-		 * @throws NullPointerException If <code>other</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>other</code> is
+		 *             <code>null</code>.
 		 * @throws ClassCastException If the keys of <code>other</code> are not
-		 *         mutally comparable to the keys of this heap.
+		 *             mutally comparable to the keys of this heap.
 		 * @throws IllegalArgumentException If you attempt to insert a heap into
-		 *         itself.
+		 *             itself.
 		 * @see #union(Heap)
 		 */
-		public void insertAll( final Heap<? extends K, ? extends V> other )
-			throws NullPointerException, ClassCastException, IllegalArgumentException
+		public void insertAll(final Heap<? extends TKey, ? extends TValue> other)
+			throws NullPointerException, ClassCastException,
+			IllegalArgumentException
 		{
-			if( other == null )
+			if (other == null)
 			{
 				throw new NullPointerException();
 			}
 
-			if( ReferenceEquals( other, this ) )
+			if (ReferenceEquals(other, this))
 			{
 				throw new IllegalArgumentException();
 			}
 
 			throw new UnsupportedOperationException();
 		}
-
 
 		/**
 		 * Get the number of entries in this heap.
@@ -379,9 +247,8 @@ public final class Heaps
 		 */
 		public int getSize()
 		{
-			return ( 0 );
+			return 0;
 		}
-
 
 		/**
 		 * Is this heap empty?
@@ -391,9 +258,8 @@ public final class Heaps
 		 */
 		public boolean isEmpty()
 		{
-			return ( true );
+			return true;
 		}
-
 
 		/**
 		 * Get the entry with the minimum key.
@@ -404,12 +270,11 @@ public final class Heaps
 		 * @throws NoSuchElementException If this heap is empty.
 		 * @see #extractMinimum()
 		 */
-		public Entry<K, V> getMinimum()
+		public Entry<TKey, TValue> getMinimum()
 			throws NoSuchElementException
 		{
 			throw new NoSuchElementException();
 		}
-
 
 		/**
 		 * Remove and return the entry minimum key.
@@ -418,47 +283,44 @@ public final class Heaps
 		 * @throws UnsupportedOperationException Always.
 		 * @see #getMinimum()
 		 */
-		public Entry<K, V> extractMinimum()
+		public Entry<TKey, TValue> extractMinimum()
 			throws UnsupportedOperationException
 		{
 			throw new UnsupportedOperationException();
 		}
 
-
 		/**
 		 * Decrease the key of the given element.
 		 * <p>
-		 * Attempting to decrease the key of an entry which is not a member of this
-		 * heap may damage both this heap and the heap of which <code>e</code> is
-		 * actually a member beyond repair.
+		 * Attempting to decrease the key of an entry which is not a member of
+		 * this heap may damage both this heap and the heap of which
+		 * <code>e</code> is actually a member beyond repair.
 		 * 
 		 * @param e the entry for which to decrease the key.
 		 * @param key the new key.
 		 * @throws UnsupportedOperationException Always.
 		 */
-		public void decreaseKey( final Entry<K, V> e, final K key )
+		public void decreaseKey(final Entry<TKey, TValue> e, final TKey key)
 			throws UnsupportedOperationException
 		{
 			throw new UnsupportedOperationException();
 		}
-
 
 		/**
 		 * Delete the entry from this heap.
 		 * <p>
 		 * Attempting to delete an entry which is not a member of this heap may
-		 * damage both this heap and the heap of which <code>e</code> is actually
-		 * a member beyond repair.
+		 * damage both this heap and the heap of which <code>e</code> is
+		 * actually a member beyond repair.
 		 * 
 		 * @param e the entry to delete.
 		 * @throws UnsupportedOperationException Always.
 		 */
-		public void delete( final Entry<K, V> e )
+		public void delete(final Entry<TKey, TValue> e)
 			throws UnsupportedOperationException
 		{
 			throw new UnsupportedOperationException();
 		}
-
 
 		/**
 		 * Does this heap hold the specified entry?
@@ -466,19 +328,19 @@ public final class Heaps
 		 * @param entry the entry to check.
 		 * @return <code>true</code> if this heap holds the specified entry;
 		 *         <code>false</code> otherwise.
-		 * @throws NullPointerException If <code>entry</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>entry</code> is
+		 *             <code>null</code>.
 		 */
-		public boolean holdsEntry( final Entry<K, V> entry )
+		public boolean holdsEntry(final Entry<TKey, TValue> entry)
 			throws NullPointerException
 		{
-			if( entry == null )
+			if (entry == null)
 			{
 				throw new NullPointerException();
 			}
 
-			return ( false );
+			return false;
 		}
-
 
 		/**
 		 * Does this heap contain the specified entry?
@@ -486,19 +348,19 @@ public final class Heaps
 		 * @param entry the entry to check.
 		 * @return <code>true</code> if this heap contains the specified entry;
 		 *         <code>false</code> otherwise.
-		 * @throws NullPointerException If <code>entry</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>entry</code> is
+		 *             <code>null</code>.
 		 */
-		public boolean containsEntry( final Entry<K, V> entry )
+		public boolean containsEntry(final Entry<TKey, TValue> entry)
 			throws NullPointerException
 		{
-			if( entry == null )
+			if (entry == null)
 			{
 				throw new NullPointerException();
 			}
 
-			return ( false );
+			return false;
 		}
-
 
 		/**
 		 * Union this heap with another heap.
@@ -506,43 +368,42 @@ public final class Heaps
 		 * @param other the other heap.
 		 * @throws UnsupportedOperationException Always.
 		 */
-		public void union( final Heap<K, V> other )
+		public void union(final Heap<TKey, TValue> other)
 			throws UnsupportedOperationException
 		{
 			throw new UnsupportedOperationException();
 		}
 
-
 		/**
-		 * Check whether the specified object is referentially or semantically equal
+		 * Check whether the specified object is referentially or semantically
+		 * equal
 		 * to this object.
 		 * 
 		 * @param other the other object.
 		 * @return <code>true</code> if equal; <code>false</code> otherwise.
 		 */
-		@SuppressWarnings( "unchecked" )
+		@SuppressWarnings("unchecked")
 		@Override
-		public boolean equals( final Object other )
+		public boolean equals(final Object other)
 		{
-			if( other == null )
+			if (other == null)
 			{
-				return ( false );
+				return false;
 			}
 
-			if( this == other )
+			if (this == other)
 			{
-				return ( true );
+				return true;
 			}
 
-			if( Heap.class.isAssignableFrom( other.getClass() ) )
+			if (Heap.class.isAssignableFrom(other.getClass()))
 			{
-				Heap that = (Heap)other;
-				return ( that.getSize() == 0 );
+				Heap that = (Heap) other;
+				return (that.getSize() == 0);
 			}
 
-			return ( false );
+			return false;
 		}
-
 
 		/**
 		 * Return the hashcode for this object.
@@ -552,9 +413,8 @@ public final class Heaps
 		@Override
 		public int hashCode()
 		{
-			return ( 0 );
+			return 0;
 		}
-
 
 		/**
 		 * Get a string representation of this object.
@@ -564,9 +424,8 @@ public final class Heaps
 		@Override
 		public String toString()
 		{
-			return ( "EmptyHeap(0){}" );
+			return "EmptyHeap(0){}";
 		}
-
 
 		/**
 		 * Get the entry collection.
@@ -576,11 +435,10 @@ public final class Heaps
 		 * @return the entries.
 		 * @see org.teneighty.heap.Heap.Entry
 		 */
-		public Collection<Heap.Entry<K, V>> getEntries()
+		public Collection<Heap.Entry<TKey, TValue>> getEntries()
 		{
-			return ( Collections.emptyList() );
+			return Collections.emptyList();
 		}
-
 
 		/**
 		 * Get the collection of values.
@@ -589,11 +447,10 @@ public final class Heaps
 		 * 
 		 * @return the values.
 		 */
-		public Collection<V> getValues()
+		public Collection<TValue> getValues()
 		{
-			return ( Collections.emptyList() );
+			return Collections.emptyList();
 		}
-
 
 		/**
 		 * Get the collection of keys.
@@ -602,45 +459,44 @@ public final class Heaps
 		 * 
 		 * @return the keys.
 		 */
-		public Collection<K> getKeys()
+		public Collection<TKey> getKeys()
 		{
-			return ( Collections.emptyList() );
+			return Collections.emptyList();
 		}
-
 
 		/**
 		 * Get an iterator over the entries in this heap.
 		 * 
 		 * @return an iterator over the entries.
 		 */
-		public Iterator<Heap.Entry<K, V>> iterator()
+		public Iterator<Heap.Entry<TKey, TValue>> iterator()
 		{
 			// we have this dumbness because the Java compiler is even dumber
 			// and cannot correctly pass on the generic types to iterator() in
 			// the following statement:
 			// return ( Collections.emptyList().iterator() );
-			Collection<Heap.Entry<K, V>> emptyList = Collections.emptyList();
-			return ( emptyList.iterator() );
+			Collection<Heap.Entry<TKey, TValue>> emptyList = Collections
+					.emptyList();
+			return emptyList.iterator();
 		}
-
 
 		/**
 		 * Perform the specified action on each element of this heap.
 		 * <p>
-		 * It's extremely unwise to attempt to modify the heap (e.g. decrease the
-		 * keys of all elements by one). Most implementations of this method are
-		 * likely to be implemented atop an iterator over the heap, and thus, if the
-		 * iterator is fail-fast and detects concurrent modification, any changes to
-		 * the heap will cause the iterator to die.
+		 * It's extremely unwise to attempt to modify the heap (e.g. decrease
+		 * the keys of all elements by one). Most implementations of this method
+		 * are likely to be implemented atop an iterator over the heap, and
+		 * thus, if the iterator is fail-fast and detects concurrent
+		 * modification, any changes to the heap will cause the iterator to die.
 		 * 
 		 * @param action the action to perform.
 		 * @throws NullPointerException If <code>action</code> is
-		 *         <code>null</code>.
+		 *             <code>null</code>.
 		 */
-		public void forEach( Action<Heap.Entry<K, V>> action )
+		public void forEach(Action<Heap.Entry<TKey, TValue>> action)
 			throws NullPointerException
 		{
-			if( action == null )
+			if (action == null)
 			{
 				throw new NullPointerException();
 			}
@@ -648,42 +504,39 @@ public final class Heaps
 			// do nothing - since this heap is empty, we have no work to do!
 		}
 
-
 	}
-
 
 	/**
 	 * Unmodifiable heap decorator.
 	 * 
-	 * @param <K> the key type.
-	 * @param <V> the value type.
+	 * @param <TKey> the key type.
+	 * @param <TValue> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
-	private static final class UnmodifiableHeap<K, V>
+	private static final class UnmodifiableHeap<TKey, TValue>
 		extends Object
-		implements Heap<K, V>, Iterable<Heap.Entry<K, V>>, Serializable
+		implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
+		Serializable
 	{
-
 
 		/**
 		 * Serial version UID.
 		 */
 		private static final long serialVersionUID = 23408234L;
 
-
 		/**
 		 * The backing heap.
 		 */
-		private Heap<K, V> heap;
-
+		private Heap<TKey, TValue> heap;
 
 		/**
 		 * Constructor.
 		 * 
 		 * @param heap the backing heap.
 		 */
-		UnmodifiableHeap( final Heap<K, V> heap )
+		UnmodifiableHeap(final Heap<TKey, TValue> heap)
 		{
 			super();
 
@@ -691,22 +544,20 @@ public final class Heaps
 			this.heap = heap;
 		}
 
-
 		/**
 		 * Get the comparator used for decision in this heap.
 		 * <p>
-		 * If this method returns <code>null</code> then this heap uses the keys'
-		 * <i>natural ordering</i>.
+		 * If this method returns <code>null</code> then this heap uses the
+		 * keys' <i>natural ordering</i>.
 		 * 
 		 * @return the comparator or <code>null</code>.
 		 * @see java.util.Comparator
 		 * @see java.lang.Comparable
 		 */
-		public Comparator<? super K> getComparator()
+		public Comparator<? super TKey> getComparator()
 		{
-			return ( this.heap.getComparator() );
+			return this.heap.getComparator();
 		}
-
 
 		/**
 		 * Clear this heap.
@@ -718,7 +569,6 @@ public final class Heaps
 			throw new UnsupportedOperationException();
 		}
 
-
 		/**
 		 * Add a mapping to this heap.
 		 * 
@@ -727,43 +577,45 @@ public final class Heaps
 		 * @return the entry created.
 		 * @throws UnsupportedOperationException Always.
 		 */
-		public Entry<K, V> insert( final K key, final V value )
+		public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 			throws UnsupportedOperationException
 		{
 			throw new UnsupportedOperationException();
 		}
 
-
 		/**
 		 * Insert all the entries of the specified heap into this heap.
 		 * <p>
-		 * The other heap will not be cleared, and this heap will simply <i>hold</i>
-		 * the entries of <code>other</code>, not <i>contain</i> them.
+		 * The other heap will not be cleared, and this heap will simply
+		 * <i>hold</i> the entries of <code>other</code>, not <i>contain</i>
+		 * them.
 		 * 
 		 * @param other the other heap.
-		 * @throws NullPointerException If <code>other</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>other</code> is
+		 *             <code>null</code>.
 		 * @throws ClassCastException If the keys of <code>other</code> are not
-		 *         mutally comparable to the keys of this heap.
+		 *             mutally comparable to the keys of this heap.
 		 * @throws IllegalArgumentException If you attempt to insert a heap into
-		 *         itself.
+		 *             itself.
 		 * @see #union(Heap)
 		 */
-		public void insertAll( final Heap<? extends K, ? extends V> other )
-			throws NullPointerException, ClassCastException, IllegalArgumentException
+		public void insertAll(final Heap<? extends TKey, ? extends TValue> other)
+			throws NullPointerException, ClassCastException,
+			IllegalArgumentException
 		{
-			if( other == null )
+			if (other == null)
 			{
 				throw new NullPointerException();
 			}
 
-			if( ReferenceEquals( other, this ) || ReferenceEquals( other, this.heap ) )
+			if (ReferenceEquals(other, this)
+					|| ReferenceEquals(other, this.heap))
 			{
 				throw new IllegalArgumentException();
 			}
 
 			throw new UnsupportedOperationException();
 		}
-
 
 		/**
 		 * Get the number of entries in this heap.
@@ -772,9 +624,8 @@ public final class Heaps
 		 */
 		public int getSize()
 		{
-			return ( this.heap.getSize() );
+			return this.heap.getSize();
 		}
-
 
 		/**
 		 * Is this heap empty?
@@ -784,9 +635,8 @@ public final class Heaps
 		 */
 		public boolean isEmpty()
 		{
-			return ( this.heap.isEmpty() );
+			return this.heap.isEmpty();
 		}
-
 
 		/**
 		 * Get the entry with the minimum key.
@@ -797,12 +647,11 @@ public final class Heaps
 		 * @throws NoSuchElementException If this heap is empty.
 		 * @see #extractMinimum()
 		 */
-		public Entry<K, V> getMinimum()
+		public Entry<TKey, TValue> getMinimum()
 			throws NoSuchElementException
 		{
-			return ( this.heap.getMinimum() );
+			return this.heap.getMinimum();
 		}
-
 
 		/**
 		 * Remove and return the entry minimum key.
@@ -811,47 +660,44 @@ public final class Heaps
 		 * @throws UnsupportedOperationException Always.
 		 * @see #getMinimum()
 		 */
-		public Entry<K, V> extractMinimum()
+		public Entry<TKey, TValue> extractMinimum()
 			throws UnsupportedOperationException
 		{
 			throw new UnsupportedOperationException();
 		}
 
-
 		/**
 		 * Decrease the key of the given element.
 		 * <p>
-		 * Attempting to decrease the key of an entry which is not a member of this
-		 * heap may damage both this heap and the heap of which <code>e</code> is
-		 * actually a member beyond repair.
+		 * Attempting to decrease the key of an entry which is not a member of
+		 * this heap may damage both this heap and the heap of which
+		 * <code>e</code> is actually a member beyond repair.
 		 * 
 		 * @param e the entry for which to decrease the key.
 		 * @param key the new key.
 		 * @throws UnsupportedOperationException Always.
 		 */
-		public void decreaseKey( final Entry<K, V> e, final K key )
+		public void decreaseKey(final Entry<TKey, TValue> e, final TKey key)
 			throws UnsupportedOperationException
 		{
 			throw new UnsupportedOperationException();
 		}
-
 
 		/**
 		 * Delete the entry from this heap.
 		 * <p>
 		 * Attempting to delete an entry which is not a member of this heap may
-		 * damage both this heap and the heap of which <code>e</code> is actually
-		 * a member beyond repair.
+		 * damage both this heap and the heap of which <code>e</code> is
+		 * actually a member beyond repair.
 		 * 
 		 * @param e the entry to delete.
 		 * @throws UnsupportedOperationException Always.
 		 */
-		public void delete( final Entry<K, V> e )
+		public void delete(final Entry<TKey, TValue> e)
 			throws UnsupportedOperationException
 		{
 			throw new UnsupportedOperationException();
 		}
-
 
 		/**
 		 * Does this heap hold the specified entry?
@@ -859,14 +705,14 @@ public final class Heaps
 		 * @param entry the entry to check.
 		 * @return <code>true</code> if this heap holds the specified entry;
 		 *         <code>false</code> otherwise.
-		 * @throws NullPointerException If <code>entry</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>entry</code> is
+		 *             <code>null</code>.
 		 */
-		public boolean holdsEntry( final Entry<K, V> entry )
+		public boolean holdsEntry(final Entry<TKey, TValue> entry)
 			throws NullPointerException
 		{
-			return ( this.heap.holdsEntry( entry ) );
+			return this.heap.holdsEntry(entry);
 		}
-
 
 		/**
 		 * Does this heap contain the specified entry?
@@ -874,14 +720,14 @@ public final class Heaps
 		 * @param entry the entry to check.
 		 * @return <code>true</code> if this heap contains the specified entry;
 		 *         <code>false</code> otherwise.
-		 * @throws NullPointerException If <code>entry</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>entry</code> is
+		 *             <code>null</code>.
 		 */
-		public boolean containsEntry( final Entry<K, V> entry )
+		public boolean containsEntry(final Entry<TKey, TValue> entry)
 			throws NullPointerException
 		{
-			return ( this.heap.containsEntry( entry ) );
+			return this.heap.containsEntry(entry);
 		}
-
 
 		/**
 		 * Union this heap with another heap.
@@ -889,36 +735,35 @@ public final class Heaps
 		 * @param other the other heap.
 		 * @throws UnsupportedOperationException Always.
 		 */
-		public void union( final Heap<K, V> other )
+		public void union(final Heap<TKey, TValue> other)
 			throws UnsupportedOperationException
 		{
 			throw new UnsupportedOperationException();
 		}
 
-
 		/**
-		 * Check whether the specified object is referentially or semantically equal
+		 * Check whether the specified object is referentially or semantically
+		 * equal
 		 * to this object.
 		 * 
 		 * @param other the other object.
 		 * @return <code>true</code> if equal; <code>false</code> otherwise.
 		 */
 		@Override
-		public boolean equals( final Object other )
+		public boolean equals(final Object other)
 		{
-			if( other == null )
+			if (other == null)
 			{
-				return ( false );
+				return false;
 			}
 
-			if( this == other )
+			if (this == other)
 			{
-				return ( true );
+				return true;
 			}
 
-			return ( this.heap.equals( other ) );
+			return this.heap.equals(other);
 		}
-
 
 		/**
 		 * Return a hashcode inline with equals for this object.
@@ -928,9 +773,8 @@ public final class Heaps
 		@Override
 		public int hashCode()
 		{
-			return ( this.heap.hashCode() );
+			return this.heap.hashCode();
 		}
-
 
 		/**
 		 * Get a string representation of this object.
@@ -940,20 +784,18 @@ public final class Heaps
 		@Override
 		public String toString()
 		{
-			return ( this.heap.toString() );
+			return this.heap.toString();
 		}
-
 
 		/**
 		 * Get the collection of entries held by this heap.
 		 * 
 		 * @return the entry collection.
 		 */
-		public Collection<Heap.Entry<K, V>> getEntries()
+		public Collection<Heap.Entry<TKey, TValue>> getEntries()
 		{
-			return ( Collections.unmodifiableCollection( this.heap.getEntries() ) );
+			return Collections.unmodifiableCollection(this.heap.getEntries());
 		}
-
 
 		/**
 		 * Get the collection of values.
@@ -962,11 +804,10 @@ public final class Heaps
 		 * 
 		 * @return the values.
 		 */
-		public Collection<V> getValues()
+		public Collection<TValue> getValues()
 		{
-			return ( Collections.unmodifiableCollection( this.heap.getValues() ) );
+			return Collections.unmodifiableCollection(this.heap.getValues());
 		}
-
 
 		/**
 		 * Get the collection of keys.
@@ -975,76 +816,74 @@ public final class Heaps
 		 * 
 		 * @return the keys.
 		 */
-		public Collection<K> getKeys()
+		public Collection<TKey> getKeys()
 		{
-			return ( Collections.unmodifiableCollection( this.heap.getKeys() ) );
+			return Collections.unmodifiableCollection(this.heap.getKeys());
 		}
-
 
 		/**
 		 * Get an iterator over the entries in this heap.
 		 * 
 		 * @return an iterator over the entries.
 		 */
-		public Iterator<Heap.Entry<K, V>> iterator()
+		public Iterator<Heap.Entry<TKey, TValue>> iterator()
 		{
-			return ( new ImmutableHeapEntryIterator<K, V>( this.heap.iterator() ) );
+			return new ImmutableHeapEntryIterator<TKey, TValue>(this.heap
+					.iterator());
 		}
-
 
 		/**
 		 * Perform the specified action on each element of this heap.
 		 * <p>
-		 * It's extremely unwise to attempt to modify the heap (e.g. decrease the
-		 * keys of all elements by one). Most implementations of this method are
-		 * likely to be implemented atop an iterator over the heap, and thus, if the
-		 * iterator is fail-fast and detects concurrent modification, any changes to
-		 * the heap will cause the iterator to die.
+		 * It's extremely unwise to attempt to modify the heap (e.g. decrease
+		 * the keys of all elements by one). Most implementations of this method
+		 * are likely to be implemented atop an iterator over the heap, and
+		 * thus, if the iterator is fail-fast and detects concurrent
+		 * modification, any changes to the heap will cause the iterator to die.
 		 * 
 		 * @param action the action to perform.
 		 * @throws NullPointerException If <code>action</code> is
-		 *         <code>null</code>.
+		 *             <code>null</code>.
 		 */
-		public void forEach( final Action<Heap.Entry<K, V>> action )
+		public void forEach(final Action<Heap.Entry<TKey, TValue>> action)
 			throws NullPointerException
 		{
 			// straight delegation...
-			this.heap.forEach( action );
+			this.heap.forEach(action);
 		}
 
-
 		/**
-		 * An immutable iterator decorator - i.e. an iterator that doesn't support
+		 * An immutable iterator decorator - i.e. an iterator that doesn't
+		 * support
 		 * the remove method.
 		 * 
-		 * @param <K> the key type.
-		 * @param <V> the value type.
+		 * @param <TKey> the key type.
+		 * @param <TValue> the value type.
 		 * @author Fran Lattanzio
-		 * @version $Revision$ $Date$
+		 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+		 *          2009) $
 		 */
-		private static final class ImmutableHeapEntryIterator<K, V>
+		private static final class ImmutableHeapEntryIterator<TKey, TValue>
 			extends Object
-			implements Iterator<Heap.Entry<K, V>>
+			implements Iterator<Heap.Entry<TKey, TValue>>
 		{
-
 
 			/**
 			 * The backing iterator.
 			 */
-			private Iterator<Heap.Entry<K, V>> backingIterator;
-
+			private Iterator<Heap.Entry<TKey, TValue>> backingIterator;
 
 			/**
 			 * Constructor.
 			 * 
 			 * @param iterator the iterator to use to back this iterator.
 			 */
-			ImmutableHeapEntryIterator( final Iterator<Heap.Entry<K, V>> iterator )
+			ImmutableHeapEntryIterator(
+					final Iterator<Heap.Entry<TKey, TValue>> iterator)
 			{
 				// store the backing iterator and stuff.
 				this.backingIterator = iterator;
 			}
-
 
 			/**
 			 * Check if this iterator has a next element.
@@ -1054,27 +893,26 @@ public final class Heaps
 			 */
 			public boolean hasNext()
 			{
-				return ( this.backingIterator.hasNext() );
+				return this.backingIterator.hasNext();
 			}
-
 
 			/**
 			 * Get the next heap entry in this iterator.
 			 * 
 			 * @return the next entry in the iterator.
-			 * @throws NoSuchElementException If there are no elements left in this
-			 *         iterator.
+			 * @throws NoSuchElementException If there are no elements left in
+			 *             this
+			 *             iterator.
 			 */
-			public Heap.Entry<K, V> next()
+			public Heap.Entry<TKey, TValue> next()
 				throws NoSuchElementException
 			{
 				// grab next thing.
-				Heap.Entry<K, V> next = this.backingIterator.next();
+				Heap.Entry<TKey, TValue> next = this.backingIterator.next();
 
 				// wrap in immutable decorator.
-				return ( new ImmutableHeapEntry<K, V>( next ) );
+				return new ImmutableHeapEntry<TKey, TValue>(next);
 			}
-
 
 			/**
 			 * Remove the most recently iterated entry.
@@ -1087,42 +925,38 @@ public final class Heaps
 				throw new UnsupportedOperationException();
 			}
 
-
 		}
-
 
 		/**
 		 * Immutable wrapper around a heap entry.
 		 * 
-		 * @param <K> the key type.
-		 * @param <V> the value type.
+		 * @param <TKey> the key type.
+		 * @param <TValue> the value type.
 		 * @author Fran Lattanzio
-		 * @version $Revision$ $Date$
+		 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+		 *          2009) $
 		 */
-		private static final class ImmutableHeapEntry<K, V>
+		private static final class ImmutableHeapEntry<TKey, TValue>
 			extends Object
-			implements Heap.Entry<K, V>, Serializable
+			implements Heap.Entry<TKey, TValue>, Serializable
 		{
-
 
 			/**
 			 * Serial version UID.
 			 */
 			private static final long serialVersionUID = 45897356L;
 
-
 			/**
 			 * The backing element.
 			 */
-			private Heap.Entry<K, V> entry;
-
+			private Heap.Entry<TKey, TValue> entry;
 
 			/**
 			 * Constructor.
 			 * 
 			 * @param towrap the entry to wrap.
 			 */
-			ImmutableHeapEntry( Heap.Entry<K, V> towrap )
+			ImmutableHeapEntry(Heap.Entry<TKey, TValue> towrap)
 			{
 				super();
 
@@ -1130,28 +964,25 @@ public final class Heaps
 				this.entry = towrap;
 			}
 
-
 			/**
 			 * Get the key
 			 * 
 			 * @return the key.
 			 */
-			public K getKey()
+			public TKey getKey()
 			{
-				return ( this.entry.getKey() );
+				return this.entry.getKey();
 			}
-
 
 			/**
 			 * Get the value.
 			 * 
 			 * @return the value.
 			 */
-			public V getValue()
+			public TValue getValue()
 			{
-				return ( this.entry.getValue() );
+				return this.entry.getValue();
 			}
-
 
 			/**
 			 * Set the value.
@@ -1160,12 +991,11 @@ public final class Heaps
 			 * @return the old value.
 			 * @throws UnsupportedOperationException Always.
 			 */
-			public V setValue( final V val )
+			public TValue setValue(final TValue val)
 				throws UnsupportedOperationException
 			{
 				throw new UnsupportedOperationException();
 			}
-
 
 			/**
 			 * Get a string representation of this object.
@@ -1175,9 +1005,8 @@ public final class Heaps
 			@Override
 			public String toString()
 			{
-				return ( this.entry.toString() );
+				return this.entry.toString();
 			}
-
 
 			/**
 			 * Compare this object to equality to the specified object.
@@ -1186,21 +1015,20 @@ public final class Heaps
 			 * @return <code>true</code> if equal; <code>false</code> otherwise.
 			 */
 			@Override
-			public boolean equals( final Object other )
+			public boolean equals(final Object other)
 			{
-				if( other == null )
+				if (other == null)
 				{
-					return ( false );
+					return false;
 				}
 
-				if( other == this )
+				if (other == this)
 				{
-					return ( true );
+					return true;
 				}
 
-				return ( this.entry.equals( other ) );
+				return this.entry.equals(other);
 			}
-
 
 			/**
 			 * Get the hash code for this object.
@@ -1210,59 +1038,56 @@ public final class Heaps
 			@Override
 			public int hashCode()
 			{
-				return ( this.entry.hashCode() );
+				return this.entry.hashCode();
 			}
-
 
 		}
 
-
 	}
-
 
 	/**
 	 * Synchronized heap decorator.
 	 * 
-	 * @param <K> the key type.
-	 * @param <V> the value type.
+	 * @param <TKey> the key type.
+	 * @param <TValue> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
-	private static final class SynchronizedHeap<K, V>
+	private static final class SynchronizedHeap<TKey, TValue>
 		extends Object
-		implements Heap<K, V>, Iterable<Heap.Entry<K, V>>, Serializable
+		implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
+		Serializable
 	{
-
 
 		/**
 		 * Serial version UID.
 		 */
 		private static final long serialVersionUID = 4798234789234L;
 
-
 		/**
 		 * The backing heap.
 		 */
-		private Heap<K, V> heap;
+		private Heap<TKey, TValue> heap;
 
 		/**
 		 * The locking object.
 		 */
 		private transient Object mutex;
 
-
 		/**
 		 * Constructor.
 		 * 
 		 * @param heap the backing heap.
-		 * @throws NullPointerException If <code>heap</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>heap</code> is
+		 *             <code>null</code>.
 		 */
-		SynchronizedHeap( final Heap<K, V> heap )
-			throws NullPointerException
+		SynchronizedHeap(final Heap<TKey, TValue> heap)
+				throws NullPointerException
 		{
 			super();
 
-			if( heap == null )
+			if (heap == null)
 			{
 				throw new NullPointerException();
 			}
@@ -1274,21 +1099,20 @@ public final class Heaps
 			this.mutex = this;
 		}
 
-
 		/**
 		 * Constructor.
 		 * 
 		 * @param heap the backing heap.
 		 * @param mutex the object on which to synchronize.
-		 * @throws NullPointerException If <code>heap</code> or <code>mutex</code>
-		 *         are <code>null</code>.
+		 * @throws NullPointerException If <code>heap</code> or
+		 *             <code>mutex</code> are <code>null</code>.
 		 */
-		SynchronizedHeap( final Heap<K, V> heap, final Object mutex )
-			throws NullPointerException
+		SynchronizedHeap(final Heap<TKey, TValue> heap, final Object mutex)
+				throws NullPointerException
 		{
 			super();
 
-			if( heap == null || mutex == null )
+			if (heap == null || mutex == null)
 			{
 				throw new NullPointerException();
 			}
@@ -1298,37 +1122,34 @@ public final class Heaps
 			this.mutex = mutex;
 		}
 
-
 		/**
 		 * Get the comparator used for decision in this heap.
 		 * <p>
-		 * If this method returns <code>null</code> then this heap uses the keys'
-		 * <i>natural ordering</i>.
+		 * If this method returns <code>null</code> then this heap uses the
+		 * keys' <i>natural ordering</i>.
 		 * 
 		 * @return the comparator or <code>null</code>.
 		 * @see java.util.Comparator
 		 * @see java.lang.Comparable
 		 */
-		public Comparator<? super K> getComparator()
+		public Comparator<? super TKey> getComparator()
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.getComparator() );
+				return this.heap.getComparator();
 			}
 		}
-
 
 		/**
 		 * Clear this heap.
 		 */
 		public void clear()
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
 				this.heap.clear();
 			}
 		}
-
 
 		/**
 		 * Add a mapping to this heap.
@@ -1337,52 +1158,54 @@ public final class Heaps
 		 * @param value the node value.
 		 * @return the entry created.
 		 * @throws ClassCastException If the specified key is not mutually
-		 *         comparable with the other keys of this heap.
+		 *             comparable with the other keys of this heap.
 		 */
-		public Entry<K, V> insert( final K key, final V value )
+		public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 			throws ClassCastException
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.insert( key, value ) );
+				return this.heap.insert(key, value);
 			}
 		}
-
 
 		/**
 		 * Insert all the entries of the specified heap into this heap.
 		 * <p>
-		 * The other heap will not be cleared, and this heap will simply <i>hold</i>
-		 * the entries of <code>other</code>, not <i>contain</i> them.
+		 * The other heap will not be cleared, and this heap will simply
+		 * <i>hold</i> the entries of <code>other</code>, not <i>contain</i>
+		 * them.
 		 * 
 		 * @param other the other heap.
-		 * @throws NullPointerException If <code>other</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>other</code> is
+		 *             <code>null</code>.
 		 * @throws ClassCastException If the keys of <code>other</code> are not
-		 *         mutally comparable to the keys of this heap.
+		 *             mutally comparable to the keys of this heap.
 		 * @throws IllegalArgumentException If you attempt to insert a heap into
-		 *         itself.
+		 *             itself.
 		 * @see #union(Heap)
 		 */
-		public void insertAll( final Heap<? extends K, ? extends V> other )
-			throws NullPointerException, ClassCastException, IllegalArgumentException
+		public void insertAll(final Heap<? extends TKey, ? extends TValue> other)
+			throws NullPointerException, ClassCastException,
+			IllegalArgumentException
 		{
-			if( other == null )
+			if (other == null)
 			{
 				throw new NullPointerException();
 			}
 
-			if( ReferenceEquals( other, this ) || ReferenceEquals( other, this.heap ) )
+			if (ReferenceEquals(other, this)
+					|| ReferenceEquals(other, this.heap))
 			{
 				throw new IllegalArgumentException();
 			}
 
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				this.insertAll( other );
+				this.insertAll(other);
 			}
 
 		}
-
 
 		/**
 		 * Get the number of entries in this heap.
@@ -1391,12 +1214,11 @@ public final class Heaps
 		 */
 		public int getSize()
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.getSize() );
+				return this.heap.getSize();
 			}
 		}
-
 
 		/**
 		 * Is this heap empty?
@@ -1407,12 +1229,11 @@ public final class Heaps
 		 */
 		public boolean isEmpty()
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.isEmpty() );
+				return this.heap.isEmpty();
 			}
 		}
-
 
 		/**
 		 * Get the entry with the minimum key.
@@ -1423,15 +1244,14 @@ public final class Heaps
 		 * @throws NoSuchElementException If this heap is empty.
 		 * @see #extractMinimum()
 		 */
-		public Entry<K, V> getMinimum()
+		public Entry<TKey, TValue> getMinimum()
 			throws NoSuchElementException
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.getMinimum() );
+				return this.heap.getMinimum();
 			}
 		}
-
 
 		/**
 		 * Remove and return the entry minimum key.
@@ -1440,15 +1260,14 @@ public final class Heaps
 		 * @throws NoSuchElementException If the heap is empty.
 		 * @see #getMinimum()
 		 */
-		public Entry<K, V> extractMinimum()
+		public Entry<TKey, TValue> extractMinimum()
 			throws NoSuchElementException
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.extractMinimum() );
+				return this.heap.extractMinimum();
 			}
 		}
-
 
 		/**
 		 * Decrease the key of the specified entry.
@@ -1456,40 +1275,40 @@ public final class Heaps
 		 * @param e the entry for which to decrease the key.
 		 * @param key the new key.
 		 * @throws IllegalArgumentException If <code>k</code> is larger than
-		 *         <code>e</code>'s current key or <code>e</code> is not in
-		 *         this heap.
-		 * @throws ClassCastException If the new key is not mutually comparable with
-		 *         other keys in the heap.
+		 *             <code>e</code>'s current key or <code>e</code> is not in
+		 *             this heap.
+		 * @throws ClassCastException If the new key is not mutually comparable
+		 *             with
+		 *             other keys in the heap.
 		 * @throws NullPointerException If <code>e</code> is <code>null</code>.
 		 */
-		public void decreaseKey( final Entry<K, V> e, final K key )
-			throws IllegalArgumentException, ClassCastException, NullPointerException
+		public void decreaseKey(final Entry<TKey, TValue> e, final TKey key)
+			throws IllegalArgumentException, ClassCastException,
+			NullPointerException
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				this.heap.decreaseKey( e, key );
+				this.heap.decreaseKey(e, key);
 			}
 		}
-
 
 		/**
 		 * Delete the entry from this heap.
 		 * 
 		 * @param e the entry to delete.
 		 * @throws IllegalArgumentException If <code>k</code> is larger than
-		 *         <code>e</code>'s current key or <code>e</code> is not in
-		 *         this heap.
+		 *             <code>e</code>'s current key or <code>e</code> is not in
+		 *             this heap.
 		 * @throws NullPointerException If <code>e</code> is <code>null</code>.
 		 */
-		public void delete( final Entry<K, V> e )
+		public void delete(final Entry<TKey, TValue> e)
 			throws IllegalArgumentException, NullPointerException
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				this.heap.delete( e );
+				this.heap.delete(e);
 			}
 		}
-
 
 		/**
 		 * Does this heap hold the specified entry?
@@ -1497,17 +1316,17 @@ public final class Heaps
 		 * @param entry the entry to check.
 		 * @return <code>true</code> if this heap contains the specified entry;
 		 *         <code>false</code> otherwise.
-		 * @throws NullPointerException If <code>entry</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>entry</code> is
+		 *             <code>null</code>.
 		 */
-		public boolean holdsEntry( final Entry<K, V> entry )
+		public boolean holdsEntry(final Entry<TKey, TValue> entry)
 			throws NullPointerException
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.holdsEntry( entry ) );
+				return this.heap.holdsEntry(entry);
 			}
 		}
-
 
 		/**
 		 * Does this heap contain the specified entry?
@@ -1515,46 +1334,47 @@ public final class Heaps
 		 * @param entry the entry to check.
 		 * @return <code>true</code> if this heap contains the specified entry;
 		 *         <code>false</code> otherwise.
-		 * @throws NullPointerException If <code>entry</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>entry</code> is
+		 *             <code>null</code>.
 		 */
-		public boolean containsEntry( final Entry<K, V> entry )
+		public boolean containsEntry(final Entry<TKey, TValue> entry)
 			throws NullPointerException
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.containsEntry( entry ) );
+				return this.heap.containsEntry(entry);
 			}
 		}
-
 
 		/**
 		 * Union this heap with another heap.
 		 * 
 		 * @param other the other heap.
-		 * @throws NullPointerException If <code>other</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>other</code> is
+		 *             <code>null</code>.
 		 * @throws ClassCastException If the keys of the nodes are not mutally
-		 *         comparable.
+		 *             comparable.
 		 * @throws IllegalArgumentException If you attempt to union a heap with
-		 *         itself.
+		 *             itself.
 		 */
-		public void union( final Heap<K, V> other )
-			throws ClassCastException, NullPointerException, IllegalArgumentException
+		public void union(final Heap<TKey, TValue> other)
+			throws ClassCastException, NullPointerException,
+			IllegalArgumentException
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				this.heap.union( other );
+				this.heap.union(other);
 			}
 		}
-
 
 		/**
 		 * Equals.
 		 * <p>
-		 * Equals for a heap is an interesting question, since it depends not only
-		 * on which elements are stored, but how they are stored. For example, it's
-		 * difficult to effeciently compare a FibonacciHeap and a BinomialHeap, even
-		 * if they contain the same elements, since their underlying representations
-		 * are very different.
+		 * Equals for a heap is an interesting question, since it depends not
+		 * only on which elements are stored, but how they are stored. For
+		 * example, it's difficult to effeciently compare a FibonacciHeap and a
+		 * BinomialHeap, even if they contain the same elements, since their
+		 * underlying representations are very different.
 		 * <p>
 		 * You may want to override the equals method in your implementation.
 		 * 
@@ -1564,33 +1384,32 @@ public final class Heaps
 		 *         otherwise.
 		 */
 		@Override
-		public boolean equals( final Object other )
+		public boolean equals(final Object other)
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				if( other == null )
+				if (other == null)
 				{
-					return ( false );
+					return false;
 				}
 
-				if( this == other )
+				if (this == other)
 				{
-					return ( true );
+					return true;
 				}
 
-				return ( this.heap.equals( other ) );
+				return this.heap.equals(other);
 			}
 		}
-
 
 		/**
 		 * Return a hashcode for this object that is inline with equals.
 		 * <p>
 		 * As mentioned in the comment for equals, equality is a difficult or
 		 * perhaps interesting question for a heap to answer efficiently. If you
-		 * choose to override the equals method, you must also override this method,
-		 * unless you really want your objects to violate the general contract of
-		 * <code>Object</code>.
+		 * choose to override the equals method, you must also override this
+		 * method, unless you really want your objects to violate the general
+		 * contract of <code>Object</code>.
 		 * 
 		 * @return the hashcode.
 		 * @see java.lang.Object#hashCode()
@@ -1599,12 +1418,11 @@ public final class Heaps
 		@Override
 		public int hashCode()
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.hashCode() );
+				return this.heap.hashCode();
 			}
 		}
-
 
 		/**
 		 * Get a better string representation of this object.
@@ -1614,12 +1432,11 @@ public final class Heaps
 		@Override
 		public String toString()
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.toString() );
+				return this.heap.toString();
 			}
 		}
-
 
 		/**
 		 * Get the entry collection.
@@ -1629,14 +1446,13 @@ public final class Heaps
 		 * @return the entry collection.
 		 * @see org.teneighty.heap.Heap.Entry
 		 */
-		public Collection<Heap.Entry<K, V>> getEntries()
+		public Collection<Heap.Entry<TKey, TValue>> getEntries()
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.getEntries() );
+				return this.heap.getEntries();
 			}
 		}
-
 
 		/**
 		 * Get the collection of values.
@@ -1645,14 +1461,13 @@ public final class Heaps
 		 * 
 		 * @return the values.
 		 */
-		public Collection<V> getValues()
+		public Collection<TValue> getValues()
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.getValues() );
+				return this.heap.getValues();
 			}
 		}
-
 
 		/**
 		 * Get the collection of keys.
@@ -1661,51 +1476,48 @@ public final class Heaps
 		 * 
 		 * @return the keys.
 		 */
-		public Collection<K> getKeys()
+		public Collection<TKey> getKeys()
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.getKeys() );
+				return this.heap.getKeys();
 			}
 		}
-
 
 		/**
 		 * Get an iterator over the entries in this heap.
 		 * 
 		 * @return an iterator over the heap entries.
 		 */
-		public Iterator<Heap.Entry<K, V>> iterator()
+		public Iterator<Heap.Entry<TKey, TValue>> iterator()
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				return ( this.heap.iterator() );
+				return this.heap.iterator();
 			}
 		}
-
 
 		/**
 		 * Perform the specified action on each element of this heap.
 		 * <p>
-		 * It's extremely unwise to attempt to modify the heap (e.g. decrease the
-		 * keys of all elements by one). Most implementations of this method are
-		 * likely to be implemented atop an iterator over the heap, and thus, if the
-		 * iterator is fail-fast and detects concurrent modification, any changes to
-		 * the heap will cause the iterator to die.
+		 * It's extremely unwise to attempt to modify the heap (e.g. decrease
+		 * the keys of all elements by one). Most implementations of this method
+		 * are likely to be implemented atop an iterator over the heap, and
+		 * thus, if the iterator is fail-fast and detects concurrent
+		 * modification, any changes to the heap will cause the iterator to die.
 		 * 
 		 * @param action the action to perform.
 		 * @throws NullPointerException If <code>action</code> is
-		 *         <code>null</code>.
+		 *             <code>null</code>.
 		 */
-		public void forEach( final Action<Heap.Entry<K, V>> action )
+		public void forEach(final Action<Heap.Entry<TKey, TValue>> action)
 			throws NullPointerException
 		{
-			synchronized( this.mutex )
+			synchronized (this.mutex)
 			{
-				this.heap.forEach( action );
+				this.heap.forEach(action);
 			}
 		}
-
 
 		/**
 		 * Serialization wave-of-the-hand.
@@ -1713,38 +1525,37 @@ public final class Heaps
 		 * @param out the stream to which to write.
 		 * @throws IOException If serialization fails.
 		 */
-		private void writeObject( final ObjectOutputStream out )
+		private void writeObject(final ObjectOutputStream out)
 			throws IOException
 		{
 			out.defaultWriteObject();
 		}
-
 
 		/**
 		 * Read and restore this object from the specified stream.
 		 * 
 		 * @param in the stream from which to read.
 		 * @throws IOException If deserialization fails.
-		 * @throws ClassNotFoundException If deserialization attempts to classload a
-		 *         non-existant class.
+		 * @throws ClassNotFoundException If deserialization attempts to
+		 *             classload a
+		 *             non-existant class.
 		 */
-		private void readObject( final ObjectInputStream in )
+		private void readObject(final ObjectInputStream in)
 			throws IOException, ClassNotFoundException
 		{
 			in.defaultReadObject();
 
-			if( this.heap == null )
+			if (this.heap == null)
 			{
-				throw new InvalidObjectException( "Backing heap is non-existant." );
+				throw new InvalidObjectException(
+						"Backing heap is non-existant.");
 			}
 
 			// Mutex is this.
 			this.mutex = this;
 		}
 
-
 	}
-
 
 	/**
 	 * Constructor. Instances of this class are not allowed, so don't bother
@@ -1755,10 +1566,9 @@ public final class Heaps
 	 * @throws InternalError Always.
 	 */
 	private Heaps()
-		throws InternalError
+			throws InternalError
 	{
-		throw new InternalError( "Instances are not allowed" );
+		throw new InternalError("Instances are not allowed");
 	}
-
 
 }

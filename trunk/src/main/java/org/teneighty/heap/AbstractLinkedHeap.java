@@ -26,7 +26,6 @@ package org.teneighty.heap;
 
 import java.lang.ref.WeakReference;
 
-
 /**
  * Abstract linked heap. This class provides extra functionality for
  * linked-based heap implementations, i.e. where the heap structure is
@@ -41,26 +40,24 @@ import java.lang.ref.WeakReference;
  * reference here so that the holding help can still be garbage collected even
  * if some of the entries are still strongly reachable. This is a semi-minor
  * hack in the grand scheme of things: Dijkstra wouldn't like this, but it gets
- * the job done fairly cheaply. </li>
+ * the job done fairly cheaply.</li>
  * <li>The node class (and compare method) can deal with "infinite" values:
- * Setting the <code>is_infinite</code> flag on the node automatically makes
- * it smaller than any (finite) node. Generally, there should not be more than
- * one infinite node in any heap. If there are two, it's a good indication of a
+ * Setting the <code>is_infinite</code> flag on the node automatically makes it
+ * smaller than any (finite) node. Generally, there should not be more than one
+ * infinite node in any heap. If there are two, it's a good indication of a
  * serious programming error or concurrent modification. This is also a
- * semi-minor hack, I think; could be better, but we've all seen much worse.
- * </li>
+ * semi-minor hack, I think; could be better, but we've all seen much worse.</li>
  * </ol>
  * 
- * @param <K> the key type.
- * @param <V> the value type.
+ * @param <TKey> the key type.
+ * @param <TValue> the value type.
  * @author Fran Lattanzio
  * @version $Revision$ $Date$
  */
-public abstract class AbstractLinkedHeap<K, V>
-	extends AbstractHeap<K, V>
-	implements Heap<K, V>, Iterable<Heap.Entry<K, V>>
+public abstract class AbstractLinkedHeap<TKey, TValue>
+	extends AbstractHeap<TKey, TValue>
+	implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>
 {
-
 
 	/**
 	 * Constructor.
@@ -73,46 +70,45 @@ public abstract class AbstractLinkedHeap<K, V>
 		super();
 	}
 
-
 	/**
 	 * Check for infinite flag.
 	 * 
 	 * @param node1 the first node.
 	 * @param node2 the second node.
 	 * @return integer just like {@link java.lang.Comparable#compareTo(Object)}.
-	 * @throws ClassCastException If the keys of the nodes are not mutally
-	 *         comparable.
+	 * @throws ClassCastException If the keys of the nodes are not mutually
+	 *             comparable.
 	 * @throws NullPointerException If <code>node1</code> or <code>node2</code>
-	 *         are <code>null</code>. This probably shouldn't happen.
+	 *             are <code>null</code>. This probably shouldn't happen.
 	 */
 	@Override
-	protected int compare( final Entry<K, V> node1, final Entry<K, V> node2 )
+	protected int compare(final Entry<TKey, TValue> node1,
+			final Entry<TKey, TValue> node2)
 		throws ClassCastException, NullPointerException
 	{
-		AbstractLinkedHeapEntry<K, V> e1 = (AbstractLinkedHeapEntry<K, V>)node1;
-		AbstractLinkedHeapEntry<K, V> e2 = (AbstractLinkedHeapEntry<K, V>)node2;
+		AbstractLinkedHeapEntry<TKey, TValue> e1 = (AbstractLinkedHeapEntry<TKey, TValue>) node1;
+		AbstractLinkedHeapEntry<TKey, TValue> e2 = (AbstractLinkedHeapEntry<TKey, TValue>) node2;
 
-		if( e1.is_infinite && e2.is_infinite )
+		if (e1.is_infinite && e2.is_infinite)
 		{
 			// Probably shouldn't happen. A good indication of concurrent
 			// modification... figure out if we should just toss an exception
 			// here.
-			return ( 0 );
+			return 0;
 		}
-		else if( e1.is_infinite )
+		else if (e1.is_infinite)
 		{
-			return ( -1 );
+			return -1;
 		}
-		else if( e2.is_infinite )
+		else if (e2.is_infinite)
 		{
-			return ( 1 );
+			return 1;
 		}
 		else
 		{
-			return ( super.compare( node1, node2 ) );
+			return super.compare(node1, node2);
 		}
 	}
-
 
 	/**
 	 * Abstract linked heap entry.
@@ -120,12 +116,12 @@ public abstract class AbstractLinkedHeap<K, V>
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
 	protected static abstract class AbstractLinkedHeapEntry<K, V>
 		extends AbstractHeap.AbstractHeapEntry<K, V>
 	{
-
 
 		/**
 		 * Infinite flag. Hack used for delete.
@@ -137,7 +133,6 @@ public abstract class AbstractLinkedHeap<K, V>
 		 */
 		private transient volatile HeapReference containing_ref;
 
-
 		/**
 		 * Constructor.
 		 * <p>
@@ -147,44 +142,44 @@ public abstract class AbstractLinkedHeap<K, V>
 		 * @param value the value.
 		 * @param ref the heap reference.
 		 */
-		protected AbstractLinkedHeapEntry( final K key, final V value,
-																				final HeapReference ref )
+		protected AbstractLinkedHeapEntry(final K key, final V value,
+				final HeapReference ref)
 		{
-			super( key, value );
+			super(key, value);
 
 			// Store ref.
 			this.containing_ref = ref;
 			this.is_infinite = false;
 		}
 
-
 		/**
 		 * Is this node contained by the specified heap?
 		 * 
 		 * @param heap the heap for which to test membership.
 		 * @return boolean true if this node is contained by the specified heap.
-		 * @throws NullPointerException If <code>heap</code> is <code>null</code>.
-		 *         Probably shouldn't happen.
+		 * @throws NullPointerException If <code>heap</code> is
+		 *             <code>null</code>.
+		 *             Probably shouldn't happen.
 		 */
-		protected final boolean isContainedBy( final AbstractLinkedHeap<K, V> heap )
+		protected final boolean isContainedBy(
+				final AbstractLinkedHeap<K, V> heap)
 			throws NullPointerException
 		{
-			if( heap == null )
+			if (heap == null)
 			{
 				throw new NullPointerException();
 			}
 
-			if( this.containing_ref == null )
+			if (this.containing_ref == null)
 			{
 				// Means that this node was orphaned from it's parent heap
 				// via a clear or garbage collect.
-				return ( false );
+				return false;
 			}
 
 			// Straight reference comparison.
-			return ( this.containing_ref.getHeap() == heap );
+			return (this.containing_ref.getHeap() == heap);
 		}
-
 
 		/**
 		 * Clear this object reference to the source heap.
@@ -194,49 +189,45 @@ public abstract class AbstractLinkedHeap<K, V>
 			this.containing_ref = null;
 		}
 
-
 	}
-
 
 	/**
 	 * Heap weak reference container.
 	 * <p>
-	 * The point of this class is to make sure that nodes are not deleted or have
-	 * their key's decrease in the context of a heap of which they are not a
-	 * member.
+	 * The point of this class is to make sure that nodes are not deleted or
+	 * have their key's decrease in the context of a heap of which they are not
+	 * a member.
 	 * <p>
 	 * We use weak reference here to help the garbage collector. It also means
 	 * that if an entry's containing heap is garbage collected, the node is
 	 * considered "orphaned" and no longer a member of the heap.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings("unchecked")
 	protected static final class HeapReference
 		extends Object
 	{
-
 
 		/**
 		 * A weak reference to a heap.
 		 */
 		private WeakReference<AbstractLinkedHeap> heap_ref;
 
-
 		/**
 		 * Constructor.
 		 * 
 		 * @param fh the heap to which this object's WeakReference should point.
 		 */
-		protected HeapReference( final AbstractLinkedHeap fh )
+		protected HeapReference(final AbstractLinkedHeap fh)
 		{
 			super();
 
 			// Create stuff.
-			this.heap_ref = new WeakReference<AbstractLinkedHeap>( fh );
+			this.heap_ref = new WeakReference<AbstractLinkedHeap>(fh);
 		}
-
 
 		/**
 		 * Get the heap reference contained by this object.
@@ -246,21 +237,21 @@ public abstract class AbstractLinkedHeap<K, V>
 		 */
 		protected final AbstractLinkedHeap getHeap()
 		{
-			return ( this.heap_ref.get() );
+			return this.heap_ref.get();
 		}
-
 
 		/**
 		 * Set the heap reference contained by this object.
 		 * 
 		 * @param heap the new heap.
-		 * @throws NullPointerException If <code>heap</code> is <code>null</code>.
+		 * @throws NullPointerException If <code>heap</code> is
+		 *             <code>null</code>.
 		 * @see #getHeap()
 		 */
-		protected final void setHeap( final AbstractLinkedHeap heap )
+		protected final void setHeap(final AbstractLinkedHeap heap)
 			throws NullPointerException
 		{
-			if( heap == null )
+			if (heap == null)
 			{
 				throw new NullPointerException();
 			}
@@ -269,9 +260,8 @@ public abstract class AbstractLinkedHeap<K, V>
 			this.clearHeap();
 
 			// Create new reference object.
-			this.heap_ref = new WeakReference<AbstractLinkedHeap>( heap );
+			this.heap_ref = new WeakReference<AbstractLinkedHeap>(heap);
 		}
-
 
 		/**
 		 * Clear the reference.
@@ -281,8 +271,6 @@ public abstract class AbstractLinkedHeap<K, V>
 			this.heap_ref.clear();
 		}
 
-
 	}
-
 
 }
