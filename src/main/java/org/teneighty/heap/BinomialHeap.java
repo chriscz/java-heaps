@@ -33,7 +33,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-
 /**
  * This class implements a binomial heap, as described in <i>Introduction to
  * Algorithms</i>, hereafter referred to as <i>CLRS</i>.
@@ -44,8 +43,8 @@ import java.io.Serializable;
  * structure. A binomial tree is defined recursively as:
  * <ul>
  * <li>A tree of order 0 is a single entry.</li>
- * <li>A tree of order <code>k</code> has <code>k</code> children, which
- * are binomial trees of order <code>k-1</code>, <code>k-2</code>, ... ,
+ * <li>A tree of order <code>k</code> has <code>k</code> children, which are
+ * binomial trees of order <code>k-1</code>, <code>k-2</code>, ... ,
  * <code>0</code>, in a list with exactly this order.</li>
  * </ul>
  * The forest is stored simply stored as an ordered list of the binomial trees.
@@ -61,16 +60,16 @@ import java.io.Serializable;
  * <code>O(log n)</code>; this puts an upper bound on the merge operation. We
  * now describe the major operations in some technical detail:
  * <ul>
- * <li>Insertion works by taking a single binomial tree of order 0 (in a list
- * of size 1) and merging with the current tree list. This takes time
- * <code>O(log n)</code>. </li>
+ * <li>Insertion works by taking a single binomial tree of order 0 (in a list of
+ * size 1) and merging with the current tree list. This takes time
+ * <code>O(log n)</code>.</li>
  * <li>Extracting the minimum involves first finding it (an
- * <code>O(log n)</code> operation), and yanking it from the list. We then
- * take this nodes child list, play with it a little bit, and merge it back into
- * the forest list. </li>
+ * <code>O(log n)</code> operation), and yanking it from the list. We then take
+ * this nodes child list, play with it a little bit, and merge it back into the
+ * forest list.</li>
  * <li>Decrease key works by percolating the offending entry upwards (swapping
  * it with it's parent), until it reaches the forest list or no longer violates
- * the heap invariant. </li>
+ * the heap invariant.</li>
  * <li>Delete is implemented atop decrease key and extract min.</li>
  * </ul>
  * <p>
@@ -88,10 +87,10 @@ import java.io.Serializable;
  * The collection-view methods of this class are backed by iterators over the
  * heap structure which are <i>fail-fast</i>: If the heap is structurally
  * modified at any time after the iterator is created, the iterator throws a
- * <code>ConcurrentModificationException</code>. Thus, in the face of
- * concurrent modification, the iterator fails quickly and cleanly, rather than
- * risking arbitrary, non-deterministic behavior at an undetermined time in the
- * future. The collection-views returned by this class do not support the
+ * <code>ConcurrentModificationException</code>. Thus, in the face of concurrent
+ * modification, the iterator fails quickly and cleanly, rather than risking
+ * arbitrary, non-deterministic behavior at an undetermined time in the future.
+ * The collection-views returned by this class do not support the
  * <code>remove()</code> operation.
  * <p>
  * This class is not synchronized (by choice). You must ensure sequential access
@@ -109,29 +108,28 @@ import java.io.Serializable;
  * <code>insert()</code> method uses constant time, so deserialization takes
  * <code>O(n log n)</code> time.
  * 
- * @param <K> the key type.
- * @param <V> the value type.
+ * @param <TKey> the key type.
+ * @param <TValue> the value type.
  * @author Fran Lattanzio
  * @version $Revision$ $Date$
  * @see "Cormen, T. H.; Leiserson C. E.; Rivest R. L. & C. Stein (2001)
  *      <i>Introduction to Algorithms</i>. MIT Press."
  */
-public class BinomialHeap<K, V>
-	extends AbstractLinkedHeap<K, V>
-	implements Heap<K, V>, Iterable<Heap.Entry<K, V>>, Serializable
+public class BinomialHeap<TKey, TValue>
+	extends AbstractLinkedHeap<TKey, TValue>
+	implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
+	Serializable
 {
-
 
 	/**
 	 * The serial version.
 	 */
 	private static final long serialVersionUID = 458754L;
 
-
 	/**
 	 * Comparator.
 	 */
-	private Comparator<? super K> comp;
+	private Comparator<? super TKey> comp;
 
 	/**
 	 * The heap reference.
@@ -151,39 +149,38 @@ public class BinomialHeap<K, V>
 	/**
 	 * Head pointer.
 	 */
-	private BinomialHeapEntry<K, V> head;
-
+	private BinomialHeapEntry<TKey, TValue> head;
 
 	/**
 	 * Constructor.
 	 * <p>
-	 * The nodes of this heap will be ordered by their keys' <i>natural ordering</i>.
+	 * The nodes of this heap will be ordered by their keys' <i>natural
+	 * ordering</i>.
 	 * <p>
 	 * The keys of all nodes inserted into the heap must implement the
 	 * <code>Comparable</code> interface. Furthermore, all such keys must be
-	 * <i>mutually comparable</i>:<code>k1.compareTo(k2)</code> must not throw
-	 * a <code>ClassCastException</code> for any elements <code>k1</code> and
+	 * <i>mutually comparable</i>:<code>k1.compareTo(k2)</code> must not throw a
+	 * <code>ClassCastException</code> for any elements <code>k1</code> and
 	 * <code>k2</code> in the heap.
 	 */
 	public BinomialHeap()
 	{
-		this( null );
+		this(null);
 	}
-
 
 	/**
 	 * Constructor.
 	 * <p>
-	 * The keys of all nodes inserted into the heap must be <i>mutually comparable</i>
-	 * by the given <code>Comparator</code>:
+	 * The keys of all nodes inserted into the heap must be <i>mutually
+	 * comparable</i> by the given <code>Comparator</code>:
 	 * <code>comparator.compare(k1,k2)</code> must not throw a
 	 * <code>ClassCastException</code> for any keys <code>k1</code> and
 	 * <code>k2</code> in the heap.
 	 * 
 	 * @param comp the comparator to use. A <code>null</code> means the keys'
-	 *        natural ordering will be used.
+	 *            natural ordering will be used.
 	 */
-	public BinomialHeap( final Comparator<? super K> comp )
+	public BinomialHeap(final Comparator<? super TKey> comp)
 	{
 		super();
 
@@ -191,12 +188,11 @@ public class BinomialHeap<K, V>
 		this.comp = comp;
 
 		// Create heap source reference.
-		this.source_heap = new HeapReference( this );
+		this.source_heap = new HeapReference(this);
 
 		// Create root list.
 		this.head = null;
 	}
-
 
 	/**
 	 * Get the the Comparator.
@@ -206,11 +202,10 @@ public class BinomialHeap<K, V>
 	 * 
 	 * @return the Comparator or <code>null</code>.
 	 */
-	public Comparator<? super K> getComparator()
+	public Comparator<? super TKey> getComparator()
 	{
-		return ( this.comp );
+		return (this.comp);
 	}
-
 
 	/**
 	 * Clear this heap.
@@ -224,9 +219,8 @@ public class BinomialHeap<K, V>
 		this.source_heap.clearHeap();
 
 		// Recreate and such.
-		this.source_heap = new HeapReference( this );
+		this.source_heap = new HeapReference(this);
 	}
-
 
 	/**
 	 * Get the number of entries in this heap.
@@ -235,9 +229,8 @@ public class BinomialHeap<K, V>
 	 */
 	public int getSize()
 	{
-		return ( this.size );
+		return this.size;
 	}
-
 
 	/**
 	 * Get the entry with the minimum key.
@@ -250,29 +243,28 @@ public class BinomialHeap<K, V>
 	 * @throws NoSuchElementException If this heap is empty.
 	 * @see #extractMinimum()
 	 */
-	public Entry<K, V> getMinimum()
+	public Entry<TKey, TValue> getMinimum()
 		throws NoSuchElementException
 	{
-		if( this.isEmpty() )
+		if (this.isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
 		// Look through root list for smallest node...
-		BinomialHeapEntry<K, V> min = this.head;
-		BinomialHeapEntry<K, V> next = min.sibling;
-		while( next != null )
+		BinomialHeapEntry<TKey, TValue> min = this.head;
+		BinomialHeapEntry<TKey, TValue> next = min.sibling;
+		while (next != null)
 		{
-			if( this.compare( min, next ) > 0 )
+			if (this.compare(min, next) > 0)
 			{
 				min = next;
 			}
 			next = next.sibling;
 		}
 
-		return ( min.proxy    );
+		return min.proxy;
 	}
-
 
 	/**
 	 * Remove and return the entry minimum key.
@@ -281,22 +273,22 @@ public class BinomialHeap<K, V>
 	 * @throws NoSuchElementException If the heap is empty.
 	 * @see #getMinimum()
 	 */
-	public Entry<K, V> extractMinimum()
+	public Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
-		if( this.isEmpty() )
+		if (this.isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
 		// Find min and prev pointer to min...
-		BinomialHeapEntry<K, V> min = this.head;
-		BinomialHeapEntry<K, V> min_prev = null;
-		BinomialHeapEntry<K, V> next = min.sibling;
-		BinomialHeapEntry<K, V> prev = min;
-		while( next != null )
+		BinomialHeapEntry<TKey, TValue> min = this.head;
+		BinomialHeapEntry<TKey, TValue> min_prev = null;
+		BinomialHeapEntry<TKey, TValue> next = min.sibling;
+		BinomialHeapEntry<TKey, TValue> prev = min;
+		while (next != null)
 		{
-			if( this.compare( min, next ) > 0 )
+			if (this.compare(min, next) > 0)
 			{
 				min_prev = prev;
 				min = next;
@@ -307,7 +299,7 @@ public class BinomialHeap<K, V>
 
 		// Ok, time to do some work...
 		// First, remove the minimum.
-		if( min_prev != null )
+		if (min_prev != null)
 		{
 			// min is not head.
 			min_prev.sibling = min.sibling;
@@ -321,21 +313,21 @@ public class BinomialHeap<K, V>
 		// Clear sibling ref!
 		min.sibling = null;
 
-		if( min.child != null )
+		if (min.child != null)
 		{
 			// If min had children, we are in trouble...
 			// This statement may be applicable in other contexts.
-			BinomialHeapEntry<K, V> child = min.child;
+			BinomialHeapEntry<TKey, TValue> child = min.child;
 
 			// GC aid.
 			min.child = null;
 
 			// Super lame local variables.
-			BinomialHeapEntry<K, V> pv = null;
-			BinomialHeapEntry<K, V> tmp = null;
+			BinomialHeapEntry<TKey, TValue> pv = null;
+			BinomialHeapEntry<TKey, TValue> tmp = null;
 
 			// Reverse order of child list.
-			while( child != null )
+			while (child != null)
 			{
 				tmp = child.sibling;
 				child.sibling = pv;
@@ -352,7 +344,7 @@ public class BinomialHeap<K, V>
 			child = pv;
 
 			// new head is union of head and reversed children.
-			this.head = this.unionEntries( this.head, child );
+			this.head = this.unionEntries(this.head, child);
 		}
 
 		// Lame housekeeping.
@@ -360,9 +352,8 @@ public class BinomialHeap<K, V>
 		this.mod_count += 1;
 		min.clearSourceReference();
 
-		return ( min.proxy   );
+		return min.proxy;
 	}
-
 
 	/**
 	 * Add a mapping to this heap.
@@ -370,35 +361,36 @@ public class BinomialHeap<K, V>
 	 * @param key the node key.
 	 * @param value the node value.
 	 * @return the entry created.
-	 * @throws ClassCastException If the specified key is not mutually comparable
-	 *         with the other keys of this heap.
+	 * @throws ClassCastException If the specified key is not mutually
+	 *             comparable
+	 *             with the other keys of this heap.
 	 */
-	public Entry<K, V> insert( final K key, final V value )
+	public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 		throws ClassCastException
 	{
-		BinomialHeapEntry<K, V> entry = new BinomialHeapEntry<K, V>( key, value, this.source_heap );
+		BinomialHeapEntry<TKey, TValue> entry = new BinomialHeapEntry<TKey, TValue>(
+				key, value, this.source_heap);
 
-		if( this.head == null )
+		if (this.head == null)
 		{
 			this.head = entry;
 			this.size = 1;
 		}
 		else
 		{
-			this.head = this.unionEntries( this.head, entry );
+			this.head = this.unionEntries(this.head, entry);
 			this.size += 1;
 		}
 
 		this.mod_count += 1;
 
 		// Lame proxy hack.
-		HeapEntryProxy<K, V> proxy = new HeapEntryProxy<K, V>();
+		HeapEntryProxy<TKey, TValue> proxy = new HeapEntryProxy<TKey, TValue>();
 		proxy.entry = entry;
 		entry.proxy = proxy;
 
-		return ( proxy );
+		return proxy;
 	}
-
 
 	/**
 	 * Does this heap hold the specified entry?
@@ -408,33 +400,26 @@ public class BinomialHeap<K, V>
 	 * @return <code>true</code> if this heap holds <code>e</code>;
 	 *         <code>false</code> otherwise.
 	 */
-	public boolean holdsEntry( final Heap.Entry<K, V> e )
+	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
 		throws NullPointerException
 	{
-		if( e == null )
+		if (e == null)
 		{
 			throw new NullPointerException();
 		}
 
 		// Obvious check.
-		if( e.getClass().equals( HeapEntryProxy.class ) == false )
+		if (e.getClass().equals(HeapEntryProxy.class) == false)
 		{
-			return ( false );
+			return false;
 		}
 
 		// Narrow.
-		HeapEntryProxy<K, V> proxy = (HeapEntryProxy<K, V>)e;
+		HeapEntryProxy<TKey, TValue> proxy = (HeapEntryProxy<TKey, TValue>) e;
 
 		// Use reference trickery.
-		if( proxy.entry.isContainedBy( this ) == false )
-		{
-			return ( false );
-		}
-
-		// Yup.
-		return ( true );
+		return proxy.entry.isContainedBy(this);
 	}
-
 
 	/**
 	 * Link the specified entries: This function links two trees of
@@ -446,15 +431,14 @@ public class BinomialHeap<K, V>
 	 * @param y the first node.
 	 * @param z the second node.
 	 */
-	private void link( final BinomialHeapEntry<K, V> y,
-			final BinomialHeapEntry<K, V> z )
+	private void link(final BinomialHeapEntry<TKey, TValue> y,
+			final BinomialHeapEntry<TKey, TValue> z)
 	{
 		y.parent = z;
 		y.sibling = z.child;
 		z.child = y;
 		z.degree += 1;
 	}
-
 
 	/**
 	 * Union the specified entries together into one uber entry, which is
@@ -466,39 +450,40 @@ public class BinomialHeap<K, V>
 	 * @param two the second entry.
 	 * @return BinomialHeapEntry{@literal <K,V>} the unioned entries.
 	 */
-	private BinomialHeapEntry<K, V> unionEntries(
-			final BinomialHeapEntry<K, V> one, final BinomialHeapEntry<K, V> two )
+	private BinomialHeapEntry<TKey, TValue> unionEntries(
+			final BinomialHeapEntry<TKey, TValue> one,
+			final BinomialHeapEntry<TKey, TValue> two)
 	{
 		// Merge the sibling lists into uber list increasing by degree.
-		BinomialHeapEntry<K, V> newhead = this.mergeEntries( one, two );
+		BinomialHeapEntry<TKey, TValue> newhead = this.mergeEntries(one, two);
 
-		if( newhead == null )
+		if (newhead == null)
 		{
-			return ( null );
+			return null;
 		}
 
 		// References from CLRS.
-		BinomialHeapEntry<K, V> prev_x = null;
-		BinomialHeapEntry<K, V> x = newhead;
-		BinomialHeapEntry<K, V> next_x = x.sibling;
+		BinomialHeapEntry<TKey, TValue> prev_x = null;
+		BinomialHeapEntry<TKey, TValue> x = newhead;
+		BinomialHeapEntry<TKey, TValue> next_x = x.sibling;
 
-		while( next_x != null )
+		while (next_x != null)
 		{
-			if( x.degree != next_x.degree
-					|| ( next_x.sibling != null && next_x.sibling.degree == x.degree ) )
+			if (x.degree != next_x.degree
+					|| (next_x.sibling != null && next_x.sibling.degree == x.degree))
 			{
 				prev_x = x;
 				x = next_x;
 			}
-			else if( this.compare( x, next_x ) <= 0 )
+			else if (this.compare(x, next_x) <= 0)
 			{
 				// Same degrees, so link.
 				x.sibling = next_x.sibling;
-				this.link( next_x, x );
+				this.link(next_x, x);
 			}
 			else
 			{
-				if( prev_x == null )
+				if (prev_x == null)
 				{
 					newhead = next_x;
 				}
@@ -508,7 +493,7 @@ public class BinomialHeap<K, V>
 				}
 
 				// Link 'em up.
-				this.link( x, next_x );
+				this.link(x, next_x);
 				x = next_x;
 			}
 
@@ -517,9 +502,8 @@ public class BinomialHeap<K, V>
 		}
 
 		// Ok, finit!
-		return ( newhead );
+		return newhead;
 	}
-
 
 	/**
 	 * Merge the specified list of sibling pointed to by the specified entries,
@@ -532,21 +516,22 @@ public class BinomialHeap<K, V>
 	 * @param two the second list.
 	 * @return the merged entry.
 	 */
-	private BinomialHeapEntry<K, V> mergeEntries( BinomialHeapEntry<K, V> one,
-			BinomialHeapEntry<K, V> two )
+	private BinomialHeapEntry<TKey, TValue> mergeEntries(
+			BinomialHeapEntry<TKey, TValue> one,
+			BinomialHeapEntry<TKey, TValue> two)
 	{
-		if( one == null )
+		if (one == null)
 		{
-			return ( two );
+			return two;
 		}
 
-		if( two == null )
+		if (two == null)
 		{
-			return ( one );
+			return one;
 		}
 
-		BinomialHeapEntry<K, V> min = null;
-		if( one.degree < two.degree )
+		BinomialHeapEntry<TKey, TValue> min = null;
+		if (one.degree < two.degree)
 		{
 			min = one;
 			one = one.sibling;
@@ -557,11 +542,11 @@ public class BinomialHeap<K, V>
 			two = two.sibling;
 		}
 
-		BinomialHeapEntry<K, V> last = min;
+		BinomialHeapEntry<TKey, TValue> last = min;
 
-		while( one != null && two != null )
+		while (one != null && two != null)
 		{
-			if( one.degree < two.degree )
+			if (one.degree < two.degree)
 			{
 				last.sibling = one;
 				one = one.sibling;
@@ -576,7 +561,7 @@ public class BinomialHeap<K, V>
 			last = last.sibling;
 		}
 
-		if( one == null )
+		if (one == null)
 		{
 			last.sibling = two;
 		}
@@ -585,9 +570,8 @@ public class BinomialHeap<K, V>
 			last.sibling = one;
 		}
 
-		return ( min );
+		return min;
 	}
-
 
 	/**
 	 * Delete the specified entry.
@@ -596,33 +580,32 @@ public class BinomialHeap<K, V>
 	 * @throws IllegalArgumentException If <code>e</code> is not in this heap.
 	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
 	 */
-	public void delete( final Heap.Entry<K, V> e )
+	public void delete(final Heap.Entry<TKey, TValue> e)
 		throws IllegalArgumentException, NullPointerException
 	{
 		// Check and cast.
-		if( this.holdsEntry( e ) == false )
+		if (this.holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
 
 		// Narrow.
-		HeapEntryProxy<K, V> px = (HeapEntryProxy<K, V>)e;
-		BinomialHeapEntry<K, V> entry = px.entry;
+		HeapEntryProxy<TKey, TValue> px = (HeapEntryProxy<TKey, TValue>) e;
+		BinomialHeapEntry<TKey, TValue> entry = px.entry;
 
 		// Make it infinitely small.
 		entry.is_infinite = true;
 
 		// Percolate the top,
-		this.decreaseKeyImpl( entry );
+		this.decreaseKeyImpl(entry);
 
 		// Remove.
-		px = (HeapEntryProxy<K, V>)this.extractMinimum();
+		px = (HeapEntryProxy<TKey, TValue>) this.extractMinimum();
 		entry = px.entry;
 
 		// Reset entry state.
 		entry.is_infinite = false;
 	}
-
 
 	/**
 	 * Decrease the key of the given element.
@@ -633,57 +616,57 @@ public class BinomialHeap<K, V>
 	 * @param e the entry for which to decrease the key.
 	 * @param k the new key.
 	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *         <code>e</code>'s current key or <code>k</code> is not a member
-	 *         of this heap.
+	 *             <code>e</code>'s current key or <code>k</code> is not a
+	 *             member
+	 *             of this heap.
 	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *         other keys in the heap.
+	 *             other keys in the heap.
 	 */
-	public void decreaseKey( final Heap.Entry<K, V> e, final K k )
+	public void decreaseKey(final Heap.Entry<TKey, TValue> e, final TKey k)
 		throws IllegalArgumentException, ClassCastException
 	{
 		// Check and cast.
-		if( this.holdsEntry( e ) == false )
+		if (this.holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
 
 		// x from CLRS.
-		HeapEntryProxy<K, V> px = (HeapEntryProxy<K, V>)e;
-		BinomialHeapEntry<K, V> x = px.entry;
+		HeapEntryProxy<TKey, TValue> px = (HeapEntryProxy<TKey, TValue>) e;
+		BinomialHeapEntry<TKey, TValue> x = px.entry;
 
 		// Check key... May throw class cast as well.
-		if( this.compareKeys( k, x.getKey() ) > 0 )
+		if (this.compareKeys(k, x.getKey()) > 0)
 		{
 			throw new IllegalArgumentException();
 		}
 
 		// Store the new key value.
-		x.setKey( k );
+		x.setKey(k);
 
 		// Restore the heap structure.
-		this.decreaseKeyImpl( x );
+		this.decreaseKeyImpl(x);
 	}
-
 
 	/**
 	 * Decrease key implementation. Basically, we restore the heap structure by
 	 * percolating <code>x</code> up the heap.
 	 * 
 	 * @param x the whose key has just been decreased and needs to be percolated
-	 *        toward the top of the heap.
+	 *            toward the top of the heap.
 	 */
-	private void decreaseKeyImpl( final BinomialHeapEntry<K, V> x )
+	private void decreaseKeyImpl(final BinomialHeapEntry<TKey, TValue> x)
 	{
 		// Happy variables from .
-		BinomialHeapEntry<K, V> y = x;
-		BinomialHeapEntry<K, V> z = y.parent;
+		BinomialHeapEntry<TKey, TValue> y = x;
+		BinomialHeapEntry<TKey, TValue> z = y.parent;
 
-		K key;
-		V val;
+		TKey key;
+		TValue val;
 		boolean inf;
-		HeapEntryProxy<K, V> prx = null;
+		HeapEntryProxy<TKey, TValue> prx = null;
 
-		while( z != null && this.compare( y, z ) < 0 )
+		while (z != null && this.compare(y, z) < 0)
 		{
 			key = y.getKey();
 			val = y.getValue();
@@ -691,15 +674,15 @@ public class BinomialHeap<K, V>
 			prx = y.proxy;
 
 			// Set y's props.
-			y.setKey( z.getKey() );
-			y.setValue( z.getValue() );
+			y.setKey(z.getKey());
+			y.setValue(z.getValue());
 			y.is_infinite = z.is_infinite;
 			y.proxy = z.proxy;
 			y.proxy.entry = y;
 
 			// z time.
-			z.setKey( key );
-			z.setValue( val );
+			z.setKey(key);
+			z.setValue(val);
 			z.is_infinite = inf;
 			z.proxy = prx;
 			z.proxy.entry = z;
@@ -710,53 +693,53 @@ public class BinomialHeap<K, V>
 		}
 	}
 
-
 	/**
 	 * Union with another heap.
 	 * <p>
-	 * This operation takes time <code>O(log n)</code> if <code>other</code>
-	 * is an instance of <code>BinomialHeap</code> and <code>O(n log n)</code>
-	 * time otherwise.
+	 * This operation takes time <code>O(log n)</code> if <code>other</code> is
+	 * an instance of <code>BinomialHeap</code> and <code>O(n log n)</code> time
+	 * otherwise.
 	 * 
 	 * @param other the other heap.
 	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
 	 * @throws ClassCastException If the keys of the nodes are not mutally
-	 *         comparable.
+	 *             comparable.
 	 * @throws IllegalArgumentException If you attempt to union a heap with
-	 *         itself.
+	 *             itself.
 	 */
-	@SuppressWarnings( "unchecked" )
-	public void union( final Heap<K, V> other )
-		throws ClassCastException, NullPointerException, IllegalArgumentException
+	@SuppressWarnings("unchecked")
+	public void union(final Heap<TKey, TValue> other)
+		throws ClassCastException, NullPointerException,
+		IllegalArgumentException
 	{
-		if( other == null )
+		if (other == null)
 		{
 			throw new NullPointerException();
 		}
 
-		if( this == other )
+		if (this == other)
 		{
 			throw new IllegalArgumentException();
 		}
 
-		if( other.isEmpty() )
+		if (other.isEmpty())
 		{
 			return;
 		}
 
-		if( other.getClass().equals( BinomialHeap.class ) )
+		if (other.getClass().equals(BinomialHeap.class))
 		{
 			// Get other root.
-			BinomialHeap<K, V> that = (BinomialHeap)other;
+			BinomialHeap<TKey, TValue> that = (BinomialHeap) other;
 
 			try
 			{
 				// Simple check for comparability...
 				// Might throw CCE.
-				this.compare( this.head, that.head );
+				this.compare(this.head, that.head);
 
 				// Union root lists.
-				this.head = this.unionEntries( that.head, this.head );
+				this.head = this.unionEntries(that.head, this.head);
 
 				// Update heap fields.
 				this.size += that.size;
@@ -764,8 +747,8 @@ public class BinomialHeap<K, V>
 
 				// Change that heap's heap reference to point to this heap.
 				// Thus, all child of that become children of this.
-				that.source_heap.setHeap( this );
-				that.source_heap = new HeapReference( that );
+				that.source_heap.setHeap(this);
+				that.source_heap = new HeapReference(that);
 			}
 			finally
 			{
@@ -780,55 +763,55 @@ public class BinomialHeap<K, V>
 		}
 	}
 
-
 	/**
 	 * Get an iterator over this heap entry set.
 	 * 
 	 * @return an iterator over the entry set.
 	 */
-	public Iterator<Heap.Entry<K, V>> iterator()
+	public Iterator<Heap.Entry<TKey, TValue>> iterator()
 	{
-		return ( new EntryIterator() );
+		return new EntryIterator();
 	}
-
 
 	/**
 	 * Serialize the object to the specified output stream.
 	 * <p>
-	 * This method takes time <code>O(n)</code> where <code>n</code> is the
-	 * size this heap.
+	 * This method takes time <code>O(n)</code> where <code>n</code> is the size
+	 * this heap.
 	 * 
 	 * @param out the stream to which to serialize this object.
 	 * @throws IOException If this object cannot be serialized.
 	 */
-	private void writeObject( final ObjectOutputStream out )
+	private void writeObject(final ObjectOutputStream out)
 		throws IOException
 	{
 		// Write non-transient fields.
-		out.writeInt( this.size );
+		out.writeInt(this.size);
 
 		// Write out all key/value pairs.
-		Iterator<Heap.Entry<K, V>> it = this.iterator();
-		Heap.Entry<K, V> et = null;
-		while( it.hasNext() )
+		Iterator<Heap.Entry<TKey, TValue>> it = this.iterator();
+		Heap.Entry<TKey, TValue> et = null;
+		while (it.hasNext())
 		{
 			try
 			{
 				et = it.next();
 
-				// May result in NotSerializableExceptions, but we there's not a whole
+				// May result in NotSerializableExceptions, but we there's not a
+				// whole
 				// helluva lot we can do about that.
-				out.writeObject( et.getKey() );
-				out.writeObject( et.getValue() );
+				out.writeObject(et.getKey());
+				out.writeObject(et.getValue());
 			}
-			catch( final ConcurrentModificationException cme )
+			catch (final ConcurrentModificationException cme)
 			{
 				// User's fault.
-				throw (IOException)new IOException( "Heap structure changed during serialization" ).initCause( cme );
+				throw (IOException) new IOException(
+						"Heap structure changed during serialization")
+						.initCause(cme);
 			}
 		}
 	}
-
 
 	/**
 	 * Deserialize the restore this object from the specified stream.
@@ -837,33 +820,33 @@ public class BinomialHeap<K, V>
 	 * the size this heap.
 	 * 
 	 * @param in the stream from which to read data.
-	 * @throws IOException If this object cannot properly read from the specified
-	 *         stream.
+	 * @throws IOException If this object cannot properly read from the
+	 *             specified
+	 *             stream.
 	 * @throws ClassNotFoundException If deserialization tries to classload an
-	 *         undefined class.
+	 *             undefined class.
 	 */
-	@SuppressWarnings( "unchecked" )
-	private void readObject( final ObjectInputStream in )
+	@SuppressWarnings("unchecked")
+	private void readObject(final ObjectInputStream in)
 		throws IOException, ClassNotFoundException
 	{
 		// Read non-transient fields.
 		int rsize = in.readInt();
 
 		// Create new ref object.
-		this.source_heap = new HeapReference( this );
+		this.source_heap = new HeapReference(this);
 		this.mod_count = 0;
 
 		// Read and insert all the keys and values.
-		K key;
-		V value;
-		for( int index = 0; index < rsize; index++ )
+		TKey key;
+		TValue value;
+		for (int index = 0; index < rsize; index++)
 		{
-			key = (K)in.readObject();
-			value = (V)in.readObject();
-			this.insert( key, value );
+			key = (TKey) in.readObject();
+			value = (TValue) in.readObject();
+			this.insert(key, value);
 		}
 	}
-
 
 	/**
 	 * Entry iterator class.
@@ -873,24 +856,23 @@ public class BinomialHeap<K, V>
 	 * <code>UnsupportedOperationException</code>.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
 	private class EntryIterator
 		extends Object
-		implements Iterator<Heap.Entry<K, V>>
+		implements Iterator<Heap.Entry<TKey, TValue>>
 	{
-
 
 		/**
 		 * The next entry.
 		 */
-		private BinomialHeapEntry<K, V> next;
+		private BinomialHeapEntry<TKey, TValue> next;
 
 		/**
 		 * Local modification count.
 		 */
 		private final long my_mod_count;
-
 
 		/**
 		 * Constructor.
@@ -906,25 +888,23 @@ public class BinomialHeap<K, V>
 			this.my_mod_count = BinomialHeap.this.mod_count;
 		}
 
-
 		/**
 		 * Does this iterator have another object?
 		 * 
-		 * @return <code>true</code> if there's another object; <code>false</code>
-		 *         otherwise.
+		 * @return <code>true</code> if there's another object;
+		 *         <code>false</code> otherwise.
 		 * @throws ConcurrentModificationException If concurrent modification
-		 *         occurs.
+		 *             occurs.
 		 */
 		public boolean hasNext()
 		{
-			if( this.my_mod_count != BinomialHeap.this.mod_count )
+			if (this.my_mod_count != BinomialHeap.this.mod_count)
 			{
 				throw new ConcurrentModificationException();
 			}
 
-			return ( this.next != null );
+			return (this.next != null);
 		}
-
 
 		/**
 		 * Get the next object from this iterator.
@@ -932,22 +912,21 @@ public class BinomialHeap<K, V>
 		 * @return the next object.
 		 * @throws NoSuchElementException If the iterator has no more elements.
 		 * @throws ConcurrentModificationException If concurrent modification
-		 *         occurs.
+		 *             occurs.
 		 */
-		public Heap.Entry<K, V> next()
+		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
-			if( this.hasNext() == false )
+			if (this.hasNext() == false)
 			{
 				throw new NoSuchElementException();
 			}
 
 			// Get the next node.
-			BinomialHeapEntry<K, V> n = this.next;
-			this.next = this.eulerianSuccessor( this.next );
-			return ( n.proxy   );
+			BinomialHeapEntry<TKey, TValue> n = this.next;
+			this.next = this.eulerianSuccessor(this.next);
+			return n.proxy;
 		}
-
 
 		/**
 		 * Not supported.
@@ -960,7 +939,6 @@ public class BinomialHeap<K, V>
 			throw new UnsupportedOperationException();
 		}
 
-
 		/**
 		 * Return the successor entry to the specified entry, in the context of
 		 * Euler tour over this heap.
@@ -972,58 +950,54 @@ public class BinomialHeap<K, V>
 		 * @param entry the given entry.
 		 * @return the successor entry.
 		 */
-		private BinomialHeapEntry<K, V> eulerianSuccessor(
-				final BinomialHeapEntry<K, V> entry )
+		private BinomialHeapEntry<TKey, TValue> eulerianSuccessor(
+				final BinomialHeapEntry<TKey, TValue> entry)
 		{
-			if( entry == null )
+			if (entry == null)
 			{
 				// Not much we can do here...
-				return ( null );
+				return null;
 			}
-			else if( entry.child != null )
+			else if (entry.child != null)
 			{
-				return ( entry.child    );
+				return entry.child;
 			}
-			else if( entry.parent == null )
+			else if (entry.parent == null)
 			{
-				return ( entry.sibling   );
+				return entry.sibling;
 			}
 			else
 			{
 				// Could also be null, when you think about it!
-				return ( entry.parent.sibling   );
+				return entry.parent.sibling;
 			}
 		}
 
-
 	}
-
 
 	/**
 	 * Node proxy class.
 	 * 
-	 * @param <K> the key type.
-	 * @param <V> the value type.
+	 * @param <TKey> the key type.
+	 * @param <TValue> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
-	private static final class HeapEntryProxy<K, V>
+	private static final class HeapEntryProxy<TKey, TValue>
 		extends Object
-		implements Heap.Entry<K, V>, Serializable
+		implements Heap.Entry<TKey, TValue>, Serializable
 	{
-
 
 		/**
 		 * Serial version UID.
 		 */
 		private static final long serialVersionUID = 23497862L;
 
-
 		/**
 		 * Backing binomial heap entry.
 		 */
-		BinomialHeapEntry<K, V> entry;
-
+		BinomialHeapEntry<TKey, TValue> entry;
 
 		/**
 		 * Constructor.
@@ -1035,7 +1009,6 @@ public class BinomialHeap<K, V>
 			super();
 		}
 
-
 		/**
 		 * Compare this object for equality with the specified object.
 		 * 
@@ -1043,21 +1016,20 @@ public class BinomialHeap<K, V>
 		 * @return <code>true</code> if equal; <code>false</code> otherwise.
 		 */
 		@Override
-		public boolean equals( final Object other )
+		public boolean equals(final Object other)
 		{
-			if( other == null )
+			if (other == null)
 			{
-				return ( false );
+				return (false);
 			}
 
-			if( other == this )
+			if (other == this)
 			{
-				return ( true );
+				return (true);
 			}
 
-			return ( this.entry.equals( other ) );
+			return this.entry.equals(other);
 		}
-
 
 		/**
 		 * Get a hashcode inline with equals.
@@ -1067,31 +1039,28 @@ public class BinomialHeap<K, V>
 		@Override
 		public int hashCode()
 		{
-			return ( this.entry.hashCode() );
+			return this.entry.hashCode();
 		}
-
 
 		/**
 		 * Get the key.
 		 * 
 		 * @return the key.
 		 */
-		public K getKey()
+		public TKey getKey()
 		{
-			return ( this.entry.getKey() );
+			return this.entry.getKey();
 		}
-
 
 		/**
 		 * Get the value.
 		 * 
 		 * @return the value.
 		 */
-		public V getValue()
+		public TValue getValue()
 		{
-			return ( this.entry.getValue() );
+			return this.entry.getValue();
 		}
-
 
 		/**
 		 * Set the value.
@@ -1099,11 +1068,10 @@ public class BinomialHeap<K, V>
 		 * @param value the new value.
 		 * @return the old value.
 		 */
-		public V setValue( final V value )
+		public TValue setValue(final TValue value)
 		{
-			return ( this.entry.setValue( value ) );
+			return this.entry.setValue(value);
 		}
-
 
 		/**
 		 * Get nice(r) string representation of this object.
@@ -1113,20 +1081,20 @@ public class BinomialHeap<K, V>
 		@Override
 		public String toString()
 		{
-			return ( this.entry.toString() );
+			return this.entry.toString();
 		}
-
 
 		/**
 		 * Deserialize the restore this object from the specified stream.
 		 * 
 		 * @param in the stream from which to read data.
 		 * @throws IOException If this object cannot properly read from the
-		 *         specified stream.
-		 * @throws ClassNotFoundException If deserialization tries to classload an
-		 *         undefined class.
+		 *             specified stream.
+		 * @throws ClassNotFoundException If deserialization tries to classload
+		 *             an
+		 *             undefined class.
 		 */
-		private void readObject( final ObjectInputStream in )
+		private void readObject(final ObjectInputStream in)
 			throws IOException, ClassNotFoundException
 		{
 			// Read non-transient fields.
@@ -1136,9 +1104,7 @@ public class BinomialHeap<K, V>
 			this.entry.proxy = this;
 		}
 
-
 	}
-
 
 	/**
 	 * Binomial heap entry.
@@ -1146,19 +1112,18 @@ public class BinomialHeap<K, V>
 	 * @param <K> the key type.
 	 * @param <V> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
 	private static final class BinomialHeapEntry<K, V>
 		extends AbstractLinkedHeapEntry<K, V>
 		implements Heap.Entry<K, V>, Serializable
 	{
 
-
 		/**
 		 * Serial version.
 		 */
 		private static final long serialVersionUID = 93424L;
-
 
 		/**
 		 * The degree of this node.
@@ -1185,7 +1150,6 @@ public class BinomialHeap<K, V>
 		 */
 		transient HeapEntryProxy<K, V> proxy;
 
-
 		/**
 		 * Constructor.
 		 * 
@@ -1193,9 +1157,9 @@ public class BinomialHeap<K, V>
 		 * @param value the value.
 		 * @param ref the reference.
 		 */
-		BinomialHeapEntry( final K key, final V value, final HeapReference ref )
+		BinomialHeapEntry(final K key, final V value, final HeapReference ref)
 		{
-			super( key, value, ref );
+			super(key, value, ref);
 
 			// Blah - store some stuff.
 			this.sibling = null;
@@ -1204,8 +1168,6 @@ public class BinomialHeap<K, V>
 			this.degree = 0;
 		}
 
-
 	}
-
 
 }

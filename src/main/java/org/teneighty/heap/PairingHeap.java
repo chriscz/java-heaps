@@ -35,7 +35,6 @@ import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-
 /**
  * A pairing heap implementation. A pairing heap is really just a tree that
  * maintains the heap invariant: Every entry has a key less than or equal to the
@@ -58,11 +57,11 @@ import java.util.Iterator;
  * (and it works quite well).</li>
  * </ul>
  * <p>
- * The heap invariant is basically maintained by one method: <code>join()</code>.
- * This method takes two entries and makes the smaller the parent of the larger.
- * More precisely, the larger node becomes the leftmost child of the smaller
- * node; the nodes previously in the list are "shifted" to the right. Below are
- * brief descriptions of how each method works:
+ * The heap invariant is basically maintained by one method: <code>join()</code>
+ * . This method takes two entries and makes the smaller the parent of the
+ * larger. More precisely, the larger node becomes the leftmost child of the
+ * smaller node; the nodes previously in the list are "shifted" to the right.
+ * Below are brief descriptions of how each method works:
  * <ul>
  * <li>Insert works quite simply: We create a new entry for the given key value
  * pair, and link it to the root entry. Insert take only <code>O(1)</code>
@@ -84,7 +83,8 @@ import java.util.Iterator;
  * <li>Delete is implemented atop decrease key and extract min, so also take
  * <code>O(n)</code> time. There are, of course, other ways of doing remove
  * (such as simply merging the children of the deleted entry and doing some
- * other cleanup), but this is simpler to implement and has the same complexity.</li>
+ * other cleanup), but this is simpler to implement and has the same complexity.
+ * </li>
  * </ul>
  * <p>
  * As mentioned above, the <code>join()</code> method, and the way it merges
@@ -109,10 +109,10 @@ import java.util.Iterator;
  * The collection-view methods of this class are backed by iterators over the
  * heap structure which are <i>fail-fast</i>: If the heap is structurally
  * modified at any time after the iterator is created, the iterator throws a
- * <code>ConcurrentModificationException</code>. Thus, in the face of
- * concurrent modification, the iterator fails quickly and cleanly, rather than
- * risking arbitrary, non-deterministic behavior at an undetermined time in the
- * future. The collection-views returned by this class do not support the
+ * <code>ConcurrentModificationException</code>. Thus, in the face of concurrent
+ * modification, the iterator fails quickly and cleanly, rather than risking
+ * arbitrary, non-deterministic behavior at an undetermined time in the future.
+ * The collection-views returned by this class do not support the
  * <code>remove()</code> operation.
  * <p>
  * This class is not synchronized (by choice). You must ensure sequential access
@@ -130,32 +130,32 @@ import java.util.Iterator;
  * them. The <code>insert()</code> method tales constant time, so
  * deserialization take <code>O(n)</code> time.
  * 
- * @param <K> the key type.
- * @param <V> the value type.
+ * @param <TKey> the key type.
+ * @param <TValue> the value type.
  * @author Fran Lattanzio
  * @version $Revision$ $Date$
  * @see "<i>The pairing heap: A new form of self-adjusting heap</i>,
  *      <u>Algorithmica</u>, 1, March 1986, 111-129, by M. Fredman, R.
  *      Sedgewick, R. Sleator, and R. Tarjan"
- * @see "Mark Weiss (1999) <i>Data Structures and Algorithm Analysis in Java</i>.
+ * @see "Mark Weiss (1999) <i>Data Structures and Algorithm Analysis in
+ *      Java</i>.
  *      Addison Wesley Professional"
  */
-public class PairingHeap<K, V>
-	extends AbstractLinkedHeap<K, V>
-	implements Heap<K, V>, Iterable<Heap.Entry<K, V>>, Serializable
+public class PairingHeap<TKey, TValue>
+	extends AbstractLinkedHeap<TKey, TValue>
+	implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
+	Serializable
 {
-
 
 	/**
 	 * Serial version hoo-ha.
 	 */
 	private static final long serialVersionUID = 2323423L;
 
-
 	/**
 	 * Comparator to use.
 	 */
-	private Comparator<? super K> comp;
+	private Comparator<? super TKey> comp;
 
 	/**
 	 * The size of this heap.
@@ -170,7 +170,7 @@ public class PairingHeap<K, V>
 	/**
 	 * The minimum entry!
 	 */
-	private transient PairingHeapEntry<K, V> minimum;
+	private transient PairingHeapEntry<TKey, TValue> minimum;
 
 	/**
 	 * Heap reference.
@@ -182,49 +182,47 @@ public class PairingHeap<K, V>
 	 */
 	private MergeStrategy merge_type;
 
-
 	/**
 	 * Constructor.
 	 * <p>
-	 * The nodes of this heap will be ordered by their keys' <i>natural ordering</i>.
+	 * The nodes of this heap will be ordered by their keys' <i>natural
+	 * ordering</i>.
 	 * <p>
 	 * The keys of all nodes inserted into the heap must implement the
 	 * <code>Comparable</code> interface. Furthermore, all such keys must be
-	 * <i>mutually comparable</i>:<code>k1.compareTo(k2)</code> must not throw
-	 * a <code>ClassCastException</code> for any elements <code>k1</code> and
+	 * <i>mutually comparable</i>:<code>k1.compareTo(k2)</code> must not throw a
+	 * <code>ClassCastException</code> for any elements <code>k1</code> and
 	 * <code>k2</code> in the heap.
 	 */
 	public PairingHeap()
 	{
-		this( null, MergeStrategy.MULTI );
+		this(null, MergeStrategy.MULTI);
 	}
-
 
 	/**
 	 * Constructor.
 	 * <p>
-	 * The nodes of this heap will be ordered by their keys' <i>natural ordering</i>.
+	 * The nodes of this heap will be ordered by their keys' <i>natural
+	 * ordering</i>.
 	 * 
 	 * @param strat the merging strategy.
 	 * @throws NullPointerException If <code>strat</code> is <code>null</code>.
 	 */
-	public PairingHeap( final MergeStrategy strat )
-		throws NullPointerException
+	public PairingHeap(final MergeStrategy strat)
+			throws NullPointerException
 	{
-		this( null, strat );
+		this(null, strat);
 	}
-
 
 	/**
 	 * Constructor.
 	 * 
 	 * @param comp the comparator.
 	 */
-	public PairingHeap( final Comparator<? super K> comp )
+	public PairingHeap(final Comparator<? super TKey> comp)
 	{
-		this( comp, MergeStrategy.MULTI );
+		this(comp, MergeStrategy.MULTI);
 	}
-
 
 	/**
 	 * Constructor.
@@ -233,19 +231,20 @@ public class PairingHeap<K, V>
 	 * @param ms the merge strategy.
 	 * @throws NullPointerException If <code>ms</code> is <code>null</code>.
 	 */
-	public PairingHeap( final Comparator<? super K> comp, final MergeStrategy ms )
-		throws NullPointerException
+	public PairingHeap(final Comparator<? super TKey> comp,
+			final MergeStrategy ms)
+			throws NullPointerException
 	{
 		super();
 
-		if( ms == null )
+		if (ms == null)
 		{
 			throw new NullPointerException();
 		}
 
 		// Store comp.
 		this.comp = comp;
-		this.source = new HeapReference( this );
+		this.source = new HeapReference(this);
 
 		// Other stuff.
 		this.size = 0;
@@ -255,7 +254,6 @@ public class PairingHeap<K, V>
 		// Not user configurable...
 		this.merge_type = ms;
 	}
-
 
 	/**
 	 * Get the merge strategy.
@@ -267,9 +265,8 @@ public class PairingHeap<K, V>
 	 */
 	public MergeStrategy getMergeStrategy()
 	{
-		return ( this.merge_type );
+		return this.merge_type;
 	}
-
 
 	/**
 	 * Set the merge strategy.
@@ -279,11 +276,10 @@ public class PairingHeap<K, V>
 	 * @param strat the new strategy.
 	 * @see #getMergeStrategy()
 	 */
-	public void setMergeStrategy( final MergeStrategy strat )
+	public void setMergeStrategy(final MergeStrategy strat)
 	{
 		this.merge_type = strat;
 	}
-
 
 	/**
 	 * Get the comparator used for decision in this heap.
@@ -295,11 +291,10 @@ public class PairingHeap<K, V>
 	 * @see java.util.Comparator
 	 * @see java.lang.Comparable
 	 */
-	public Comparator<? super K> getComparator()
+	public Comparator<? super TKey> getComparator()
 	{
-		return ( this.comp );
+		return this.comp;
 	}
-
 
 	/**
 	 * Clear this heap.
@@ -313,9 +308,8 @@ public class PairingHeap<K, V>
 
 		// Clear source heap and recreate heap refrence.
 		this.source.clearHeap();
-		this.source = new HeapReference( this );
+		this.source = new HeapReference(this);
 	}
-
 
 	/**
 	 * Get the number of key/value pairs (i.e. the size) of this heap.
@@ -324,9 +318,8 @@ public class PairingHeap<K, V>
 	 */
 	public int getSize()
 	{
-		return ( this.size );
+		return this.size;
 	}
-
 
 	/**
 	 * Add a key/value pair to this heap.
@@ -334,24 +327,26 @@ public class PairingHeap<K, V>
 	 * @param key the node key.
 	 * @param value the node value.
 	 * @return the entry created.
-	 * @throws ClassCastException If the specified key is not mutually comparable
-	 *         with the other keys of this heap.
-	 * @throws NullPointerException If <code>key</code> is <code>null</code>
-	 *         and this heap does not support <code>null</code> keys.
+	 * @throws ClassCastException If the specified key is not mutually
+	 *             comparable
+	 *             with the other keys of this heap.
+	 * @throws NullPointerException If <code>key</code> is <code>null</code> and
+	 *             this heap does not support <code>null</code> keys.
 	 */
-	public Entry<K, V> insert( final K key, final V value )
+	public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 		throws ClassCastException, NullPointerException
 	{
-		PairingHeapEntry<K, V> entry = new PairingHeapEntry<K, V>( key, value, this.source );
+		PairingHeapEntry<TKey, TValue> entry = new PairingHeapEntry<TKey, TValue>(
+				key, value, this.source);
 
-		if( this.isEmpty() )
+		if (this.isEmpty())
 		{
 			// trivial case...
 			this.minimum = entry;
 		}
 		else
 		{
-			this.minimum = this.join( this.minimum, entry );
+			this.minimum = this.join(this.minimum, entry);
 			this.minimum.previous = null;
 		}
 
@@ -360,9 +355,8 @@ public class PairingHeap<K, V>
 		this.mod_count += 1;
 
 		// Return new entry.
-		return ( entry );
+		return entry;
 	}
-
 
 	/**
 	 * Get the entry with the minimum key.
@@ -373,17 +367,16 @@ public class PairingHeap<K, V>
 	 * @throws NoSuchElementException If this heap is empty.
 	 * @see #extractMinimum()
 	 */
-	public Entry<K, V> getMinimum()
+	public Entry<TKey, TValue> getMinimum()
 		throws NoSuchElementException
 	{
-		if( this.isEmpty() )
+		if (this.isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
-		return ( this.minimum );
+		return this.minimum;
 	}
-
 
 	/**
 	 * Join together the specified entries together.
@@ -392,46 +385,46 @@ public class PairingHeap<K, V>
 	 * @param second the second entry.
 	 * @return the result of linking the specified entries together, of course.
 	 */
-	private PairingHeapEntry<K, V> join( final PairingHeapEntry<K, V> first,
-			final PairingHeapEntry<K, V> second )
+	private PairingHeapEntry<TKey, TValue> join(
+			final PairingHeapEntry<TKey, TValue> first,
+			final PairingHeapEntry<TKey, TValue> second)
 	{
-		if( second == null )
+		if (second == null)
 		{
-			return ( first );
+			return first;
 		}
 
-		if( this.compare( first, second ) >= 0 )
+		if (this.compare(first, second) >= 0)
 		{
 			// Make first the child of second.
 			second.previous = first.previous;
 			first.previous = second;
 			first.next = second.child;
-			if( first.next != null )
+			if (first.next != null)
 			{
 				first.next.previous = first;
 			}
 			second.child = first;
-			return ( second );
+			return second;
 		}
 
 		// Make second the child of first.
 		second.previous = first;
 		first.next = second.next;
-		if( first.next != null )
+		if (first.next != null)
 		{
 			first.next.previous = first;
 		}
 
 		second.next = first.child;
-		if( second.next != null )
+		if (second.next != null)
 		{
 			second.next.previous = second;
 		}
 
 		first.child = second;
-		return ( first );
+		return first;
 	}
-
 
 	/**
 	 * Remove and return the entry minimum key.
@@ -440,24 +433,24 @@ public class PairingHeap<K, V>
 	 * @throws NoSuchElementException If the heap is empty.
 	 * @see #getMinimum()
 	 */
-	public Entry<K, V> extractMinimum()
+	public Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
-		if( this.isEmpty() )
+		if (this.isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
-		PairingHeapEntry<K, V> old_min = this.minimum;
+		PairingHeapEntry<TKey, TValue> old_min = this.minimum;
 
 		// Extricate the specified entry from this heap.
-		if( this.size == 1 )
+		if (this.size == 1)
 		{
 			this.minimum = null;
 		}
 		else
 		{
-			this.minimum = this.merge( this.minimum.child );
+			this.minimum = this.merge(this.minimum.child);
 			this.minimum.previous = null;
 			this.minimum.next = null;
 		}
@@ -472,9 +465,8 @@ public class PairingHeap<K, V>
 		old_min.next = null;
 		old_min.previous = null;
 
-		return ( old_min );
+		return old_min;
 	}
-
 
 	/**
 	 * Delete the specified entry.
@@ -485,19 +477,19 @@ public class PairingHeap<K, V>
 	 * @throws IllegalArgumentException If <code>e</code> is not in this heap.
 	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
 	 */
-	public void delete( final Heap.Entry<K, V> e )
+	public void delete(final Heap.Entry<TKey, TValue> e)
 		throws IllegalArgumentException, NullPointerException
 	{
 		// Check and cast.
-		if( this.holdsEntry( e ) == false )
+		if (this.holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
 
 		// Narrow.
-		PairingHeapEntry<K, V> entry = (PairingHeapEntry<K, V>)e;
+		PairingHeapEntry<TKey, TValue> entry = (PairingHeapEntry<TKey, TValue>) e;
 
-		if( entry == this.minimum )
+		if (entry == this.minimum)
 		{
 			this.extractMinimum();
 			return;
@@ -507,7 +499,7 @@ public class PairingHeap<K, V>
 		entry.is_infinite = true;
 
 		// Relink to top!
-		this.relink( entry );
+		this.relink(entry);
 
 		// Remove. Takes care of size stuff, mod count, all that jazz.
 		this.extractMinimum();
@@ -515,7 +507,6 @@ public class PairingHeap<K, V>
 		// Reset entry state.
 		entry.is_infinite = false;
 	}
-
 
 	/**
 	 * Decrease the key of the given element.
@@ -526,57 +517,58 @@ public class PairingHeap<K, V>
 	 * @param e the entry for which to decrease the key.
 	 * @param key the new key.
 	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *         <code>e</code>'s current key or <code>e</code> is held by this
-	 *         heap.
+	 *             <code>e</code>'s current key or <code>e</code> is held by
+	 *             this
+	 *             heap.
 	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *         other keys in the heap.
+	 *             other keys in the heap.
 	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
 	 * @see #holdsEntry(Heap.Entry)
 	 */
-	public void decreaseKey( final Entry<K, V> e, final K key )
-		throws IllegalArgumentException, ClassCastException, NullPointerException
+	public void decreaseKey(final Entry<TKey, TValue> e, final TKey key)
+		throws IllegalArgumentException, ClassCastException,
+		NullPointerException
 	{
-		if( this.holdsEntry( e ) == false )
+		if (this.holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
 
-		PairingHeapEntry<K, V> entry = (PairingHeapEntry<K, V>)e;
+		PairingHeapEntry<TKey, TValue> entry = (PairingHeapEntry<TKey, TValue>) e;
 
 		// Check key.
-		if( this.compareKeys( entry.getKey(), key ) < 0 )
+		if (this.compareKeys(entry.getKey(), key) < 0)
 		{
 			throw new IllegalArgumentException();
 		}
 
 		// Update key.
-		entry.setKey( key );
+		entry.setKey(key);
 
 		// Re link
-		this.relink( entry );
+		this.relink(entry);
 
 		// We made a change!
 		this.mod_count += 1;
 	}
-
 
 	/**
 	 * Relink the specified element, whose key has just been decreased.
 	 * 
 	 * @param entry the entry whose key have just been decreased.
 	 */
-	private void relink( final PairingHeapEntry<K, V> entry )
+	private void relink(final PairingHeapEntry<TKey, TValue> entry)
 	{
-		if( entry != this.minimum )
+		if (entry != this.minimum)
 		{
 
-			if( entry.next != null )
+			if (entry.next != null)
 			{
 				// Not rightmost. Remove from child list.
 				entry.next.previous = entry.previous;
 			}
 
-			if( entry.previous.child == entry )
+			if (entry.previous.child == entry)
 			{
 				// It's the leftmost child.
 				entry.previous.child = entry.next;
@@ -591,12 +583,11 @@ public class PairingHeap<K, V>
 			entry.next = null;
 
 			// join with the root.
-			this.minimum = this.join( entry, this.minimum );
+			this.minimum = this.join(entry, this.minimum);
 			this.minimum.previous = null;
 			this.minimum.next = null;
 		}
 	}
-
 
 	/**
 	 * Do a merge of the siblings of the specified node, based on the heap
@@ -605,29 +596,29 @@ public class PairingHeap<K, V>
 	 * @param consol the node to consolidate.
 	 * @return the new root of all the siblings of <code>consol</code>.
 	 */
-	private PairingHeapEntry<K, V> merge( final PairingHeapEntry<K, V> consol )
+	private PairingHeapEntry<TKey, TValue> merge(
+			final PairingHeapEntry<TKey, TValue> consol)
 	{
-		switch( this.merge_type )
+		switch (this.merge_type)
 		{
 			case TWO:
-				return ( this.twoPassMerge( consol ) );
+				return this.twoPassMerge(consol);
 			case MULTI:
-				return ( this.multiPassMerge( consol ) );
+				return this.multiPassMerge(consol);
 			default:
 				// Umm... right...
-				throw new InternalError();			
+				throw new InternalError();
 		}
 	}
-
 
 	/**
 	 * Do a two-pass merge on the siblings of the specified node.
 	 * <p>
 	 * Very similiar to code in "Algorithms and Datastructures in Java" by Mark
 	 * Allen Weiss. The main difference here is that we don't save an array
-	 * between calls to this method. This is because it could potentially mean the
-	 * heap allocates an extra <code>O(n)</code> space and could interfere with
-	 * garbage collection of removed/deleted/extracted nodes. It should not
+	 * between calls to this method. This is because it could potentially mean
+	 * the heap allocates an extra <code>O(n)</code> space and could interfere
+	 * with garbage collection of removed/deleted/extracted nodes. It should not
 	 * significantly effect the running time (I hope).
 	 * <p>
 	 * TODO: Investigate whether we should save the aforementioned hideous array
@@ -636,24 +627,24 @@ public class PairingHeap<K, V>
 	 * @param consol the node to consolidate.
 	 * @return the new root of all the siblings of <code>consol</code>.
 	 */
-	private PairingHeapEntry<K, V> twoPassMerge(
-			final PairingHeapEntry<K, V> consol )
+	private PairingHeapEntry<TKey, TValue> twoPassMerge(
+			final PairingHeapEntry<TKey, TValue> consol)
 	{
-		if( consol.next == null )
+		if (consol.next == null)
 		{
-			return ( consol );
+			return (consol);
 		}
 
 		// list of entries.
-		ArrayList<PairingHeapEntry<K, V>> entrylist = new ArrayList<PairingHeapEntry<K, V>>();
+		ArrayList<PairingHeapEntry<TKey, TValue>> entrylist = new ArrayList<PairingHeapEntry<TKey, TValue>>();
 
 		// "Iterator" node.
-		PairingHeapEntry<K, V> iter = consol;
+		PairingHeapEntry<TKey, TValue> iter = consol;
 		int count = 0;
-		while( iter != null )
+		while (iter != null)
 		{
 			// Store in list.
-			entrylist.add( iter );
+			entrylist.add(iter);
 
 			// Cut link.
 			iter.previous.next = null;
@@ -665,43 +656,42 @@ public class PairingHeap<K, V>
 
 		// Merge going left to right.
 		int index = 0;
-		PairingHeapEntry<K, V> one = null;
-		PairingHeapEntry<K, V> two = null;
+		PairingHeapEntry<TKey, TValue> one = null;
+		PairingHeapEntry<TKey, TValue> two = null;
 
-		for( index = 0; ( index + 1 ) < count; index += 2 )
+		for (index = 0; (index + 1) < count; index += 2)
 		{
-			one = entrylist.get( index );
-			two = entrylist.get( ( index + 1 ) );
+			one = entrylist.get(index);
+			two = entrylist.get((index + 1));
 
-			entrylist.set( index, this.join( one, two ) );
+			entrylist.set(index, this.join(one, two));
 		}
 
 		int jindex = index - 2;
 
-		if( jindex == ( count - 3 ) )
+		if (jindex == (count - 3))
 		{
-			one = entrylist.get( jindex );
-			two = entrylist.get( ( jindex + 2 ) );
+			one = entrylist.get(jindex);
+			two = entrylist.get((jindex + 2));
 
-			entrylist.set( jindex, this.join( one, two ) );
+			entrylist.set(jindex, this.join(one, two));
 		}
 
 		// Merge right to left.
-		while( jindex >= 2 )
+		while (jindex >= 2)
 		{
 			// grab two guys.
-			one = entrylist.get( jindex );
-			two = entrylist.get( ( jindex - 2 ) );
+			one = entrylist.get(jindex);
+			two = entrylist.get((jindex - 2));
 
 			// Merge 'em
-			entrylist.set( ( jindex - 2 ), this.join( two, one ) );
+			entrylist.set((jindex - 2), this.join(two, one));
 			jindex -= 2;
 		}
 
 		// Finit.
-		return ( entrylist.get( 0 ) );
+		return entrylist.get(0);
 	}
-
 
 	/**
 	 * Do a multi pass merge on the siblings of the specified node.
@@ -712,27 +702,27 @@ public class PairingHeap<K, V>
 	 * @param consol the node to consolidate.
 	 * @return the new root of all the siblings of <code>consol</code>.
 	 */
-	private PairingHeapEntry<K, V> multiPassMerge(
-			final PairingHeapEntry<K, V> consol )
+	private PairingHeapEntry<TKey, TValue> multiPassMerge(
+			final PairingHeapEntry<TKey, TValue> consol)
 	{
 		// Happy scrappy hero pup FIFO queue. Or a List. But that's just, like,
 		// my opinion, man.
-		LinkedList<PairingHeapEntry<K, V>> queue = new LinkedList<PairingHeapEntry<K, V>>();
+		LinkedList<PairingHeapEntry<TKey, TValue>> queue = new LinkedList<PairingHeapEntry<TKey, TValue>>();
 
 		// By the way I'm on drugs right now, so this code might not
 		// make too much sense or work.
 
-		if( consol.next == null )
+		if (consol.next == null)
 		{
-			return ( consol );
+			return consol;
 		}
 
 		// "Iterator" node.
-		PairingHeapEntry<K, V> iter = consol;
-		while( iter != null )
+		PairingHeapEntry<TKey, TValue> iter = consol;
+		while (iter != null)
 		{
 			// Store in happy queue.
-			queue.addFirst( iter );
+			queue.addFirst(iter);
 
 			// Cut link.
 			iter.previous.next = null;
@@ -742,9 +732,9 @@ public class PairingHeap<K, V>
 		}
 
 		// Some nodes. And stuff.
-		PairingHeapEntry<K, V> one = null;
-		PairingHeapEntry<K, V> two = null;
-		PairingHeapEntry<K, V> joined = null;
+		PairingHeapEntry<TKey, TValue> one = null;
+		PairingHeapEntry<TKey, TValue> two = null;
+		PairingHeapEntry<TKey, TValue> joined = null;
 
 		// Combine adjacent trees in our "queue" - basically, we just
 		// grab successive nodes off of the list, merge them together,
@@ -752,29 +742,28 @@ public class PairingHeap<K, V>
 		// only one node is left (which is the element with the smallest
 		// value among those in the queue).
 
-		while( queue.size() > 1 )
+		while (queue.size() > 1)
 		{
 			// Have to be at least two...
 			one = queue.removeFirst();
 			two = queue.removeFirst();
 
-			if( one.next == null )
+			if (one.next == null)
 			{
-				joined = this.join( one, two );
+				joined = this.join(one, two);
 			}
 			else
 			{
-				joined = this.join( two, one );
+				joined = this.join(two, one);
 			}
 
 			// Append to queue.
-			queue.addLast( joined );
+			queue.addLast(joined);
 		}
 
 		// DONE!
-		return ( queue.removeFirst() );
+		return queue.removeFirst();
 	}
-
 
 	/**
 	 * Does this heap hold the specified entry?
@@ -784,33 +773,26 @@ public class PairingHeap<K, V>
 	 * @return <code>true</code> if this heap holds <code>e</code>;
 	 *         <code>false</code> otherwise.
 	 */
-	public boolean holdsEntry( final Heap.Entry<K, V> e )
+	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
 		throws NullPointerException
 	{
-		if( e == null )
+		if (e == null)
 		{
 			throw new NullPointerException();
 		}
 
 		// Obvious check.
-		if( e.getClass().equals( PairingHeapEntry.class ) == false )
+		if (e.getClass().equals(PairingHeapEntry.class) == false)
 		{
-			return ( false );
+			return false;
 		}
 
 		// Narrow.
-		PairingHeapEntry<K, V> entry = (PairingHeapEntry<K, V>)e;
+		PairingHeapEntry<TKey, TValue> entry = (PairingHeapEntry<TKey, TValue>) e;
 
 		// Use reference trickery.
-		if( entry.isContainedBy( this ) == false )
-		{
-			return ( false );
-		}
-
-		// Yup.
-		return ( true );
+		return entry.isContainedBy(this);
 	}
-
 
 	/**
 	 * Union this heap with another heap.
@@ -818,41 +800,43 @@ public class PairingHeap<K, V>
 	 * @param other the other heap.
 	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
 	 * @throws ClassCastException If the keys of the nodes are not mutally
-	 *         comparable.
-	 * @throws IllegalArgumentException If you attempt to union a heap with itself
-	 *         (i.e if <code>other == this</code>).
+	 *             comparable.
+	 * @throws IllegalArgumentException If you attempt to union a heap with
+	 *             itself
+	 *             (i.e if <code>other == this</code>).
 	 */
 	@SuppressWarnings("unchecked")
-	public void union( final Heap<K, V> other )
-		throws ClassCastException, NullPointerException, IllegalArgumentException
+	public void union(final Heap<TKey, TValue> other)
+		throws ClassCastException, NullPointerException,
+		IllegalArgumentException
 	{
-		if( other == null )
+		if (other == null)
 		{
 			throw new NullPointerException();
 		}
 
-		if( other == this )
+		if (other == this)
 		{
 			throw new IllegalArgumentException();
 		}
 
-		if( other.getClass().equals( PairingHeap.class ) )
+		if (other.getClass().equals(PairingHeap.class))
 		{
 			try
 			{
 				// erased cast - hence we have to suppress unchecked.
-				PairingHeap<K, V> ph = (PairingHeap<K, V>)other;
+				PairingHeap<TKey, TValue> ph = (PairingHeap<TKey, TValue>) other;
 
 				// Find the new minimum.
-				this.minimum = this.join( this.minimum, ph.minimum );
+				this.minimum = this.join(this.minimum, ph.minimum);
 
 				// Update stuff.
 				this.size += ph.size;
 				this.mod_count += 1;
 
 				// Retarget source pointing.
-				ph.source.setHeap( this );
-				ph.source = new HeapReference( ph );
+				ph.source.setHeap(this);
+				ph.source = new HeapReference(ph);
 			}
 			finally
 			{
@@ -865,56 +849,56 @@ public class PairingHeap<K, V>
 		}
 	}
 
-
 	/**
 	 * Get an iterator over this heap entry set.
 	 * 
 	 * @return an iterator over the entry set.
 	 */
-	public Iterator<Heap.Entry<K, V>> iterator()
+	public Iterator<Heap.Entry<TKey, TValue>> iterator()
 	{
-		return ( new EntryIterator() );
+		return new EntryIterator();
 	}
-
 
 	/**
 	 * Serialize the object to the specified output stream.
 	 * <p>
-	 * This method takes time <code>O(n)</code> where <code>n</code> is the
-	 * size this heap.
+	 * This method takes time <code>O(n)</code> where <code>n</code> is the size
+	 * this heap.
 	 * 
 	 * @param out the stream to which to serialize this object.
 	 * @throws IOException If this object cannot be serialized.
 	 */
-	private void writeObject( final ObjectOutputStream out )
+	private void writeObject(final ObjectOutputStream out)
 		throws IOException
 	{
 		// Write non-transient fields.
 		out.defaultWriteObject();
-		out.writeInt( this.size );
+		out.writeInt(this.size);
 
 		// Write out all key/value pairs.
-		Iterator<Heap.Entry<K, V>> it = new EntryIterator();
-		Heap.Entry<K, V> et = null;
-		while( it.hasNext() )
+		Iterator<Heap.Entry<TKey, TValue>> it = new EntryIterator();
+		Heap.Entry<TKey, TValue> et = null;
+		while (it.hasNext())
 		{
 			try
 			{
 				et = it.next();
 
-				// May result in NotSerializableExceptions, but we there's not a whole
+				// May result in NotSerializableExceptions, but we there's not a
+				// whole
 				// helluva lot we can do about that.
-				out.writeObject( et.getKey() );
-				out.writeObject( et.getValue() );
+				out.writeObject(et.getKey());
+				out.writeObject(et.getValue());
 			}
-			catch( final ConcurrentModificationException cme )
+			catch (final ConcurrentModificationException cme)
 			{
 				// User's fault.
-				throw (IOException)new IOException( "Heap structure changed during serialization" ).initCause( cme );
+				throw (IOException) new IOException(
+						"Heap structure changed during serialization")
+						.initCause(cme);
 			}
 		}
 	}
-
 
 	/**
 	 * Deserialize the restore this object from the specified stream.
@@ -923,13 +907,14 @@ public class PairingHeap<K, V>
 	 * the size this heap.
 	 * 
 	 * @param in the stream from which to read data.
-	 * @throws IOException If this object cannot properly read from the specified
-	 *         stream.
+	 * @throws IOException If this object cannot properly read from the
+	 *             specified
+	 *             stream.
 	 * @throws ClassNotFoundException If deserialization tries to classload an
-	 *         undefined class.
+	 *             undefined class.
 	 */
-	@SuppressWarnings( "unchecked" )
-	private void readObject( final ObjectInputStream in )
+	@SuppressWarnings("unchecked")
+	private void readObject(final ObjectInputStream in)
 		throws IOException, ClassNotFoundException
 	{
 		// Read non-transient fields.
@@ -937,19 +922,18 @@ public class PairingHeap<K, V>
 		int rsize = in.readInt();
 
 		// Create new ref object.
-		this.source = new HeapReference( this );
+		this.source = new HeapReference(this);
 
 		// Read and insert all the keys and values.
-		K key;
-		V value;
-		for( int index = 0; index < rsize; index++ )
+		TKey key;
+		TValue value;
+		for (int index = 0; index < rsize; index++)
 		{
-			key = (K)in.readObject();
-			value = (V)in.readObject();
-			this.insert( key, value );
+			key = (TKey) in.readObject();
+			value = (TValue) in.readObject();
+			this.insert(key, value);
 		}
 	}
-
 
 	/**
 	 * Entry iterator class.
@@ -959,13 +943,13 @@ public class PairingHeap<K, V>
 	 * <code>UnsupportedOperationException</code>.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
 	private class EntryIterator
 		extends Object
-		implements Iterator<Heap.Entry<K, V>>
+		implements Iterator<Heap.Entry<TKey, TValue>>
 	{
-
 
 		/**
 		 * The mod count.
@@ -975,8 +959,7 @@ public class PairingHeap<K, V>
 		/**
 		 * The next node.
 		 */
-		private PairingHeapEntry<K, V> next;
-
+		private PairingHeapEntry<TKey, TValue> next;
 
 		/**
 		 * Constructor.
@@ -992,25 +975,23 @@ public class PairingHeap<K, V>
 			this.next = PairingHeap.this.minimum;
 		}
 
-
 		/**
 		 * Does this iterator have another object?
 		 * 
 		 * @return <code>true</code> if this iterator has another entry;
 		 *         <code>false</code> otherwise.
 		 * @throws ConcurrentModificationException If concurrent modification
-		 *         occurs.
+		 *             occurs.
 		 */
 		public boolean hasNext()
 		{
-			if( this.my_mod_count != PairingHeap.this.mod_count )
+			if (this.my_mod_count != PairingHeap.this.mod_count)
 			{
 				throw new ConcurrentModificationException();
 			}
 
-			return ( this.next != null );
+			return (this.next != null);
 		}
-
 
 		/**
 		 * Get the next object from this iterator.
@@ -1018,22 +999,21 @@ public class PairingHeap<K, V>
 		 * @return the next object.
 		 * @throws NoSuchElementException If the iterator has no more elements.
 		 * @throws ConcurrentModificationException If concurrent modification
-		 *         occurs.
+		 *             occurs.
 		 */
-		public Heap.Entry<K, V> next()
+		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
-			if( this.hasNext() == false )
+			if (this.hasNext() == false)
 			{
 				throw new NoSuchElementException();
 			}
 
 			// Get eulerian successor so forth.
-			PairingHeapEntry<K, V> tmp = this.next;
-			this.next = this.getEulerianSuccessor( tmp );
-			return ( tmp );
+			PairingHeapEntry<TKey, TValue> tmp = this.next;
+			this.next = this.getEulerianSuccessor(tmp);
+			return tmp;
 		}
-
 
 		/**
 		 * Not supported.
@@ -1046,55 +1026,52 @@ public class PairingHeap<K, V>
 			throw new UnsupportedOperationException();
 		}
 
-
 		/**
 		 * Get the successor to the specified node, in the context of taking an
 		 * Eulerian tour over the heap.
 		 * <p>
 		 * This method takes amortized <code>O(1)</code> time but worst-case
-		 * <code>O(n)</code> time. I think, but my analysis of algorithms is a wee
-		 * bit rusty.
+		 * <code>O(n)</code> time. I think, but my analysis of algorithms is a
+		 * wee bit rusty.
 		 * 
 		 * @param entry the entry for which to get the Eulerian successor.
 		 * @return the Eulerian successor.
 		 */
-		private PairingHeapEntry<K, V> getEulerianSuccessor(
-				PairingHeapEntry<K, V> entry )
+		private PairingHeapEntry<TKey, TValue> getEulerianSuccessor(
+				PairingHeapEntry<TKey, TValue> entry)
 		{
-			if( entry.child != null )
+			if (entry.child != null)
 			{
-				return ( entry.child    );
+				return entry.child;
 			}
 
-			if( entry.next != null )
+			if (entry.next != null)
 			{
-				return ( entry.next    );
+				return entry.next;
 			}
 
 			// at this point, we have to walk back "up and to the right" across
 			// the tree until we find a non-left-most node with a non-null
 			// next node (or until we hit the root).
 
-			while( true )
+			while (true)
 			{
-				if( entry == PairingHeap.this.minimum )
+				if (entry == PairingHeap.this.minimum)
 				{
 					// this is the end of the tour.
-					return ( null );
+					return null;
 				}
 
-				if( entry.previous.child == entry )
+				if (entry.previous.child == entry)
 				{
 					// this is a leftmost node.
-					if( entry.previous.next != null )
+					if (entry.previous.next != null)
 					{
-						return ( entry.previous.next    );
+						return entry.previous.next;
 					}
-					else
-					{
-						// walk up - previous points to the parent.
-						entry = entry.previous;
-					}
+
+					// walk up - previous points to the parent.
+					entry = entry.previous;
 				}
 				else
 				{
@@ -1104,39 +1081,36 @@ public class PairingHeap<K, V>
 			}
 		}
 
-
 	}
-
 
 	/**
 	 * Pairing heap entry...
 	 * 
-	 * @param <K> the key type.
-	 * @param <V> the value type.
+	 * @param <TKey> the key type.
+	 * @param <TValue> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
-	private static final class PairingHeapEntry<K, V>
-		extends AbstractLinkedHeap.AbstractLinkedHeapEntry<K, V>
-		implements Heap.Entry<K, V>, Serializable
+	private static final class PairingHeapEntry<TKey, TValue>
+		extends AbstractLinkedHeap.AbstractLinkedHeapEntry<TKey, TValue>
+		implements Heap.Entry<TKey, TValue>, Serializable
 	{
-
 
 		/**
 		 * Serial version UID.
 		 */
 		private static final long serialVersionUID = 2984L;
 
-
 		/**
 		 * The left child.
 		 */
-		transient PairingHeapEntry<K, V> child;
+		transient PairingHeapEntry<TKey, TValue> child;
 
 		/**
 		 * The next sibling
 		 */
-		transient PairingHeapEntry<K, V> next;
+		transient PairingHeapEntry<TKey, TValue> next;
 
 		/**
 		 * The previous/parent node.
@@ -1146,8 +1120,7 @@ public class PairingHeap<K, V>
 		 * pointer is used in such a way that
 		 * <code>this.next.previous == this</code>.
 		 */
-		transient PairingHeapEntry<K, V> previous;
-
+		transient PairingHeapEntry<TKey, TValue> previous;
 
 		/**
 		 * Constructor.
@@ -1156,21 +1129,20 @@ public class PairingHeap<K, V>
 		 * @param val the value.
 		 * @param source the source.
 		 */
-		PairingHeapEntry( final K key, final V val,
-															final HeapReference source )
+		PairingHeapEntry(final TKey key, final TValue val,
+				final HeapReference source)
 		{
-			super( key, val, source );
+			super(key, val, source);
 		}
 
-
 	}
-
 
 	/**
 	 * Pairing heap merge strategy enumeration.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
 	public static enum MergeStrategy
 		implements Serializable
@@ -1179,36 +1151,32 @@ public class PairingHeap<K, V>
 		/**
 		 * The two-pass strategy
 		 */
-		TWO( "Two pass strategy" ),
+		TWO("Two pass strategy"),
 
 		/**
 		 * Multi pass
 		 */
-		MULTI( "Multi pass strategy" );
-
+		MULTI("Multi pass strategy");
 
 		/**
 		 * Serial verison
 		 */
 		private static final long serialVersionUID = 40234L;
 
-
 		/**
 		 * Description
 		 */
 		private String desc;
-
 
 		/**
 		 * Initializer.
 		 * 
 		 * @param d the description.
 		 */
-		private MergeStrategy( final String d )
+		private MergeStrategy(final String d)
 		{
 			this.desc = d;
 		}
-
 
 		/**
 		 * Get the description
@@ -1217,11 +1185,9 @@ public class PairingHeap<K, V>
 		 */
 		public String getDescription()
 		{
-			return ( this.desc );
+			return this.desc;
 		}
 
-
 	}
-
 
 }

@@ -1,6 +1,6 @@
 /*
  * $Id$
- *
+ * 
  * Copyright (c) 2005-2009 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,7 +33,6 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
 
-
 /**
  * A Fibonacci heap implementation.
  * <p>
@@ -42,42 +41,42 @@ import java.io.IOException;
  * than the key of its parent. Clearly, this means that the smallest node is at
  * the root of any tree, and that the minimum of the heap as a whole must be
  * among the roots of the forest. Fibonacci heaps have a relaxed structure - the
- * trees have no prescribed shape (allowing for an abitrary number of children)
+ * trees have no prescribed shape (allowing for an arbitrary number of children)
  * nor are there restrictions on the number of trees in the forest. This
  * flexibility allows Fibonacci heaps to do work in a lazy manner. We postpone
  * doing work on the heap structure until it is convenient (or easy) to do.
  * <p>
  * Two basic operations determine the structure of a Fibonacci heap:
  * <ul>
- * <li> <b>Linking:</b><br>
+ * <li><b>Linking:</b><br>
  * Linking reduces the number of trees in the forest by linking trees whose
  * roots have the same degree (here, degree means the number of direct
  * children). The linking is performed in such a way that the degree of any
- * given node never exceeds <code>O(log n)</code>. </li>
- * <li> <b>Cutting:</b><br>
- * Cutting creates an additional tree in the forst by removing a child from a
+ * given node never exceeds <code>O(log n)</code>.</li>
+ * <li><b>Cutting:</b><br>
+ * Cutting creates an additional tree in the forest by removing a child from a
  * node. Any non-root node can have only one child cut from it before the node
  * itself needs to be cut. This ensures that the size of subtree, whose parent
- * has degree <code>d</code>, is at least <code>F<sub>d+2</sub></code>,
- * where <code>F<sub>i</sub></code> is the <code>i<sup>th</sup></code>
- * Fibonacci number. </li>
+ * has degree <code>d</code>, is at least <code>F<sub>d+2</sub></code>, where
+ * <code>F<sub>i</sub></code> is the <code>i<sup>th</sup></code> Fibonacci
+ * number.</li>
  * </ul>
  * <p>
  * All methods/algorithms of this class are based on the code in <i>Introduction
  * to Algorithms</i> by Cormen et al (refered to as CLRS hereafter). Generally,
- * I use the same variable names and such with those in the text. You should
+ * we use the same variable names and such with those in the text. You should
  * refer to the text if you want a better/deeper understanding of a particular
  * procedure's purpose or correctness.
  * <p>
  * The collection-view methods of this class are backed by iterators over the
  * heap structure which are <i>fail-fast</i>: If the heap is structurally
  * modified at any time after the iterator is created, the iterator throws a
- * <code>ConcurrentModificationException</code>. Thus, in the face of
- * concurrent modification, the iterator fails quickly and cleanly, rather than
- * risking arbitrary, non-deterministic behavior at an undetermined time in the
- * future. The collection-views returned by this class do not support the
- * <code>remove()</code> operation. This is, unfortunately, not possible using
- * stateless iterators. (By stateless, I simply mean that the iterator holds a
+ * <code>ConcurrentModificationException</code>. Thus, in the face of concurrent
+ * modification, the iterator fails quickly and cleanly, rather than risking
+ * arbitrary, non-deterministic behavior at an undetermined time in the future.
+ * The collection-views returned by this class do not support the
+ * <code>remove</code> operation. This is, unfortunately, not possible using
+ * stateless iterators. (By stateless, we simply mean that the iterator holds a
  * reference to a single entry in the heap, and asks the heap itself for the
  * "successor" to its current entry to find the next entry.) As long as the heap
  * structure remains the same, this function will work across multiple calls.
@@ -106,29 +105,28 @@ import java.io.IOException;
  * bounds for a deserialized version may be worse, but a thorough
  * discussion/investigation is beyond the scope of these comments.
  * 
- * @param <K> the key type.
- * @param <V> the value type.
+ * @param <TKey> the key type.
+ * @param <TValue> the value type.
  * @author Fran Lattanzio
  * @version $Revision$ $Date$
  * @see "Cormen, T. H.; Leiserson C. E.; Rivest R. L.; &amp; Stein, C (2001)
  *      <i>Introduction to Algorithms</i>. MIT Press."
  */
-public class FibonacciHeap<K, V>
-	extends AbstractLinkedHeap<K, V>
-	implements Heap<K, V>, Iterable<Heap.Entry<K, V>>, Serializable
+public class FibonacciHeap<TKey, TValue>
+	extends AbstractLinkedHeap<TKey, TValue>
+	implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
+	Serializable
 {
-
 
 	/**
 	 * Serialization ID.
 	 */
 	private static final long serialVersionUID = 9802348L;
 
-
 	/**
 	 * The minimum entry of this heap.
 	 */
-	private FibonacciHeapEntry<K, V> minimum;
+	private FibonacciHeapEntry<TKey, TValue> minimum;
 
 	/**
 	 * The size of this heap.
@@ -143,44 +141,43 @@ public class FibonacciHeap<K, V>
 	/**
 	 * Comparator.
 	 */
-	private Comparator<? super K> comp;
+	private Comparator<? super TKey> comp;
 
 	/**
 	 * The heap reference.
 	 */
 	private HeapReference source_heap;
 
-
 	/**
 	 * Constructor.
 	 * <p>
-	 * The nodes of this heap will be ordered by their keys' <i>natural ordering</i>.
+	 * The nodes of this heap will be ordered by their keys' <i>natural
+	 * ordering</i>.
 	 * <p>
 	 * The keys of all nodes inserted into the heap must implement the
 	 * <code>Comparable</code> interface. Furthermore, all such keys must be
-	 * <i>mutually comparable</i>:<code>k1.compareTo(k2)</code> must not throw
-	 * a <code>ClassCastException</code> for any elements <code>k1</code> and
+	 * <i>mutually comparable</i>:<code>k1.compareTo(k2)</code> must not throw a
+	 * <code>ClassCastException</code> for any elements <code>k1</code> and
 	 * <code>k2</code> in the heap.
 	 */
 	public FibonacciHeap()
 	{
-		this( null );
+		this(null);
 	}
-
 
 	/**
 	 * Constructor.
 	 * <p>
-	 * The keys of all nodes inserted into the heap must be <i>mutually comparable</i>
-	 * by the given <code>Comparator</code>:
+	 * The keys of all nodes inserted into the heap must be <i>mutually
+	 * comparable</i> by the given <code>Comparator</code>:
 	 * <code>comparator.compare(k1,k2)</code> must not throw a
 	 * <code>ClassCastException</code> for any keys <code>k1</code> and
 	 * <code>k2</code> in the heap.
 	 * 
 	 * @param comp the comparator to use. A <code>null</code> means the keys'
-	 *        natural ordering will be used.
+	 *            natural ordering will be used.
 	 */
-	public FibonacciHeap( final Comparator<? super K> comp )
+	public FibonacciHeap(final Comparator<? super TKey> comp)
 	{
 		super();
 
@@ -189,9 +186,8 @@ public class FibonacciHeap<K, V>
 		this.size = 0;
 		this.mod_count = 0;
 		this.comp = comp;
-		this.source_heap = new HeapReference( this );
+		this.source_heap = new HeapReference(this);
 	}
-
 
 	/**
 	 * Get the size.
@@ -200,9 +196,8 @@ public class FibonacciHeap<K, V>
 	 */
 	public int getSize()
 	{
-		return ( this.size );
+		return this.size;
 	}
-
 
 	/**
 	 * Get the the Comparator.
@@ -212,11 +207,10 @@ public class FibonacciHeap<K, V>
 	 * 
 	 * @return the Comparator or <code>null</code>.
 	 */
-	public Comparator<? super K> getComparator()
+	public Comparator<? super TKey> getComparator()
 	{
-		return ( this.comp );
+		return this.comp;
 	}
-
 
 	/**
 	 * Insert the given key/value pair into this heap, returning the entry in
@@ -228,14 +222,16 @@ public class FibonacciHeap<K, V>
 	 * @param value the value.
 	 * @return the newly created and inserted Entry.
 	 * @throws ClassCastException If the key of <code>node</code> is not
-	 *         mutually comparable with the keys of other nodes already in this
-	 *         heap.
+	 *             mutually comparable with the keys of other nodes already in
+	 *             this
+	 *             heap.
 	 * @throws NullPointerException If <code>node</code> is <code>null</code>.
 	 */
-	public Entry<K, V> insert( final K key, final V value )
+	public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 		throws ClassCastException, NullPointerException
 	{
-		FibonacciHeapEntry<K, V> node = new FibonacciHeapEntry<K, V>( key, value, this.source_heap );
+		FibonacciHeapEntry<TKey, TValue> node = new FibonacciHeapEntry<TKey, TValue>(
+				key, value, this.source_heap);
 
 		// Do some node housekeeping.
 		node.degree = 0;
@@ -245,7 +241,7 @@ public class FibonacciHeap<K, V>
 		node.child = null;
 
 		// Connect to root node.
-		if( this.minimum == null )
+		if (this.minimum == null)
 		{
 			this.minimum = node;
 		}
@@ -253,7 +249,7 @@ public class FibonacciHeap<K, V>
 		{
 			// Check for key compatibility before inserting.
 			// May throw class cast...
-			int cmp = compare( node, this.minimum );
+			int cmp = compare(node, this.minimum);
 
 			// Insert into root list.
 			this.minimum.right.left = node;
@@ -262,7 +258,7 @@ public class FibonacciHeap<K, V>
 			node.left = this.minimum;
 
 			// We have a new winner...
-			if( cmp < 0 )
+			if (cmp < 0)
 			{
 				this.minimum = node;
 			}
@@ -275,9 +271,8 @@ public class FibonacciHeap<K, V>
 		this.mod_count += 1;
 
 		// Return the new node.
-		return ( node );
+		return node;
 	}
-
 
 	/**
 	 * Remove and return the minimum entry in this heap.
@@ -287,20 +282,20 @@ public class FibonacciHeap<K, V>
 	 * @return the entry with the smallest key.
 	 * @throws NoSuchElementException If this heap is empty.
 	 */
-	public Entry<K, V> extractMinimum()
+	public Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
-		if( this.isEmpty() )
+		if (this.isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
 		// References that will be needed. See CLRS.
-		FibonacciHeapEntry<K, V> t;
-		FibonacciHeapEntry<K, V> w;
-		FibonacciHeapEntry<K, V> z = this.minimum;
+		FibonacciHeapEntry<TKey, TValue> t;
+		FibonacciHeapEntry<TKey, TValue> w;
+		FibonacciHeapEntry<TKey, TValue> z = this.minimum;
 
-		if( z.child != null )
+		if (z.child != null)
 		{
 			// Remove parent references for all of z's children.
 			w = z.child;
@@ -311,7 +306,7 @@ public class FibonacciHeap<K, V>
 				t.parent = null;
 				t = t.right;
 			}
-			while( t != w );
+			while (t != w);
 
 			// Add the children to the root list.
 			this.minimum.left.right = w.right;
@@ -324,7 +319,7 @@ public class FibonacciHeap<K, V>
 		z.left.right = z.right;
 		z.right.left = z.left;
 
-		if( z == z.right )
+		if (z == z.right)
 		{
 			// We hope the heap is now empty...
 			this.minimum = null;
@@ -344,9 +339,8 @@ public class FibonacciHeap<K, V>
 		z.clearSourceReference();
 
 		// Return old minimum.
-		return ( z );
+		return z;
 	}
-
 
 	/**
 	 * Get the minimum node of this heap.
@@ -356,43 +350,42 @@ public class FibonacciHeap<K, V>
 	 * @return the minimum node.
 	 * @throws NoSuchElementException If the heap is empty.
 	 */
-	public Entry<K, V> getMinimum()
+	public Entry<TKey, TValue> getMinimum()
 		throws NoSuchElementException
 	{
-		if( this.isEmpty() )
+		if (this.isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
 		// Return it.
-		return ( this.minimum );
+		return this.minimum;
 	}
-
 
 	/**
 	 * Run the consolidate operation.
 	 * <p>
 	 * Based on CLRS code, but with minor mods...
 	 */
-	@SuppressWarnings( "unchecked" )
+	@SuppressWarnings("unchecked")
 	private void consolidate()
 	{
 		// Create the auxiliary array.
-		int dn = (int)Math.floor( Math.log( this.size ) / Math.log( 2 ) ) + 2;
-		FibonacciHeapEntry[] a = new FibonacciHeapEntry[ dn ];
+		int dn = (int) Math.floor(Math.log(this.size) / Math.log(2)) + 2;
+		FibonacciHeapEntry[] a = new FibonacciHeapEntry[dn];
 
 		// Iterating node - node at which to stop iterating...
-		FibonacciHeapEntry<K, V> iter = this.minimum;
+		FibonacciHeapEntry<TKey, TValue> iter = this.minimum;
 
 		// The node we're on now; w from CLRS.
-		FibonacciHeapEntry<K, V> w = iter;
+		FibonacciHeapEntry<TKey, TValue> w = iter;
 
 		// x and y from CLRS code.
-		FibonacciHeapEntry<K, V> x;
-		FibonacciHeapEntry<K, V> y;
+		FibonacciHeapEntry<TKey, TValue> x;
+		FibonacciHeapEntry<TKey, TValue> y;
 
 		// temp ref.
-		FibonacciHeapEntry<K, V> temp;
+		FibonacciHeapEntry<TKey, TValue> temp;
 
 		// d from CLRS code.
 		int d;
@@ -402,14 +395,14 @@ public class FibonacciHeap<K, V>
 			x = w;
 			d = x.degree;
 
-			if( a[ d ] != x )
+			if (a[d] != x)
 			{
-				while( a[ d ] != null )
+				while (a[d] != null)
 				{
 					// y has same degree as x... This much we know.
-					y = a[ d ];
+					y = a[d];
 
-					if( compare( y, x ) < 0 )
+					if (compare(y, x) < 0)
 					{
 						// Swap x and y.
 						temp = x;
@@ -418,20 +411,20 @@ public class FibonacciHeap<K, V>
 					}
 
 					// Make y a child of x.
-					this.link( y, x );
+					this.link(y, x);
 					iter = x;
 					w = x;
-					a[ d ] = null;
+					a[d] = null;
 					d += 1;
 				}
 
-				a[ d ] = x;
+				a[d] = x;
 			}
 
 			// Next node.
 			w = w.right;
 		}
-		while( w != iter );
+		while (w != iter);
 
 		// Reset... we need to iterate over the root list again.
 		this.minimum = iter;
@@ -440,7 +433,7 @@ public class FibonacciHeap<K, V>
 		// Find the new minimum in the root list (if we don't already have it).
 		do
 		{
-			if( compare( w, this.minimum ) < 0 )
+			if (compare(w, this.minimum) < 0)
 			{
 				// Found a new minimum node.
 				this.minimum = w;
@@ -449,26 +442,25 @@ public class FibonacciHeap<K, V>
 			// Next.
 			w = w.right;
 		}
-		while( w != iter );
+		while (w != iter);
 
 	}
 
-
 	/**
-	 * Link <code>y</code> to <code>x</code>, by removing <code>y</code>
-	 * from the root list and making it a child of <code>x</code>.
+	 * Link <code>y</code> to <code>x</code>, by removing <code>y</code> from
+	 * the root list and making it a child of <code>x</code>.
 	 * 
 	 * @param y the new child node.
 	 * @param x the new parent node.
 	 */
-	private void link( final FibonacciHeapEntry<K, V> y,
-			final FibonacciHeapEntry<K, V> x )
+	private void link(final FibonacciHeapEntry<TKey, TValue> y,
+			final FibonacciHeapEntry<TKey, TValue> x)
 	{
 		// Remove y from the root list.
 		y.left.right = y.right;
 		y.right.left = y.left;
 
-		if( x.child == null )
+		if (x.child == null)
 		{
 			// x is all alone in the world.
 			y.right = y;
@@ -490,7 +482,6 @@ public class FibonacciHeap<K, V>
 		y.marked = false;
 	}
 
-
 	/**
 	 * Delete the specified entry.
 	 * <p>
@@ -501,23 +492,23 @@ public class FibonacciHeap<K, V>
 	 * @throws IllegalArgumentException If <code>e</code> is not in this heap.
 	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
 	 */
-	public void delete( final Heap.Entry<K, V> e )
+	public void delete(final Heap.Entry<TKey, TValue> e)
 		throws IllegalArgumentException, NullPointerException
 	{
 		// Check and cast.
-		if( this.holdsEntry( e ) == false )
+		if (this.holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
 
 		// Narrow.
-		FibonacciHeapEntry<K, V> entry = (FibonacciHeapEntry<K, V>)e;
+		FibonacciHeapEntry<TKey, TValue> entry = (FibonacciHeapEntry<TKey, TValue>) e;
 
 		// Make it infinitely small.
 		entry.is_infinite = true;
 
 		// Percolate the top,
-		this.decreaseKeyImpl( entry );
+		this.decreaseKeyImpl(entry);
 
 		// Remove.
 		this.extractMinimum();
@@ -525,7 +516,6 @@ public class FibonacciHeap<K, V>
 		// Reset entry state.
 		entry.is_infinite = false;
 	}
-
 
 	/**
 	 * Decrease the key of the given element.
@@ -536,36 +526,36 @@ public class FibonacciHeap<K, V>
 	 * @param e the entry for which to decrease the key.
 	 * @param k the new key.
 	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *         <code>e</code>'s current key or <code>k</code> is not a member
-	 *         of this heap.
+	 *             <code>e</code>'s current key or <code>k</code> is not a
+	 *             member
+	 *             of this heap.
 	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *         other keys in the heap.
+	 *             other keys in the heap.
 	 */
-	public void decreaseKey( final Heap.Entry<K, V> e, final K k )
+	public void decreaseKey(final Heap.Entry<TKey, TValue> e, final TKey k)
 		throws IllegalArgumentException, ClassCastException
 	{
 		// Check and cast.
-		if( this.holdsEntry( e ) == false )
+		if (this.holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
 
 		// x from CLRS.
-		FibonacciHeapEntry<K, V> x = (FibonacciHeapEntry<K, V>)e;
+		FibonacciHeapEntry<TKey, TValue> x = (FibonacciHeapEntry<TKey, TValue>) e;
 
 		// Check key... May throw class cast as well.
-		if( this.compareKeys( k, x.getKey() ) > 0 )
+		if (this.compareKeys(k, x.getKey()) > 0)
 		{
 			throw new IllegalArgumentException();
 		}
 
 		// Store the new key value.
-		x.setKey( k );
+		x.setKey(k);
 
 		// Restore the heap structure.
-		this.decreaseKeyImpl( x );
+		this.decreaseKeyImpl(x);
 	}
-
 
 	/**
 	 * Decrease key implementation. Basically, we restore the heap structure by
@@ -573,31 +563,31 @@ public class FibonacciHeap<K, V>
 	 * parent a child of <code>x</code>.
 	 * 
 	 * @param x the whose key has just been decreased and needs to be percolated
-	 *        toward the top of the heap.
+	 *            toward the top of the heap.
 	 */
-	private void decreaseKeyImpl( final FibonacciHeapEntry<K, V> x )
+	private void decreaseKeyImpl(final FibonacciHeapEntry<TKey, TValue> x)
 	{
 		// Get x's parent.
-		FibonacciHeapEntry<K, V> y = x.parent;
+		FibonacciHeapEntry<TKey, TValue> y = x.parent;
 
-		// If x has a lower key than it's parent (and assuming x was not already in
+		// If x has a lower key than it's parent (and assuming x was not already
+		// in
 		// the root list)
 		// then we have work to do.
-		if( y != null && compare( x, y ) < 0 )
+		if (y != null && compare(x, y) < 0)
 		{
-			this.cut( x, y );
-			this.cascadingCut( y );
+			this.cut(x, y);
+			this.cascadingCut(y);
 		}
 
 		// See if the new node is smaller.
-		if( compare( x, this.minimum ) < 0 )
+		if (compare(x, this.minimum) < 0)
 		{
 			this.minimum = x;
 		}
 
 		this.mod_count += 1;
 	}
-
 
 	/**
 	 * Does this heap hold the specified entry?
@@ -607,33 +597,26 @@ public class FibonacciHeap<K, V>
 	 * @return <code>true</code> if this heap holds <code>e</code>;
 	 *         <code>false</code> otherwise.
 	 */
-	public boolean holdsEntry( final Heap.Entry<K, V> e )
+	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
 		throws NullPointerException
 	{
-		if( e == null )
+		if (e == null)
 		{
 			throw new NullPointerException();
 		}
 
 		// Obvious check.
-		if( e.getClass().equals( FibonacciHeapEntry.class ) == false )
+		if (e.getClass().equals(FibonacciHeapEntry.class) == false)
 		{
-			return ( false );
+			return false;
 		}
 
 		// Narrow.
-		FibonacciHeapEntry<K, V> entry = (FibonacciHeapEntry<K, V>)e;
+		FibonacciHeapEntry<TKey, TValue> entry = (FibonacciHeapEntry<TKey, TValue>) e;
 
 		// Use reference trickery.
-		if( entry.isContainedBy( this ) == false )
-		{
-			return ( false );
-		}
-
-		// Yup.
-		return ( true );
+		return entry.isContainedBy(this);
 	}
-
 
 	/**
 	 * Remove <code>x</code> from the child list of <code>y</code> and add
@@ -642,10 +625,10 @@ public class FibonacciHeap<K, V>
 	 * @param x the node to cut.
 	 * @param y the node from which to cut <code>x</code>.
 	 */
-	private void cut( final FibonacciHeapEntry<K, V> x,
-			final FibonacciHeapEntry<K, V> y )
+	private void cut(final FibonacciHeapEntry<TKey, TValue> x,
+			final FibonacciHeapEntry<TKey, TValue> y)
 	{
-		if( x.right == x )
+		if (x.right == x)
 		{
 			// Last child.
 			y.child = null;
@@ -674,7 +657,6 @@ public class FibonacciHeap<K, V>
 		x.marked = false;
 	}
 
-
 	/**
 	 * Perform a cascading cut across <code>y</code>, by cutting <code>y</code>
 	 * from it's parent and then performing <code>cascadingCut()</code> on
@@ -682,13 +664,13 @@ public class FibonacciHeap<K, V>
 	 * 
 	 * @param y the node on which to perform a cascading cut.
 	 */
-	private void cascadingCut( final FibonacciHeapEntry<K, V> y )
+	private void cascadingCut(final FibonacciHeapEntry<TKey, TValue> y)
 	{
-		FibonacciHeapEntry<K, V> z = y.parent;
+		FibonacciHeapEntry<TKey, TValue> z = y.parent;
 
-		if( z != null )
+		if (z != null)
 		{
-			if( y.marked == false )
+			if (y.marked == false)
 			{
 				// Simply mark y.
 				y.marked = true;
@@ -696,12 +678,11 @@ public class FibonacciHeap<K, V>
 			else
 			{
 				// Otherwise, cut y and recursively cascade on z.
-				this.cut( y, z );
-				this.cascadingCut( z );
+				this.cut(y, z);
+				this.cascadingCut(z);
 			}
 		}
 	}
-
 
 	/**
 	 * Union with another heap.
@@ -711,41 +692,41 @@ public class FibonacciHeap<K, V>
 	 * @param other the other heap.
 	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
 	 * @throws ClassCastException If the keys of the nodes are not mutally
-	 *         comparable.
+	 *             comparable.
 	 * @throws IllegalArgumentException If you attempt to union a heap with
-	 *         itself.
+	 *             itself.
 	 */
-	@SuppressWarnings( "unchecked" )
-	public void union( final Heap<K, V> other )
-		throws ClassCastException, NullPointerException, IllegalArgumentException
+	public void union(final Heap<TKey, TValue> other)
+		throws ClassCastException, NullPointerException,
+		IllegalArgumentException
 	{
-		if( other == null )
+		if (other == null)
 		{
 			throw new NullPointerException();
 		}
 
-		if( this == other )
+		if (this == other)
 		{
 			throw new IllegalArgumentException();
 		}
 
-		if( other.isEmpty() )
+		if (other.isEmpty())
 		{
 			return;
 		}
 
-		if( other.getClass().equals( FibonacciHeap.class ) )
+		if (other.getClass().equals(FibonacciHeap.class))
 		{
 			// Get other root.
-			FibonacciHeap<K, V> that = (FibonacciHeap<K, V>)other;
+			FibonacciHeap<TKey, TValue> that = (FibonacciHeap<TKey, TValue>) other;
 
 			try
 			{
 				int cmp = 0;
-				if( this.minimum != null && that.minimum != null )
+				if (this.minimum != null && that.minimum != null)
 				{
 					// May throw class cast.
-					cmp = compare( that.minimum, this.minimum );
+					cmp = compare(that.minimum, this.minimum);
 				}
 
 				// Cat root list of other heap together with this one's.
@@ -754,7 +735,7 @@ public class FibonacciHeap<K, V>
 				this.minimum.left = that.minimum;
 				that.minimum.right = this.minimum;
 
-				if( cmp < 0 )
+				if (cmp < 0)
 				{
 					// Point to new min.
 					this.minimum = that.minimum;
@@ -765,9 +746,9 @@ public class FibonacciHeap<K, V>
 				this.mod_count += 1;
 
 				// Change that heap's heap reference to point to this heap.
-				// Thus, all child of that become children of this.
-				that.source_heap.setHeap( this );
-				that.source_heap = new HeapReference( that );
+				// Thus, all children of that become children of this.
+				that.source_heap.setHeap(this);
+				that.source_heap = new HeapReference(that);
 			}
 			finally
 			{
@@ -780,7 +761,6 @@ public class FibonacciHeap<K, V>
 			throw new ClassCastException();
 		}
 	}
-
 
 	/**
 	 * Clear this heap.
@@ -801,94 +781,94 @@ public class FibonacciHeap<K, V>
 		this.source_heap.clearHeap();
 
 		// Recreate the reference object.
-		this.source_heap = new HeapReference( this );
+		this.source_heap = new HeapReference(this);
 	}
-
 
 	/**
 	 * Get an iterator over this heap entry set.
 	 * 
 	 * @return an iterator.
 	 */
-	public Iterator<Heap.Entry<K, V>> iterator()
+	public Iterator<Heap.Entry<TKey, TValue>> iterator()
 	{
-		return ( new EntryIterator() );
+		return new EntryIterator();
 	}
-
 
 	/**
 	 * Serialize the object to the specified output stream.
 	 * <p>
-	 * This method takes time <code>O(n)</code> where <code>n</code> is the
-	 * size this heap.
+	 * This method takes time <code>O(n)</code> where <code>n</code> is the size
+	 * this heap.
 	 * 
 	 * @param out the stream to which to serialize this object.
 	 * @throws IOException If this object cannot be serialized.
 	 */
-	private void writeObject( final ObjectOutputStream out )
+	private void writeObject(final ObjectOutputStream out)
 		throws IOException
 	{
 		// write comparator and size.
-		out.writeObject( this.comp );
-		out.writeInt( this.size );
+		out.writeObject(this.comp);
+		out.writeInt(this.size);
 
 		// Write out all key/value pairs.
-		Iterator<Heap.Entry<K, V>> it = new EntryIterator();
-		Heap.Entry<K, V> et = null;
-		while( it.hasNext() )
+		Iterator<Heap.Entry<TKey, TValue>> it = new EntryIterator();
+		Heap.Entry<TKey, TValue> et = null;
+		while (it.hasNext())
 		{
 			try
 			{
 				et = it.next();
 
-				// May result in NotSerializableExceptions, but we there's not a whole
+				// May result in NotSerializableExceptions, but we there's not a
+				// whole
 				// helluva lot we can do about that.
-				out.writeObject( et.getKey() );
-				out.writeObject( et.getValue() );
+				out.writeObject(et.getKey());
+				out.writeObject(et.getValue());
 			}
-			catch( final ConcurrentModificationException cme )
+			catch (final ConcurrentModificationException cme)
 			{
 				// User's fault.
-				throw (IOException)new IOException( "Heap structure changed during serialization" ).initCause( cme );
+				throw (IOException) new IOException(
+						"Heap structure changed during serialization")
+						.initCause(cme);
 			}
 		}
 	}
-
 
 	/**
 	 * Deserialize the restore this object from the specified stream.
 	 * <p>
-	 * This method takes time <code>O(n)</code> where <code>n</code> is the
-	 * size this heap.
+	 * This method takes time <code>O(n)</code> where <code>n</code> is the size
+	 * this heap.
 	 * 
 	 * @param in the stream from which to read data.
-	 * @throws IOException If this object cannot properly read from the specified
-	 *         stream.
+	 * @throws IOException If this object cannot properly read from the
+	 *             specified
+	 *             stream.
 	 * @throws ClassNotFoundException If deserialization tries to classload an
-	 *         undefined class.
+	 *             undefined class.
 	 */
-	@SuppressWarnings( "unchecked" )
-	private void readObject( final ObjectInputStream in )
+	@SuppressWarnings("unchecked")
+	private void readObject(final ObjectInputStream in)
 		throws IOException, ClassNotFoundException
 	{
 		// get comparator and size.
-		this.comp = (Comparator<? super K>)in.readObject();		
+		this.comp = (Comparator<? super TKey>) in.readObject();
 		int rsize = in.readInt();
 
 		// Create new ref object.
-		this.source_heap = new HeapReference( this );
+		this.source_heap = new HeapReference(this);
 
 		// Read and insert all the keys and values.
-		K key;
-		V value;
-		for( int index = 0; index < rsize; index++ )
+		TKey key;
+		TValue value;
+		for (int index = 0; index < rsize; index++)
 		{
-			key = (K)in.readObject();
-			value = (V)in.readObject();
-			this.insert( key, value );
+			key = (TKey) in.readObject();
+			value = (TValue) in.readObject();
+			this.insert(key, value);
 		}
 	}
-
 
 	/**
 	 * Entry iterator class.
@@ -898,24 +878,23 @@ public class FibonacciHeap<K, V>
 	 * <code>UnsupportedOperationException</code>.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
 	private class EntryIterator
 		extends Object
-		implements Iterator<Heap.Entry<K, V>>
+		implements Iterator<Heap.Entry<TKey, TValue>>
 	{
-
 
 		/**
 		 * The next entry.
 		 */
-		private FibonacciHeapEntry<K, V> next;
+		private FibonacciHeapEntry<TKey, TValue> next;
 
 		/**
 		 * The mod count.
 		 */
 		private int my_mod_count;
-
 
 		/**
 		 * Constructor.
@@ -931,25 +910,23 @@ public class FibonacciHeap<K, V>
 			this.my_mod_count = FibonacciHeap.this.mod_count;
 		}
 
-
 		/**
 		 * Does this iterator have another object?
 		 * 
-		 * @return <code>true</code> if there's another object; <code>false</code>
-		 *         otherwise.
+		 * @return <code>true</code> if there's another object;
+		 *         <code>false</code> otherwise.
 		 * @throws ConcurrentModificationException If concurrent modification
-		 *         occurs.
+		 *             occurs.
 		 */
 		public boolean hasNext()
 		{
-			if( this.my_mod_count != FibonacciHeap.this.mod_count )
+			if (this.my_mod_count != FibonacciHeap.this.mod_count)
 			{
 				throw new ConcurrentModificationException();
 			}
 
-			return ( this.next != null );
+			return (this.next != null);
 		}
-
 
 		/**
 		 * Get the next object from this iterator.
@@ -957,22 +934,21 @@ public class FibonacciHeap<K, V>
 		 * @return the next object.
 		 * @throws NoSuchElementException If the iterator has no more elements.
 		 * @throws ConcurrentModificationException If concurrent modification
-		 *         occurs.
+		 *             occurs.
 		 */
-		public Heap.Entry<K, V> next()
+		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
-			if( this.hasNext() == false )
+			if (this.hasNext() == false)
 			{
 				throw new NoSuchElementException();
 			}
 
 			// Get the next node.
-			FibonacciHeapEntry<K, V> n = this.next;
-			this.next = this.getSuccessor( this.next );
-			return ( n );
+			FibonacciHeapEntry<TKey, TValue> n = this.next;
+			this.next = this.getSuccessor(this.next);
+			return n;
 		}
-
 
 		/**
 		 * Not supported.
@@ -985,67 +961,63 @@ public class FibonacciHeap<K, V>
 			throw new UnsupportedOperationException();
 		}
 
-
 		/**
 		 * Return the successor entry to the specified entry.
 		 * 
 		 * @param entry the given entry.
 		 * @return the successor entry.
 		 */
-		private FibonacciHeapEntry<K, V> getSuccessor(
-				FibonacciHeapEntry<K, V> entry )
+		private FibonacciHeapEntry<TKey, TValue> getSuccessor(
+				FibonacciHeapEntry<TKey, TValue> entry)
 		{
-			if( entry.child != null )
+			if (entry.child != null)
 			{
-				return ( entry.child );
+				return entry.child;
 			}
 
 			// The first entry.
-			FibonacciHeapEntry<K, V> first;
+			FibonacciHeapEntry<TKey, TValue> first;
 
 			do
 			{
-				first = ( entry.parent == null ) ? FibonacciHeap.this.minimum
+				first = (entry.parent == null) ? FibonacciHeap.this.minimum
 						: entry.parent.child;
 
 				// Look for siblings.
-				if( entry.right != first )
+				if (entry.right != first)
 				{
-					return ( entry.right );
+					return entry.right;
 				}
 
 				// Look at entry parent.
 				entry = entry.parent;
 			}
-			while( entry != null );
+			while (entry != null);
 
-			// Reached the root node, no more sucessors.
-			return ( null );
+			// Reached the root node, no more successors.
+			return null;
 		}
 
-
 	}
-
 
 	/**
 	 * Fibonacci heap entry.
 	 * 
-	 * @param <K> the key type.
-	 * @param <V> the value type.
+	 * @param <TKey> the key type.
+	 * @param <TValue> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date$
+	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
+	 *          2009) $
 	 */
-	private static final class FibonacciHeapEntry<K, V>
-		extends AbstractLinkedHeap.AbstractLinkedHeapEntry<K, V>
-		implements Heap.Entry<K, V>, Serializable
+	private static final class FibonacciHeapEntry<TKey, TValue>
+		extends AbstractLinkedHeap.AbstractLinkedHeapEntry<TKey, TValue>
+		implements Heap.Entry<TKey, TValue>, Serializable
 	{
-
 
 		/**
 		 * Serial version.
 		 */
 		private static final long serialVersionUID = 2348L;
-
 
 		/**
 		 * Is this node marked?
@@ -1060,23 +1032,22 @@ public class FibonacciHeap<K, V>
 		/**
 		 * Parent node.
 		 */
-		transient FibonacciHeapEntry<K, V> parent;
+		transient FibonacciHeapEntry<TKey, TValue> parent;
 
 		/**
 		 * Child node.
 		 */
-		transient FibonacciHeapEntry<K, V> child;
+		transient FibonacciHeapEntry<TKey, TValue> child;
 
 		/**
 		 * Left sibling node.
 		 */
-		transient FibonacciHeapEntry<K, V> left;
+		transient FibonacciHeapEntry<TKey, TValue> left;
 
 		/**
 		 * Right sibling node.
 		 */
-		transient FibonacciHeapEntry<K, V> right;
-
+		transient FibonacciHeapEntry<TKey, TValue> right;
 
 		/**
 		 * Constructor.
@@ -1085,14 +1056,12 @@ public class FibonacciHeap<K, V>
 		 * @param value the value.
 		 * @param source_ref a wrapped weak reference to the creating heap.
 		 */
-		FibonacciHeapEntry( final K key, final V value,
-																final HeapReference source_ref )
+		FibonacciHeapEntry(final TKey key, final TValue value,
+				final HeapReference source_ref)
 		{
-			super( key, value, source_ref );
+			super(key, value, source_ref);
 		}
 
-
 	}
-
 
 }

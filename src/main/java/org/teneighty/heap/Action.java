@@ -24,25 +24,22 @@
 
 package org.teneighty.heap;
 
-
 /**
  * A C#-like delegate-esque interface used for doing for-each looping
  * over heap elements.
- *
- * @param <T> the input type.
+ * 
+ * @param <TInput> the input type.
  * @author Fran Lattanzio
  * @version $Revision$ $Date$
  */
-public interface Action<T>
+public interface Action<TInput>
 {
-	
-	
+
 	/**
 	 * Perform an action.
 	 * 
 	 * @param input the input.
 	 */
-	public void action( T input );
-	
+	public void action(TInput input);
 
 }

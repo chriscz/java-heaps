@@ -1,6 +1,6 @@
 /*
  * $Id$
- *
+ * 
  * Copyright (c) 2005-2009 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,6 @@ package org.teneighty.heap;
 import java.util.Comparator;
 import java.io.Serializable;
 
-
 /**
  * A natural order comparator.
  * 
@@ -40,12 +39,10 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	implements Comparator<T>, Serializable
 {
 
-
 	/**
 	 * Serial version.
 	 */
 	private static final long serialVersionUID = 4583457L;
-
 
 	/**
 	 * Constructor.
@@ -55,7 +52,6 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 		super();
 	}
 
-
 	/**
 	 * Compare two objects.
 	 * 
@@ -64,19 +60,18 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	 * @return like you'd expect from a
 	 *         {@link java.util.Comparator#compare(Object, Object)} call.
 	 * @throws NullPointerException If <code>o1</code> or <code>o2</code> are
-	 *         <code>null</code>.
+	 *             <code>null</code>.
 	 */
-	public int compare( final T o1, final T o2 )
+	public int compare(final T o1, final T o2)
 		throws NullPointerException
 	{
-		if( o1 == null || o2 == null )
+		if (o1 == null || o2 == null)
 		{
 			throw new NullPointerException();
 		}
 
-		return ( o1.compareTo( o2 ) );
+		return o1.compareTo(o2);
 	}
-
 
 	/**
 	 * Check the specified object for equality.
@@ -90,21 +85,20 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	 *         this object; <code>false</code> otherwise.
 	 */
 	@Override
-	public boolean equals( final Object other )
+	public boolean equals(final Object other)
 	{
-		if( other == null )
+		if (other == null)
 		{
-			return ( false );
+			return false;
 		}
 
-		if( this == other )
+		if (this == other)
 		{
-			return ( true );
+			return true;
 		}
 
-		return ( this.getClass().equals( other.getClass() ) );
+		return this.getClass().equals(other.getClass());
 	}
-
 
 	/**
 	 * Get the hashcode inline with equals.
@@ -116,9 +110,8 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	@Override
 	public int hashCode()
 	{
-		return ( 1 );
+		return 1;
 	}
-
 
 	/**
 	 * Get a (better) string representation of this object.
@@ -128,8 +121,7 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	@Override
 	public String toString()
 	{
-		return ( this.getClass().getName() );
+		return this.getClass().getName();
 	}
-
 
 }
