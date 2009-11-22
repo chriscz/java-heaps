@@ -72,9 +72,8 @@
 	</distributionManagement>
 
 	<scm>
-		<connection>scm:svn:http://java-heaps.googlecode.com/svn/tags/heaps-2.0</connection>
-		<developerConnection>scm:svn:http://java-heaps.googlecode.com/svn/tags/heaps-2.0</developerConnection>
-		<url>scm:svn:http://java-heaps.googlecode.com/svn/tags/heaps-2.0</url>
+		<connection>scm:svn:https://java-heaps.googlecode.com/svn/trunk/</connection>
+		<developerConnection>scm:svn:https://java-heaps.googlecode.com/trunk/</developerConnection>
 	</scm>
 
 </project>
