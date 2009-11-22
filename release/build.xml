@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="teneighty heap releaser" default="release" basedir=".">
+	<description>The teneighty heap releaser project.</description>
+	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpath="svnant.jar" />
+
+	<target name="release">
+
+		<svn javahl="false">
+			<export srcUrl="https://" revision="HEAD" />
+		</svn>
+
+	</target>
+
+
+</project>
