@@ -2,7 +2,6 @@
 <project name="teneighty heap" default="image" basedir=".">
 	<description>The teneighty java heap project.</description>
 
-
 	<!-- Set global properties for this build -->
 	<property name="base.compile.bin" location="bin"/>
 	<property name="base.image" location="image"/>
@@ -24,13 +23,12 @@
 	</condition>
 
 	<!-- Build the JAR name. -->
-	<property name="main.image.jar" value="${main.image}/heap-${main.version}.jar" />
+	<property name="main.image.jar" value="${main.image}/heaps-${main.version}.jar" />
 	
 	<!-- Generate timestamp property -->
 	<tstamp>
 	       <format property="current.time" pattern="MM/dd/yyyy hh:mm aa" />
 	</tstamp>
-
 
 	<!-- Initialize the build and image directories -->
 	<target name="init" description="Make build, test, image, and doc directories">
