@@ -13,65 +13,75 @@
 	<property name="svn.url" value="${svn.base}/trunk"/>
 	<property name="svn.tagbase" value="${svn.base}/tags"/>	
 	<property name="svn.revision" value="HEAD"/>
+
+	<!-- Contains senstive username, passwords, etc. Not in SCM, obviously... -->
+	<property file="secret.properties"/>
 			
-	<!--  Step 1: Read the version number -->
-	<target name="readversion">
-		<input message="Enter version number: " addproperty="version"/>
-		<property name="export.dir" value="${project.name}-${version}"/>
-	</target>
-			
-	<!--  Step 2: Export -->
-	<target name="export">
+	<target name="release">
+		<input message="Enter version number: " addproperty="version"/>		
+		<property name="project.full.name" value="${project.name}-${version}"/>
+		<property name="export.dir" value="export/${project.full.name}"/>
+
 		<svn javahl="false">
 			<export srcUrl="${svn.url}" destPath="${export.dir}" revision="${svn.revision}" />
 		</svn>
-	</target>
-	
-	<!--  Step 3: Generate source tar. -->
-	<target name="sourceball">
-		<tar basedir="${export.dir}" destfile="${project.name}-${version}.tar.gz" compression="gzip"/>
-	</target>
+
+		<tar basedir="export" destfile="${project.full.name}-src.tar.gz" compression="gzip"/>
 		
-	<!-- Step 4: Build the image jar. -->
-	<target name="image">
-		<ant antfile="${export.dir}/build.xml" target="image">
+		<ant dir="${export.dir}" antfile="build.xml" target="image">
   			<property name="main.version" value="${version}"/>
   		</ant>
-	</target>
-	
-	<!-- Step 5: Generate JavaDoc -->
-	<target name="javadoc">
-		<ant antfile="${export.dir}/build.xml" target="javadoc">
+		<ant dir="${export.dir}" antfile="build.xml" target="javadoc">
   			<property name="main.version" value="${version}"/>
   		</ant>	
-	</target>	
-	
-	<!-- Step 6: Upload everything to Google code. -->
-	<target name="upload">
-	
-	</target>
-	
-	<!-- Step 6: Tag -->
-	<target name="tag">
-		<svn javahl="false">
-		<copy srcUrl="${svn.url}" destUrl="${svn.tagbase}/${version}"/>			
-		</svn>
-	</target>
-	
-	
-	<target name="release">
-		<antcall target="readversion" />
-		<antcall target="export" />
-		<antcall target="sourceball" />
-		<antcall target="image" />
-		<antcall target="javadoc" />
-		<!--antcall target="upload" / -->
-		<!--antcall target="tag" / -->
-		
-	</target>
-	
-	<target name="clean">
-		<delete dir="${export.dir}"/>	
-	</target>
+  		
+  		<move todir="${export.dir}/docs/${project.full.name}-doc">
+    		<fileset dir="${export.dir}/docs"/>
+  		</move>
+  		
+  		<tar basedir="${export.dir}/docs" destfile="${project.name}-${version}-doc.tar.gz" compression="gzip"/>
+  		  		
+  		<move todir="${export.dir}/docs">
+    		<fileset dir="${export.dir}/docs/${project.full.name}-doc"/>
+  		</move>
+  			
+  		<!-- Upload everything to Google code -->
+  		<!-- Ant task doesn't actually work, of course...
+  		<gcupload 
+	        username="${secret.username}" 
+    	    password="${secret.password}" 
+        	projectname="java-heaps" 
+        	filename="${export.dir}/image/${project.name}-${version}.jar" 
+        	targetfilename="${project.name}-${version}.jar"
+        	summary="JAR for version ${version} of java-heaps"
+        	labels="Featured" />
 
+  		<gcupload 
+	        username="${secret.username}" 
+    	    password="${secret.password}" 
+        	projectname="java-heaps" 
+        	filename="${project.name}-${version}-src.tar.gz" 
+        	targetfilename="${project.name}-${version}.jar"
+        	summary="Source code for version ${version} of java-heaps"
+        	labels="Featured" />
+
+  		<gcupload 
+	        username="${secret.username}" 
+    	    password="${secret.password}" 
+        	projectname="java-heaps" 
+        	filename="${project.name}-${version}-doc.tar.gz" 
+        	targetfilename="${project.name}-${version}.jar"
+        	summary="JavaDocs for version ${version} of java-heaps"
+        	labels="Featured" />
+        	 -->
+        	
+        <!--  Generate a tag in SVN -->
+		<svn javahl="false">
+			<copy srcUrl="${svn.url}" destUrl="${svn.tagbase}/${version}"/>			
+		</svn>
+		 
+		 
+	</target>
+	
+		
 </project>
