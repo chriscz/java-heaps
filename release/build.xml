@@ -1,15 +1,77 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="teneighty heap releaser" default="release" basedir=".">
+<project name="teneighty heap releaser" default="release"
+	basedir=".">
 	<description>The teneighty heap releaser project.</description>
-	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml" classpath="svnant.jar" />
-
-	<target name="release">
-
-		<svn javahl="false">
-			<export srcUrl="https://" revision="HEAD" />
-		</svn>
-
+	
+	<!-- Some additional tasks. -->
+	<typedef resource="org/tigris/subversion/svnant/svnantlib.xml"
+		classpath="svnant.jar" />
+	<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="ant-googlecode.jar" name="gcupload"/>
+		
+	<property name="project.name" value="heaps"/>
+	<property name="svn.base" value="https://java-heaps.googlecode.com/svn"/>
+	<property name="svn.url" value="${svn.base}/trunk"/>
+	<property name="svn.tagbase" value="${svn.base}/tags"/>	
+	<property name="svn.revision" value="HEAD"/>
+			
+	<!--  Step 1: Read the version number -->
+	<target name="readversion">
+		<input message="Enter version number: " addproperty="version"/>
+		<property name="export.dir" value="${project.name}-${version}"/>
 	</target>
-
+			
+	<!--  Step 2: Export -->
+	<target name="export">
+		<svn javahl="false">
+			<export srcUrl="${svn.url}" destPath="${export.dir}" revision="${svn.revision}" />
+		</svn>
+	</target>
+	
+	<!--  Step 3: Generate source tar. -->
+	<target name="sourceball">
+		<tar basedir="${export.dir}" destfile="${project.name}-${version}.tar.gz" compression="gzip"/>
+	</target>
+		
+	<!-- Step 4: Build the image jar. -->
+	<target name="image">
+		<ant antfile="${export.dir}/build.xml" target="image">
+  			<property name="main.version" value="${version}"/>
+  		</ant>
+	</target>
+	
+	<!-- Step 5: Generate JavaDoc -->
+	<target name="javadoc">
+		<ant antfile="${export.dir}/build.xml" target="javadoc">
+  			<property name="main.version" value="${version}"/>
+  		</ant>	
+	</target>	
+	
+	<!-- Step 6: Upload everything to Google code. -->
+	<target name="upload">
+	
+	</target>
+	
+	<!-- Step 6: Tag -->
+	<target name="tag">
+		<svn javahl="false">
+		<copy srcUrl="${svn.url}" destUrl="${svn.tagbase}/${version}"/>			
+		</svn>
+	</target>
+	
+	
+	<target name="release">
+		<antcall target="readversion" />
+		<antcall target="export" />
+		<antcall target="sourceball" />
+		<antcall target="image" />
+		<antcall target="javadoc" />
+		<!--antcall target="upload" / -->
+		<!--antcall target="tag" / -->
+		
+	</target>
+	
+	<target name="clean">
+		<delete dir="${export.dir}"/>	
+	</target>
 
 </project>
