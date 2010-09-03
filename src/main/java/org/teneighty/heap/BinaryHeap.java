@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2009 Fran Lattanzio
+ * Copyright (c) 2005-2010 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -112,8 +112,7 @@ import java.io.IOException;
  */
 public class BinaryHeap<TKey, TValue>
 	extends AbstractHeap<TKey, TValue>
-	implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
-	Serializable, Cloneable
+	implements Serializable, Cloneable
 {
 
 	/**
@@ -235,178 +234,145 @@ public class BinaryHeap<TKey, TValue>
 		this.comp = comp;
 
 		// Make backing array.
-		this.rec_capacity = initial_capacity + 1;
-		this.heap = new DynamicArray<BinaryHeapEntry<TKey, TValue>>(
-				this.rec_capacity);
-		this.size = 0;
-		this.mod_count = 0;
+		rec_capacity = initial_capacity + 1;
+		heap = new DynamicArray<BinaryHeapEntry<TKey, TValue>>(
+				rec_capacity);
+		size = 0;
+		mod_count = 0;
 	}
 
 	/**
-	 * Get the size.
-	 * 
-	 * @return the size.
+	 * @see org.teneighty.heap.Heap#getSize()
 	 */
+	@Override
 	public int getSize()
 	{
-		return this.size;
-	}
-
-	/**
-	 * Get the the Comparator.
-	 * <p>
-	 * If this method returns <code>null</code>, then this heap uses the keys'
-	 * <i>natural ordering</i>.
-	 * 
-	 * @return the Comparator or <code>null</code>.
-	 */
-	public Comparator<? super TKey> getComparator()
-	{
-		return this.comp;
+		return size;
 	}
 
 	/**
 	 * Get the capacity of this heap.
 	 * <p>
-	 * This method is not specified by the <code>Heap</code> interface.
+	 * This method is not specified by the {@link Heap} interface.
 	 * 
 	 * @return the capacity.
 	 */
 	public int getCapacity()
 	{
-		return this.heap.capacity();
+		return heap.capacity();
+	}
+	
+	/**
+	 * @see org.teneighty.heap.Heap#getComparator()
+	 */
+	@Override
+	public Comparator<? super TKey> getComparator()
+	{
+		return comp;
 	}
 
 	/**
-	 * Clear this heap.
-	 * <p>
-	 * This method clears all references in the backing array, and thus takes
-	 * time <code>O(n)</code>.
+	 * @see org.teneighty.heap.Heap#clear()
 	 */
+	@Override
 	public void clear()
 	{
-		this.size = 0;
-		this.mod_count += 1;
+		size = 0;
+		mod_count += 1;
 
 		// Clear backing array, entry by entry!
 		int index = 1;
-		while (this.heap.get(index) != null)
+		while (heap.get(index) != null)
 		{
-			this.heap.set(index, null);
+			heap.set(index, null);
 		}
 
 		// Reallocate back to original size.
-		this.heap.reallocate(this.rec_capacity);
+		heap.reallocate(rec_capacity);
 	}
 
 	/**
-	 * Add a key/value pair to this heap.
-	 * 
-	 * @param key the node key.
-	 * @param value the node value.
-	 * @return the entry created.
-	 * @throws ClassCastException If the specified key is not mutually
-	 *             comparable
-	 *             with the other keys of this heap.
+	 * @see org.teneighty.heap.Heap#insert(java.lang.Object, java.lang.Object)
 	 */
+	@Override
 	public Heap.Entry<TKey, TValue> insert(final TKey key, final TValue value)
 		throws ClassCastException
 	{
 		// Make a new node.
-		BinaryHeapEntry<TKey, TValue> node = new BinaryHeapEntry<TKey, TValue>(
-				key, value);
+		BinaryHeapEntry<TKey, TValue> node = new BinaryHeapEntry<TKey, TValue>(key, value);
 
-		if (this.isEmpty() == false)
+		if (isEmpty() == false)
 		{
 			// Make, throw CCE
-			compare(node, this.heap.get(1));
+			compare(node, heap.get(1));
 		}
 
 		// Make sure backing array is big enough.
-		this.ensureCapacityUp();
+		ensureCapacityUp();
 
 		// Find new index for insert.
-		int index = ++this.size;
+		int index = ++size;
 
 		// Store it.
-		this.heap.set(index, node);
+		heap.set(index, node);
 		node.heap_index = index;
 
 		// Turn this nonsense back into a heap...
-		this.heapify(index);
+		heapify(index);
 
 		// Inc mod.
-		this.mod_count += 1;
+		mod_count += 1;
 
 		// Return new node.
 		return node;
 	}
-
+	
 	/**
-	 * Get the entry with the minimum key.
-	 * <p>
-	 * This method does <u>not</u> remove the returned entry.
-	 * 
-	 * @return the entry.
-	 * @throws NoSuchElementException If this heap is empty.
-	 * @see #extractMinimum()
+	 * @see org.teneighty.heap.Heap#getMinimum()
 	 */
+	@Override
 	public Heap.Entry<TKey, TValue> getMinimum()
 		throws NoSuchElementException
 	{
-		if (this.isEmpty())
+		if (isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
-		return this.heap.get(1);
+		return heap.get(1);
 	}
 
 	/**
-	 * Remove and return the entry minimum key.
-	 * 
-	 * @return the entry.
-	 * @throws NoSuchElementException If the heap is empty.
-	 * @see #getMinimum()
+	 * @see org.teneighty.heap.Heap#extractMinimum()
 	 */
+	@Override
 	public Heap.Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
-		if (this.isEmpty())
+		if (isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
 		// Find current min.
-		BinaryHeapEntry<TKey, TValue> min = this.heap.get(1);
+		BinaryHeapEntry<TKey, TValue> min = heap.get(1);
 
 		// Delete it.
-		this.delete(min);
+		delete(min);
 
 		// Return old minimum
 		return min;
 	}
 
 	/**
-	 * Decrease the key of the given element.
-	 * <p>
-	 * This implementation always knows if <code>e</code> is not a member of
-	 * this heap.
-	 * 
-	 * @param e the entry for which to decrease the key.
-	 * @param k the new key.
-	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *             <code>e</code>'s current key or <code>e</code> is not in this
-	 *             heap.
-	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *             other keys in this heap.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
+	 * @see org.teneighty.heap.Heap#decreaseKey(org.teneighty.heap.Heap.Entry, java.lang.Object)
 	 */
+	@Override
 	public void decreaseKey(final Heap.Entry<TKey, TValue> e, final TKey k)
 		throws IllegalArgumentException, ClassCastException,
 		NullPointerException
 	{
-		if (this.holdsEntry(e) == false)
+		if (holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -425,29 +391,21 @@ public class BinaryHeap<TKey, TValue>
 		entry.setKey(k);
 
 		// percolate up.
-		this.heapify(entry.heap_index);
+		heapify(entry.heap_index);
 
 		// New mod count.
-		this.mod_count += 1;
+		mod_count += 1;
 	}
 
 	/**
-	 * Delete the entry from this heap.
-	 * <p>
-	 * This implementation always knows if <code>e</code> is not a member of
-	 * this heap.
-	 * 
-	 * @param e the entry to delete.
-	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *             <code>e</code>'s current key or <code>e</code> is not in this
-	 *             heap.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
+	 * @see org.teneighty.heap.Heap#delete(org.teneighty.heap.Heap.Entry)
 	 */
 	@SuppressWarnings("unchecked")
+	@Override
 	public void delete(final Entry<TKey, TValue> e)
 		throws IllegalArgumentException, NullPointerException
 	{
-		if (this.holdsEntry(e) == false)
+		if (holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -455,52 +413,48 @@ public class BinaryHeap<TKey, TValue>
 		// Narrow.
 		BinaryHeapEntry<TKey, TValue> entry = (BinaryHeapEntry) e;
 
-		if (this.size == 1)
+		if (size == 1)
 		{
 			// Special case.
-			this.heap.set(1, null);
-			this.size = 0;
-			this.mod_count += 1;
+			heap.set(1, null);
+			size = 0;
+			mod_count += 1;
 			return;
 		}
 
-		if (entry.heap_index == this.size)
+		if (entry.heap_index == size)
 		{
 			// Special case...
-			this.heap.set(entry.heap_index, null);
-			this.size -= 1;
+			heap.set(entry.heap_index, null);
+			size -= 1;
 		}
 		else
 		{
 			// Grab last node to replace entry.
-			this.heap.set(entry.heap_index, this.heap.get(this.size));
-			this.heap.get(entry.heap_index).heap_index = entry.heap_index;
+			heap.set(entry.heap_index, heap.get(size));
+			heap.get(entry.heap_index).heap_index = entry.heap_index;
 
 			// Clear old ref.
-			this.heap.set(this.size, null);
+			heap.set(size, null);
 
 			// Dec size
-			this.size -= 1;
+			size -= 1;
 
 			// Heapify from affected node index.
-			this.heapify(entry.heap_index);
+			heapify(entry.heap_index);
 		}
 
 		// Update mod count.
-		this.mod_count += 1;
+		mod_count += 1;
 
 		// Shrink backing array if needed.
-		this.ensureCapacityDown();
+		ensureCapacityDown();
 	}
 
 	/**
-	 * Does this heap hold the specified entry?
-	 * 
-	 * @param e the entry to check.
-	 * @return <code>true</code> if this heap holds <code>e</code>;
-	 *         <code>false</code> otherwise.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
+	 * @see org.teneighty.heap.Heap#holdsEntry(org.teneighty.heap.Heap.Entry)
 	 */
+	@Override
 	public boolean holdsEntry(final Entry<TKey, TValue> e)
 		throws NullPointerException
 	{
@@ -517,12 +471,12 @@ public class BinaryHeap<TKey, TValue>
 		// Narrow.
 		BinaryHeapEntry<TKey, TValue> bhe = (BinaryHeapEntry<TKey, TValue>) e;
 
-		if (bhe.heap_index >= this.heap.capacity())
+		if (bhe.heap_index >= heap.capacity())
 		{
 			return false;
 		}
 
-		if (this.heap.get(bhe.heap_index) != bhe)
+		if (heap.get(bhe.heap_index) != bhe)
 		{
 			return false;
 		}
@@ -532,22 +486,9 @@ public class BinaryHeap<TKey, TValue>
 	}
 
 	/**
-	 * Union this heap with another heap.
-	 * <p>
-	 * This method takes linearithmic (<code>O(n log n)</code>) time. This is
-	 * not that fast (considering a fibonacci heap can merge in
-	 * <code>O(1)</code>).
-	 * 
-	 * @param other the other heap.
-	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
-	 * @throws ClassCastException If the keys of the nodes are not mutally
-	 *             comparable or the classes do not match.
-	 * @throws IllegalArgumentException If you attempt to union a heap with
-	 *             itself
-	 *             (i.e if <code>other == this</code>).
-	 * @see #insertAll(Heap)
+	 * @see org.teneighty.heap.Heap#union(org.teneighty.heap.Heap)
 	 */
-	@SuppressWarnings("unchecked")
+	@Override
 	public void union(final Heap<TKey, TValue> other)
 		throws ClassCastException, NullPointerException,
 		IllegalArgumentException
@@ -569,14 +510,14 @@ public class BinaryHeap<TKey, TValue>
 			try
 			{
 				// alloc a new array.
-				int new_size = this.size + that.size;
-				this.heap.ensureCapacity(new_size + 1);
+				int new_size = size + that.size;
+				heap.ensureCapacity(new_size + 1);
 
 				// entry to union in.
 				BinaryHeapEntry<TKey, TValue> thatEntry;
 
 				// start copying and heapifying and stuff.
-				for (int index = this.size + 1, jindex = 1; jindex <= that.size; jindex++, index++)
+				for (int index = size + 1, jindex = 1; jindex <= that.size; jindex++, index++)
 				{
 					// set into heap - we have to set the heap index here,
 					// because
@@ -587,17 +528,17 @@ public class BinaryHeap<TKey, TValue>
 					thatEntry.heap_index = index;
 
 					// copy element.
-					this.heap.set(index, thatEntry);
+					heap.set(index, thatEntry);
 
 					// percolate/bubble/heapify or whatever you want to call it.
 					// remember, this works both up and down. See, this WAS a
 					// good idea!
-					this.heapify(index);
+					heapify(index);
 				}
 
 				// set dumb fields and stuff.
-				this.size = new_size;
-				this.mod_count += 1;
+				size = new_size;
+				mod_count += 1;
 			}
 			finally
 			{
@@ -617,16 +558,16 @@ public class BinaryHeap<TKey, TValue>
 	 */
 	private void ensureCapacityUp()
 	{
-		int new_capacity = this.getCapacity();
+		int new_capacity = getCapacity();
 
-		if (this.getSize() >= (this.getCapacity() - 1))
+		if (getSize() >= (getCapacity() - 1))
 		{
 			// Double the space.
-			new_capacity = this.getCapacity() * 2;
+			new_capacity = getCapacity() * 2;
 		}
 
 		// Call ensure capacity.
-		this.heap.ensureCapacity(new_capacity);
+		heap.ensureCapacity(new_capacity);
 	}
 
 	/**
@@ -634,25 +575,25 @@ public class BinaryHeap<TKey, TValue>
 	 */
 	private void ensureCapacityDown()
 	{
-		int new_capacity = this.getCapacity();
+		int new_capacity = getCapacity();
 
-		if (this.getSize() == 0)
+		if (getSize() == 0)
 		{
 			// Special case.
-			new_capacity = this.rec_capacity;
+			new_capacity = rec_capacity;
 		}
-		else if (this.getSize() < (this.getCapacity() / 2))
+		else if (getSize() < (getCapacity() / 2))
 		{
 			// Half the current capacity.
-			new_capacity = this.getCapacity() / 2;
+			new_capacity = getCapacity() / 2;
 
 			// Check for minimum.
-			new_capacity = (new_capacity < this.rec_capacity ? this.rec_capacity
+			new_capacity = (new_capacity < rec_capacity ? rec_capacity
 					: new_capacity);
 		}
 
 		// Call impl.
-		this.heap.ensureCapacity(new_capacity);
+		heap.ensureCapacity(new_capacity);
 	}
 
 	/**
@@ -688,18 +629,18 @@ public class BinaryHeap<TKey, TValue>
 			parent = (at_node / 2);
 
 			if (parent >= 1
-					&& this.compare(this.heap.get(parent), this.heap
+					&& compare(heap.get(parent), heap
 							.get(at_node)) > 0)
 			{
 				// Swap' em.
-				tmp = this.heap.get(at_node);
+				tmp = heap.get(at_node);
 
 				// Double ditto.
-				this.heap.set(at_node, this.heap.get(parent));
-				this.heap.get(at_node).heap_index = at_node;
+				heap.set(at_node, heap.get(parent));
+				heap.get(at_node).heap_index = at_node;
 
 				// Triple ditto.
-				this.heap.set(parent, tmp);
+				heap.set(parent, tmp);
 				tmp.heap_index = parent;
 
 				// Continue.
@@ -712,15 +653,15 @@ public class BinaryHeap<TKey, TValue>
 			smallest = at_node;
 
 			// Is the left child's priority smaller than its parent's???
-			if (left <= this.size
-					&& this.compare(this.heap.get(left), this.heap
+			if (left <= size
+					&& compare(heap.get(left), heap
 							.get(smallest)) < 0)
 			{
 				smallest = left;
 			}
 
-			if (right <= this.size
-					&& this.compare(this.heap.get(right), this.heap
+			if (right <= size
+					&& compare(heap.get(right), heap
 							.get(smallest)) < 0)
 			{
 				smallest = right;
@@ -733,13 +674,13 @@ public class BinaryHeap<TKey, TValue>
 			}
 
 			// Otherwise, swap the parent and the child of smaller priority.
-			tmp = this.heap.get(at_node);
+			tmp = heap.get(at_node);
 
 			// SWAP!
-			this.heap.set(at_node, this.heap.get(smallest));
-			this.heap.get(at_node).heap_index = at_node;
+			heap.set(at_node, heap.get(smallest));
+			heap.get(at_node).heap_index = at_node;
 
-			this.heap.set(smallest, tmp);
+			heap.set(smallest, tmp);
 			tmp.heap_index = smallest;
 
 			// Keep going up the heap.
@@ -759,20 +700,17 @@ public class BinaryHeap<TKey, TValue>
 		try
 		{
 			// Create via super.
-			BinaryHeap<TKey, TValue> clone = (BinaryHeap<TKey, TValue>) super
-					.clone();
+			BinaryHeap<TKey, TValue> clone = (BinaryHeap<TKey, TValue>) super.clone();
 
 			// Make a copy of the underlying "heap" structure.
-			clone.heap = new DynamicArray<BinaryHeapEntry<TKey, TValue>>(this
-					.getCapacity());
+			clone.heap = new DynamicArray<BinaryHeapEntry<TKey, TValue>>(getCapacity());
 
 			// Clone the stupid nodes.
 			BinaryHeapEntry<TKey, TValue> tmp = null;
-			for (int index = 1; index <= this.getSize(); index++)
+			for (int index = 1; index <= getSize(); index++)
 			{
-				tmp = this.heap.get(index);
-				clone.heap.set(index, (BinaryHeapEntry<TKey, TValue>) tmp
-						.clone());
+				tmp = heap.get(index);
+				clone.heap.set(index, (BinaryHeapEntry<TKey, TValue>) tmp.clone());
 			}
 
 			// Reset mod count. Why? Why not!
@@ -783,9 +721,7 @@ public class BinaryHeap<TKey, TValue>
 		}
 		catch (final CloneNotSupportedException cnse)
 		{
-			throw (InternalError) new InternalError(
-					"BinaryHeap supports the Cloneable interface")
-					.initCause(cnse);
+			throw (InternalError) new InternalError("BinaryHeap supports the Cloneable interface").initCause(cnse);
 		}
 	}
 
@@ -802,18 +738,18 @@ public class BinaryHeap<TKey, TValue>
 		throws IOException
 	{
 		// write comparator.
-		out.writeObject(this.comp);
+		out.writeObject(comp);
 
 		// Write "capacity" and size.
-		out.writeInt(this.heap.capacity());
-		out.writeInt(this.size);
-		out.writeInt(this.rec_capacity);
+		out.writeInt(heap.capacity());
+		out.writeInt(size);
+		out.writeInt(rec_capacity);
 
 		// Write key/value pairs.
 		BinaryHeapEntry<TKey, TValue> tmp = null;
-		for (int index = 1; index <= this.getSize(); index++)
+		for (int index = 1; index <= getSize(); index++)
 		{
-			tmp = this.heap.get(index);
+			tmp = heap.get(index);
 			out.writeObject(tmp.getKey());
 			out.writeObject(tmp.getValue());
 		}
@@ -836,19 +772,19 @@ public class BinaryHeap<TKey, TValue>
 	private void readObject(final ObjectInputStream in)
 		throws IOException, ClassNotFoundException
 	{
-		this.comp = (Comparator<? super TKey>) in.readObject();
+		comp = (Comparator<? super TKey>) in.readObject();
 
 		// Read old heap size.
 		int capacity = in.readInt();
-		this.size = in.readInt();
-		this.rec_capacity = in.readInt();
+		size = in.readInt();
+		rec_capacity = in.readInt();
 
 		// Re-alloc heap.
-		this.heap = new DynamicArray<BinaryHeapEntry<TKey, TValue>>(capacity);
+		heap = new DynamicArray<BinaryHeapEntry<TKey, TValue>>(capacity);
 
 		// Read keys and values.
 		BinaryHeapEntry<TKey, TValue> entry = null;
-		for (int index = 1; index <= this.size; index++)
+		for (int index = 1; index <= size; index++)
 		{
 			// Create new entry.
 			entry = new BinaryHeapEntry<TKey, TValue>((TKey) in.readObject(),
@@ -858,7 +794,7 @@ public class BinaryHeap<TKey, TValue>
 			entry.heap_index = index;
 
 			// Store int heap.
-			this.heap.set(index, entry);
+			heap.set(index, entry);
 		}
 	}
 
@@ -882,6 +818,7 @@ public class BinaryHeap<TKey, TValue>
 	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
 	 *          2009) $
 	 */
+	@SuppressWarnings("synthetic-access")
 	private final class EntryIterator
 		extends Object
 		implements Iterator<Heap.Entry<TKey, TValue>>
@@ -905,10 +842,10 @@ public class BinaryHeap<TKey, TValue>
 			super();
 
 			// Array iterator.
-			this.it_count = 1;
+			it_count = 1;
 
 			// Copy mod count.
-			this.it_mod_count = BinaryHeap.this.mod_count;
+			it_mod_count = BinaryHeap.this.mod_count;
 		}
 
 		/**
@@ -919,15 +856,16 @@ public class BinaryHeap<TKey, TValue>
 		 * @throws ConcurrentModificationException If concurrent modification
 		 *             occurs.
 		 */
+		
 		public boolean hasNext()
 			throws ConcurrentModificationException
 		{
-			if (BinaryHeap.this.mod_count != this.it_mod_count)
+			if (BinaryHeap.this.mod_count != it_mod_count)
 			{
 				throw new ConcurrentModificationException();
 			}
 
-			return (this.it_count <= getSize());
+			return (it_count <= getSize());
 		}
 
 		/**
@@ -941,13 +879,13 @@ public class BinaryHeap<TKey, TValue>
 		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
-			if (this.hasNext() == false)
+			if (hasNext() == false)
 			{
 				throw new NoSuchElementException("The iterator is empty");
 			}
 
 			// Return and advance.
-			return BinaryHeap.this.heap.get(this.it_count++);
+			return BinaryHeap.this.heap.get(it_count++);
 		}
 
 		/**

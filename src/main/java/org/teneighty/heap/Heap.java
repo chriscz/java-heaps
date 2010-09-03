@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2009 Fran Lattanzio
+ * Copyright (c) 2005-2010 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@ package org.teneighty.heap;
 
 import java.util.Comparator;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -44,33 +45,35 @@ import java.util.NoSuchElementException;
  * <li>See the <a href="package-summary.html">Package Manifest</a> for a summary
  * of the available implementations, as well as their runtime performance.</li>
  * <li>In general, the order of items in the Sets/Collections returned from
- * collection-view methods is arbitrary. However, it should always be the case
- * that (barring any changes to the heap) they are consistent and deterministic.
- * </li>
+ * collection-view methods is generally arbitrary. However, it should always be
+ * the case that (barring any changes to the heap) they are consistent and
+ * deterministic.</li>
  * <li>The iterators returned by implementations should generally be
  * <i>fail-fast</i>, meaning they should detect changes to the backing heap and
- * throw a <code>ConcurrentModificationException</code> if the backing heap is
+ * throw a {@link ConcurrentModificationException} if the backing heap is
  * changed during iteration.</li>
  * <li>Heaps do not maintain insertion order between elements with equal keys.
  * This is not the general contract of the heap ADT. If you need this
  * functionality, it should be programmed externally.</li>
- * <li>It is generally not a problem to use as a key <code>Comparable</code>
- * class whose <code>compareTo()</code> method is inconsistent with equals,
- * since we don't care about equal key collisions. Similarly, a
- * <code>Comparator</code> method whose <code>compare()</code> method is
- * inconsistent with equals is also OK.</li>
+ * <li>It is generally not a problem to use as a key {@link Comparable} class
+ * whose {@link Comparable#compareTo(Object)} method is inconsistent with
+ * {@link Object#equals(Object)}, since we don't care about equal key
+ * collisions. Similarly, a {@link Comparator} whose
+ * {@link Comparator#compare(Object, Object)} method is inconsistent with equals
+ * is also OK.</li>
  * <li>Be <i>very</i> careful if you use mutable objects as keys. If the
  * properties of a key object change in such a way that it affects the outcome
- * the <code>compareTo()</code>/<code>Comparator.compare()</code> methods, you
- * will probably smash the structure beyond repair. You can, of course change
- * the key associated with a given <code>Entry</code>, but only through the use
- * of the <code>decreaseKey</code> method.</li>
+ * the <code>compareTo(Object)</code>/
+ * <code>Comparator.compare(Object, Object)</code> methods, you will probably
+ * smash the structure beyond repair. You can, of course change the key
+ * associated with a given {@link Heap.Entry} but only through the use of the
+ * {@link #decreaseKey(Entry, Object)} method.</li>
  * </ol>
  * 
  * @param <TKey> the key type.
  * @param <TValue> the value type.
  * @author Fran Lattanzio
- * @version $Revision$ $Date$
+ * @version $Revision$
  * @see org.teneighty.heap.Heaps
  */
 public interface Heap<TKey, TValue>
@@ -88,127 +91,6 @@ public interface Heap<TKey, TValue>
 	 * @see java.lang.Comparable
 	 */
 	public Comparator<? super TKey> getComparator();
-
-	/**
-	 * Add a key/value pair to this heap.
-	 * 
-	 * @param key the node key.
-	 * @param value the node value.
-	 * @return the entry created.
-	 * @throws ClassCastException If the specified key is not mutually
-	 *             comparable
-	 *             with the other keys of this heap.
-	 * @throws NullPointerException If <code>key</code> is <code>null</code> and
-	 *             this heap does not support <code>null</code> keys.
-	 */
-	public Entry<TKey, TValue> insert(TKey key, TValue value)
-		throws ClassCastException, NullPointerException;
-
-	/**
-	 * Insert all the entries of the specified heap into this heap.
-	 * <p>
-	 * The other heap will not be cleared, and this heap will simply <i>hold</i>
-	 * the entries of <code>other</code>, not <i>contain</i> them.
-	 * 
-	 * @param other the other heap.
-	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
-	 * @throws ClassCastException If the keys of <code>other</code> are not
-	 *             mutually comparable to the keys of this heap.
-	 * @throws IllegalArgumentException If you attempt to insert a heap into
-	 *             itself.
-	 * @see #union(Heap)
-	 */
-	public void insertAll(Heap<? extends TKey, ? extends TValue> other)
-		throws NullPointerException, ClassCastException,
-		IllegalArgumentException;
-
-	/**
-	 * Get the entry with the minimum key.
-	 * <p>
-	 * This method does <u>not</u> remove the returned entry.
-	 * 
-	 * @return the entry.
-	 * @throws NoSuchElementException If this heap is empty.
-	 * @see #extractMinimum()
-	 */
-	public Entry<TKey, TValue> getMinimum()
-		throws NoSuchElementException;
-
-	/**
-	 * Remove and return the entry minimum key.
-	 * 
-	 * @return the entry.
-	 * @throws NoSuchElementException If the heap is empty.
-	 * @see #getMinimum()
-	 */
-	public Entry<TKey, TValue> extractMinimum()
-		throws NoSuchElementException;
-
-	/**
-	 * Decrease the key of the given element.
-	 * <p>
-	 * Note that <code>e</code> must be <i>held</i> by this heap, or a
-	 * <code>IllegalArgumentException</code> will be tossed.
-	 * 
-	 * @param e the entry for which to decrease the key.
-	 * @param key the new key.
-	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *             <code>e</code>'s current key or <code>e</code> is not held by
-	 *             this heap.
-	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *             other keys in the heap.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
-	 * @see #holdsEntry(Heap.Entry)
-	 */
-	public void decreaseKey(Entry<TKey, TValue> e, TKey key)
-		throws IllegalArgumentException, ClassCastException,
-		NullPointerException;
-
-	/**
-	 * Delete the entry from this heap.
-	 * <p>
-	 * Note that <code>e</code> must be <i>held</i> by this heap, or a
-	 * <code>IllegalArgumentException</code> will be tossed.
-	 * 
-	 * @param e the entry to delete.
-	 * @throws IllegalArgumentException If <code>e</code> is not held by this
-	 *             heap.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
-	 * @see #holdsEntry(Heap.Entry)
-	 */
-	public void delete(Entry<TKey, TValue> e)
-		throws IllegalArgumentException, NullPointerException;
-
-	/**
-	 * Union this heap with another heap.
-	 * <p>
-	 * Only instances of the same class are capable of being unioned together.
-	 * This is a change from previous versions, when the union of different
-	 * types resulting in "insertAll" type behavior. However, this meant that
-	 * the union method had different semantics based on the runtime-type of the
-	 * other heap, which is definitely a bad thing.
-	 * <p>
-	 * After a union operation, this heap will both <i>contain</i> and
-	 * <i>hold</i> the entries of the other heap. The other heap is cleared in
-	 * the process of union.
-	 * 
-	 * @param other the other heap.
-	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
-	 * @throws ClassCastException If the keys of the nodes are not mutually
-	 *             comparable or the classes do not match.
-	 * @throws IllegalArgumentException If you attempt to union a heap with
-	 *             itself
-	 *             (i.e if <code>other == this</code>).
-	 * @see #insertAll(Heap)
-	 */
-	public void union(Heap<TKey, TValue> other)
-		throws ClassCastException, NullPointerException,
-		IllegalArgumentException;
-
-	/**
-	 * Clear this heap.
-	 */
-	public void clear();
 
 	/**
 	 * Get the number of entries in this heap.
@@ -258,11 +140,9 @@ public interface Heap<TKey, TValue>
 
 	/**
 	 * Does this heap contain the specified entry? In other words, does this
-	 * heap
-	 * contain entry <code>e</code> such that
+	 * heap contain an entry <code>e</code> such that
 	 * <code>e.equals( entry ) == true</code>. Note that this does <b>not</b>
 	 * imply that <code>e == entry</code>: See {@link Heap.Entry#equals(Object)}
-	 * .
 	 * <p>
 	 * This method generally takes <code>O(n)</code> time, although you should
 	 * check the notes of the specific implementation you are using.
@@ -280,55 +160,120 @@ public interface Heap<TKey, TValue>
 		throws NullPointerException;
 
 	/**
-	 * Compare this heap for equality with the specified object.
-	 * <p>
-	 * Equality for two heaps is defined to be that they <i>contain</i>, not
-	 * <i>hold</i>, the exact same set of entries. (Otherwise, two heaps could
-	 * never be equal, unless they were the same object. This should be obvious
-	 * from the definitions of <i>holds</i> and <i>contains</i>.) See
-	 * {@link Heap.Entry#equals(Object)} for the definition of
-	 * <code>Entry</code> equality. This definition is not open to debate.
-	 * <p>
-	 * Efficiency of this method interesting question, since it depends only on
-	 * which elements are stored, not <u>how</u> they are stored. For example,
-	 * it's difficult to efficiently compare a Fibonacci heap and a Binomial
-	 * heap, even if they contain the same elements, since their underlying
-	 * representations are very different. (In fact, it's very difficult to
-	 * compare two Fibonacci heaps with the same set of entries!)
+	 * Add a key/value pair to this heap.
 	 * 
-	 * @param other the other object.
-	 * @return <code>true</code> if equal; <code>false</code> otherwise.
+	 * @param key the node key.
+	 * @param value the node value.
+	 * @return the entry created.
+	 * @throws ClassCastException If the specified key is not mutually
+	 *         comparable with the other keys of this heap.
+	 * @throws NullPointerException If <code>key</code> is <code>null</code> and
+	 *         this heap does not support <code>null</code> keys.
 	 */
-	public boolean equals(Object other);
+	public Entry<TKey, TValue> insert(TKey key, TValue value)
+		throws ClassCastException, NullPointerException;
 
 	/**
-	 * Return the hashcode for this Heap.
+	 * Insert all the entries of the specified heap into this heap.
 	 * <p>
-	 * The hashcode for <i>any</i> heap is hereby defined to be sum of the
-	 * hashcodes of the entries which this heap <i>holds</i>. Like the equality
-	 * definition, this is not debatable. Note that this definition does not
-	 * violate the definition of <code>equals</code>, since if a heap
-	 * <i>holds</i> a set of entries it must also <i>contain</i> them.
-	 * <p>
-	 * If you choose to override the equals method, you must also override this
-	 * method, unless you really want your objects to violate the general
-	 * contract of <code>Object</code>.
+	 * The other heap will not be cleared, and this heap will simply <i>hold</i>
+	 * the entries of <code>other</code>, not <i>contain</i> them.
 	 * 
-	 * @return the hashcode.
-	 * @see java.lang.Object#hashCode()
-	 * @see #equals(Object)
+	 * @param other the other heap.
+	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
+	 * @throws ClassCastException If the keys of <code>other</code> are not
+	 *         mutually comparable to the keys of this heap.
+	 * @throws IllegalArgumentException If you attempt to insert a heap into
+	 *         itself.
+	 * @see #union(Heap)
 	 */
-	public int hashCode();
+	public void insertAll(Heap<? extends TKey, ? extends TValue> other)
+		throws NullPointerException, ClassCastException, IllegalArgumentException;
 
 	/**
-	 * Get an iterator over the entries of this heap.
+	 * Union this heap with another heap.
 	 * <p>
-	 * This the method of <code>java.lang.Iterable</code> fame, allowing you to
-	 * use the Heap interface within the <code>foreach(...)</code> construct.
+	 * Only instances of the same class are capable of being unioned together.
+	 * This is a change from previous versions, when the union of different
+	 * types resulting in {@link #insertAll(Heap)} type behavior. However, this
+	 * meant that the union method had different semantics based on the
+	 * runtime-type of the other heap, which is definitely a bad thing.
+	 * <p>
+	 * After a union operation, this heap will both <i>contain</i> and
+	 * <i>hold</i> the entries of the other heap. The other heap is cleared in
+	 * the process of union.
 	 * 
-	 * @return an iterator over the entries of this heap.
+	 * @param other the other heap.
+	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
+	 * @throws ClassCastException If the keys of the nodes are not mutually
+	 *         comparable or the classes do not match.
+	 * @throws IllegalArgumentException If you attempt to union a heap with
+	 *         itself (i.e if <code>other == this</code>).
+	 * @see #insertAll(Heap)
 	 */
-	public Iterator<Heap.Entry<TKey, TValue>> iterator();
+	public void union(Heap<TKey, TValue> other)
+		throws ClassCastException, NullPointerException, IllegalArgumentException;
+
+	/**
+	 * Get the entry with the minimum key.
+	 * <p>
+	 * This method does <u>not</u> remove the returned entry.
+	 * 
+	 * @return the entry.
+	 * @throws NoSuchElementException If this heap is empty.
+	 * @see #extractMinimum()
+	 */
+	public Entry<TKey, TValue> getMinimum()
+		throws NoSuchElementException;
+
+	/**
+	 * Remove and return the entry minimum key.
+	 * 
+	 * @return the entry.
+	 * @throws NoSuchElementException If the heap is empty.
+	 * @see #getMinimum()
+	 */
+	public Entry<TKey, TValue> extractMinimum()
+		throws NoSuchElementException;
+
+	/**
+	 * Decrease the key of the given element.
+	 * <p>
+	 * Note that <code>e</code> must be <i>held</i> by this heap, or a
+	 * <code>IllegalArgumentException</code> will be tossed.
+	 * 
+	 * @param e the entry for which to decrease the key.
+	 * @param key the new key.
+	 * @throws IllegalArgumentException If <code>k</code> is larger than
+	 *         <code>e</code>'s current key or <code>e</code> is not held by
+	 *         this heap.
+	 * @throws ClassCastException If the new key is not mutually comparable with
+	 *         other keys in the heap.
+	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
+	 * @see #holdsEntry(Heap.Entry)
+	 */
+	public void decreaseKey(Entry<TKey, TValue> e, TKey key)
+		throws IllegalArgumentException, ClassCastException, NullPointerException;
+
+	/**
+	 * Delete the entry from this heap.
+	 * <p>
+	 * Note that <code>e</code> must be <i>held</i> by this heap, or a
+	 * <code>IllegalArgumentException</code> will be tossed.
+	 * 
+	 * @param e the entry to delete.
+	 * @throws IllegalArgumentException If <code>e</code> is not held by this
+	 *         heap.
+	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
+	 * @see #holdsEntry(Heap.Entry)
+	 */
+	public void delete(Entry<TKey, TValue> e)
+		throws IllegalArgumentException, NullPointerException;
+
+	/**
+	 * Clear this heap.
+	 */
+	public void clear();
 
 	/**
 	 * Perform the specified action on each element of this heap.
@@ -344,6 +289,16 @@ public interface Heap<TKey, TValue>
 	 */
 	public void forEach(Action<Heap.Entry<TKey, TValue>> action)
 		throws NullPointerException;
+	
+	/**
+	 * Get an iterator over the entries of this heap.
+	 * <p>
+	 * This the method of <code>java.lang.Iterable</code> fame, allowing you to
+	 * use the Heap interface within the <code>foreach(...)</code> construct.
+	 * 
+	 * @return an iterator over the entries of this heap.
+	 */
+	public Iterator<Heap.Entry<TKey, TValue>> iterator();
 
 	/**
 	 * Get the collection of keys.
@@ -373,6 +328,50 @@ public interface Heap<TKey, TValue>
 	 */
 	public Collection<Heap.Entry<TKey, TValue>> getEntries();
 
+	/**
+	 * Compare this heap for equality with the specified object.
+	 * <p>
+	 * Equality for two heaps is defined to be that they <i>contain</i>, not
+	 * <i>hold</i>, the exact same set of entries. (Otherwise, two heaps could
+	 * never be equal, unless they were the same object. This should be obvious
+	 * from the definitions of <i>holds</i> and <i>contains</i>.) See
+	 * {@link Heap.Entry#equals(Object)} for the definition of
+	 * <code>Entry</code> equality. This definition is not open to debate.
+	 * <p>
+	 * Efficiency of this method interesting question, since it depends only on
+	 * which elements are stored, not <u>how</u> they are stored. For example,
+	 * it's difficult to efficiently compare a {@link FibonacciHeap Fibonacci
+	 * heap} and a {@link BinomialHeap Binomial heap}, even if they contain the
+	 * same elements, since their underlying representations are vastly
+	 * different. (In fact, it's very difficult to compare two Fibonacci heaps
+	 * with the same set of entries!)
+	 * 
+	 * @param other the other object.
+	 * @return <code>true</code> if equal; <code>false</code> otherwise.
+	 * @see Object#equals(Object)
+	 * @see #hashCode()
+	 */
+	public boolean equals(Object other);
+
+	/**
+	 * Return the hashcode for this Heap.
+	 * <p>
+	 * The hashcode for <i>any</i> heap is hereby defined to be sum of the
+	 * hashcodes of the entries which this heap <i>holds</i>. Like the equality
+	 * definition, this is not debatable. Note that this definition does not
+	 * violate the definition of <code>equals</code>, since if a heap
+	 * <i>holds</i> a set of entries it must also <i>contain</i> them.
+	 * <p>
+	 * If you choose to override the equals method, you must also override this
+	 * method, unless you really want your objects to violate the general
+	 * contract of <code>Object</code>.
+	 * 
+	 * @return the hashcode.
+	 * @see java.lang.Object#hashCode()
+	 * @see #equals(Object)
+	 */
+	public int hashCode();
+	
 	/**
 	 * The heap entry interface.
 	 * 

@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2009 Fran Lattanzio
+ * Copyright (c) 2005-2010 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ import java.io.Serializable;
  * 
  * @param <T> the comparator type.
  * @author Fran Lattanzio
- * @version $Revision$ $Date$
+ * @version $Revision$
  */
 public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	extends Object
@@ -97,7 +97,7 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 			return true;
 		}
 
-		return this.getClass().equals(other.getClass());
+		return getClass().equals(other.getClass());
 	}
 
 	/**
@@ -116,12 +116,12 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	/**
 	 * Get a (better) string representation of this object.
 	 * 
-	 * @return the class name, actually.
+	 * @return The class name, actually.
 	 */
 	@Override
 	public String toString()
 	{
-		return this.getClass().getName();
+		return getClass().getName();
 	}
 
 }

@@ -109,13 +109,11 @@ import java.io.IOException;
  * @param <TValue> the value type.
  * @author Fran Lattanzio
  * @version $Revision$ $Date$
- * @see "Cormen, T. H.; Leiserson C. E.; Rivest R. L.; &amp; Stein, C (2001)
- *      <i>Introduction to Algorithms</i>. MIT Press."
+ * @see "<a href='http://en.wikipedia.org/wiki/Introduction_to_Algorithms'>Cormen, T. H.; Leiserson C. E.; Rivest R. L.; &amp; Stein, C (2001) <i>Introduction to Algorithms</i>. MIT Press.</a>"
  */
 public class FibonacciHeap<TKey, TValue>
 	extends AbstractLinkedHeap<TKey, TValue>
-	implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
-	Serializable
+	implements Serializable
 {
 
 	/**
@@ -175,7 +173,7 @@ public class FibonacciHeap<TKey, TValue>
 	 * <code>k2</code> in the heap.
 	 * 
 	 * @param comp the comparator to use. A <code>null</code> means the keys'
-	 *            natural ordering will be used.
+	 *        natural ordering will be used.
 	 */
 	public FibonacciHeap(final Comparator<? super TKey> comp)
 	{
@@ -190,48 +188,31 @@ public class FibonacciHeap<TKey, TValue>
 	}
 
 	/**
-	 * Get the size.
-	 * 
-	 * @return the size.
+	 * @see org.teneighty.heap.Heap#getSize()
 	 */
+	@Override
 	public int getSize()
 	{
 		return this.size;
 	}
 
 	/**
-	 * Get the the Comparator.
-	 * <p>
-	 * If this method returns <code>null</code>, then this heap uses the keys'
-	 * <i>natural ordering</i>.
-	 * 
-	 * @return the Comparator or <code>null</code>.
+	 * @see org.teneighty.heap.Heap#getComparator()
 	 */
+	@Override
 	public Comparator<? super TKey> getComparator()
 	{
 		return this.comp;
 	}
 
 	/**
-	 * Insert the given key/value pair into this heap, returning the entry in
-	 * which the new pair is stored.
-	 * <p>
-	 * Code basically identical to CLRS.
-	 * 
-	 * @param key the key to insert.
-	 * @param value the value.
-	 * @return the newly created and inserted Entry.
-	 * @throws ClassCastException If the key of <code>node</code> is not
-	 *             mutually comparable with the keys of other nodes already in
-	 *             this
-	 *             heap.
-	 * @throws NullPointerException If <code>node</code> is <code>null</code>.
+	 * @see org.teneighty.heap.Heap#insert(java.lang.Object, java.lang.Object)
 	 */
+	@Override
 	public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 		throws ClassCastException, NullPointerException
 	{
-		FibonacciHeapEntry<TKey, TValue> node = new FibonacciHeapEntry<TKey, TValue>(
-				key, value, this.source_heap);
+		FibonacciHeapEntry<TKey, TValue> node = new FibonacciHeapEntry<TKey, TValue>(key, value, this.source_heap);
 
 		// Do some node housekeeping.
 		node.degree = 0;
@@ -275,13 +256,9 @@ public class FibonacciHeap<TKey, TValue>
 	}
 
 	/**
-	 * Remove and return the minimum entry in this heap.
-	 * <p>
-	 * Code based on CLRS.
-	 * 
-	 * @return the entry with the smallest key.
-	 * @throws NoSuchElementException If this heap is empty.
+	 * @see org.teneighty.heap.Heap#extractMinimum()
 	 */
+	@Override
 	public Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
@@ -343,13 +320,9 @@ public class FibonacciHeap<TKey, TValue>
 	}
 
 	/**
-	 * Get the minimum node of this heap.
-	 * <p>
-	 * The returned node is not removed.
-	 * 
-	 * @return the minimum node.
-	 * @throws NoSuchElementException If the heap is empty.
+	 * @see org.teneighty.heap.Heap#getMinimum()
 	 */
+	@Override
 	public Entry<TKey, TValue> getMinimum()
 		throws NoSuchElementException
 	{
@@ -453,8 +426,7 @@ public class FibonacciHeap<TKey, TValue>
 	 * @param y the new child node.
 	 * @param x the new parent node.
 	 */
-	private void link(final FibonacciHeapEntry<TKey, TValue> y,
-			final FibonacciHeapEntry<TKey, TValue> x)
+	private void link(final FibonacciHeapEntry<TKey, TValue> y, final FibonacciHeapEntry<TKey, TValue> x)
 	{
 		// Remove y from the root list.
 		y.left.right = y.right;
@@ -483,15 +455,9 @@ public class FibonacciHeap<TKey, TValue>
 	}
 
 	/**
-	 * Delete the specified entry.
-	 * <p>
-	 * This class can always cheaply determine of <code>e</code> is not a member
-	 * of this heap (in <code>O(1)</code> time).
-	 * 
-	 * @param e entry to delete.
-	 * @throws IllegalArgumentException If <code>e</code> is not in this heap.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
+	 * @see org.teneighty.heap.Heap#delete(org.teneighty.heap.Heap.Entry)
 	 */
+	@Override
 	public void delete(final Heap.Entry<TKey, TValue> e)
 		throws IllegalArgumentException, NullPointerException
 	{
@@ -518,20 +484,9 @@ public class FibonacciHeap<TKey, TValue>
 	}
 
 	/**
-	 * Decrease the key of the given element.
-	 * <p>
-	 * This class can always cheaply determine of <code>e</code> is not a member
-	 * of this heap (in <code>O(1)</code> time, thanks to reference magic).
-	 * 
-	 * @param e the entry for which to decrease the key.
-	 * @param k the new key.
-	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *             <code>e</code>'s current key or <code>k</code> is not a
-	 *             member
-	 *             of this heap.
-	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *             other keys in the heap.
+	 * @see org.teneighty.heap.Heap#decreaseKey(org.teneighty.heap.Heap.Entry, java.lang.Object)
 	 */
+	@Override
 	public void decreaseKey(final Heap.Entry<TKey, TValue> e, final TKey k)
 		throws IllegalArgumentException, ClassCastException
 	{
@@ -563,7 +518,7 @@ public class FibonacciHeap<TKey, TValue>
 	 * parent a child of <code>x</code>.
 	 * 
 	 * @param x the whose key has just been decreased and needs to be percolated
-	 *            toward the top of the heap.
+	 *        toward the top of the heap.
 	 */
 	private void decreaseKeyImpl(final FibonacciHeapEntry<TKey, TValue> x)
 	{
@@ -571,9 +526,7 @@ public class FibonacciHeap<TKey, TValue>
 		FibonacciHeapEntry<TKey, TValue> y = x.parent;
 
 		// If x has a lower key than it's parent (and assuming x was not already
-		// in
-		// the root list)
-		// then we have work to do.
+		// in the root list) then we have work to do.
 		if (y != null && compare(x, y) < 0)
 		{
 			this.cut(x, y);
@@ -590,13 +543,9 @@ public class FibonacciHeap<TKey, TValue>
 	}
 
 	/**
-	 * Does this heap hold the specified entry?
-	 * 
-	 * @param e entry to check.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
-	 * @return <code>true</code> if this heap holds <code>e</code>;
-	 *         <code>false</code> otherwise.
+	 * @see org.teneighty.heap.Heap#holdsEntry(org.teneighty.heap.Heap.Entry)
 	 */
+	@Override
 	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
 		throws NullPointerException
 	{
@@ -625,8 +574,7 @@ public class FibonacciHeap<TKey, TValue>
 	 * @param x the node to cut.
 	 * @param y the node from which to cut <code>x</code>.
 	 */
-	private void cut(final FibonacciHeapEntry<TKey, TValue> x,
-			final FibonacciHeapEntry<TKey, TValue> y)
+	private void cut(final FibonacciHeapEntry<TKey, TValue> x, final FibonacciHeapEntry<TKey, TValue> y)
 	{
 		if (x.right == x)
 		{
@@ -685,20 +633,11 @@ public class FibonacciHeap<TKey, TValue>
 	}
 
 	/**
-	 * Union with another heap.
-	 * <p>
-	 * This operation takes <code>O(1)</code> time.
-	 * 
-	 * @param other the other heap.
-	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
-	 * @throws ClassCastException If the keys of the nodes are not mutally
-	 *             comparable.
-	 * @throws IllegalArgumentException If you attempt to union a heap with
-	 *             itself.
+	 * @see org.teneighty.heap.Heap#union(org.teneighty.heap.Heap)
 	 */
+	@Override
 	public void union(final Heap<TKey, TValue> other)
-		throws ClassCastException, NullPointerException,
-		IllegalArgumentException
+		throws ClassCastException, NullPointerException, IllegalArgumentException
 	{
 		if (other == null)
 		{
@@ -763,12 +702,9 @@ public class FibonacciHeap<TKey, TValue>
 	}
 
 	/**
-	 * Clear this heap.
-	 * <p>
-	 * In addition to actually clearing this heap via <code>clearImpl()</code>,
-	 * this method clears the source heap ref, thus "orphaning" all contained
-	 * nodes in <code>O(1)</code> time.
+	 * @see org.teneighty.heap.Heap#clear()
 	 */
+	@Override
 	public void clear()
 	{
 		// Clear lame fields.
@@ -828,9 +764,7 @@ public class FibonacciHeap<TKey, TValue>
 			catch (final ConcurrentModificationException cme)
 			{
 				// User's fault.
-				throw (IOException) new IOException(
-						"Heap structure changed during serialization")
-						.initCause(cme);
+				throw (IOException) new IOException("Heap structure changed during serialization").initCause(cme);
 			}
 		}
 	}
@@ -843,10 +777,10 @@ public class FibonacciHeap<TKey, TValue>
 	 * 
 	 * @param in the stream from which to read data.
 	 * @throws IOException If this object cannot properly read from the
-	 *             specified
-	 *             stream.
+	 *         specified
+	 *         stream.
 	 * @throws ClassNotFoundException If deserialization tries to classload an
-	 *             undefined class.
+	 *         undefined class.
 	 */
 	@SuppressWarnings("unchecked")
 	private void readObject(final ObjectInputStream in)
@@ -878,8 +812,7 @@ public class FibonacciHeap<TKey, TValue>
 	 * <code>UnsupportedOperationException</code>.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
-	 *          2009) $
+	 * @version $Revision$ $Date$
 	 */
 	private class EntryIterator
 		extends Object
@@ -899,6 +832,7 @@ public class FibonacciHeap<TKey, TValue>
 		/**
 		 * Constructor.
 		 */
+		@SuppressWarnings("synthetic-access")
 		EntryIterator()
 		{
 			super();
@@ -916,7 +850,7 @@ public class FibonacciHeap<TKey, TValue>
 		 * @return <code>true</code> if there's another object;
 		 *         <code>false</code> otherwise.
 		 * @throws ConcurrentModificationException If concurrent modification
-		 *             occurs.
+		 *         occurs.
 		 */
 		public boolean hasNext()
 		{
@@ -934,7 +868,7 @@ public class FibonacciHeap<TKey, TValue>
 		 * @return the next object.
 		 * @throws NoSuchElementException If the iterator has no more elements.
 		 * @throws ConcurrentModificationException If concurrent modification
-		 *             occurs.
+		 *         occurs.
 		 */
 		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
@@ -967,8 +901,8 @@ public class FibonacciHeap<TKey, TValue>
 		 * @param entry the given entry.
 		 * @return the successor entry.
 		 */
-		private FibonacciHeapEntry<TKey, TValue> getSuccessor(
-				FibonacciHeapEntry<TKey, TValue> entry)
+		@SuppressWarnings("synthetic-access")
+		private FibonacciHeapEntry<TKey, TValue> getSuccessor(FibonacciHeapEntry<TKey, TValue> entry)
 		{
 			if (entry.child != null)
 			{
@@ -980,8 +914,7 @@ public class FibonacciHeap<TKey, TValue>
 
 			do
 			{
-				first = (entry.parent == null) ? FibonacciHeap.this.minimum
-						: entry.parent.child;
+				first = (entry.parent == null) ? FibonacciHeap.this.minimum : entry.parent.child;
 
 				// Look for siblings.
 				if (entry.right != first)
@@ -1006,12 +939,11 @@ public class FibonacciHeap<TKey, TValue>
 	 * @param <TKey> the key type.
 	 * @param <TValue> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
-	 *          2009) $
+	 * @version $Revision$ $Date$
 	 */
 	private static final class FibonacciHeapEntry<TKey, TValue>
 		extends AbstractLinkedHeap.AbstractLinkedHeapEntry<TKey, TValue>
-		implements Heap.Entry<TKey, TValue>, Serializable
+		implements Serializable
 	{
 
 		/**
@@ -1056,8 +988,7 @@ public class FibonacciHeap<TKey, TValue>
 		 * @param value the value.
 		 * @param source_ref a wrapped weak reference to the creating heap.
 		 */
-		FibonacciHeapEntry(final TKey key, final TValue value,
-				final HeapReference source_ref)
+		FibonacciHeapEntry(final TKey key, final TValue value, final HeapReference source_ref)
 		{
 			super(key, value, source_ref);
 		}

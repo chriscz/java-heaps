@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2009 Fran Lattanzio
+ * Copyright (c) 2005-2010 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,14 +29,10 @@ import java.io.Serializable;
 /**
  * A lame little helper class: Provides a real dynamic array functionality,
  * unlike the POS known as <code>Vector</code>.
- * <p>
- * It's arguable that this class should just be folded into
- * <code>BinaryHeap</code>, since that's the only class that needs
- * <code>DynamicArray</code>.
  * 
  * @param <TElement> the element type.
  * @author Fran Lattanzio
- * @version $Revision$ $Date$
+ * @version $Revision$
  */
 final class DynamicArray<TElement>
 	extends Object
@@ -63,7 +59,7 @@ final class DynamicArray<TElement>
 		super();
 
 		// Create data array
-		this.data = new Object[cap];
+		data = new Object[cap];
 	}
 
 	/**
@@ -73,7 +69,7 @@ final class DynamicArray<TElement>
 	 */
 	int capacity()
 	{
-		return this.data.length;
+		return data.length;
 	}
 
 	/**
@@ -83,17 +79,17 @@ final class DynamicArray<TElement>
 	 */
 	void ensureCapacity(final int new_capacity)
 	{
-		if (new_capacity != this.capacity())
+		if (new_capacity != capacity())
 		{
 			// Re-alloc all the crap.
 			Object[] new_data = new Object[new_capacity];
 
 			// Copy everything, except 0th index.
-			System.arraycopy(this.data, 1, new_data, 1, Math.min(
-					new_data.length, this.data.length) - 1);
+			System.arraycopy(data, 1, new_data, 1, Math.min(
+					new_data.length, data.length) - 1);
 
 			// Set new stuff.
-			this.data = new_data;
+			data = new_data;
 		}
 	}
 
@@ -107,8 +103,9 @@ final class DynamicArray<TElement>
 	 */
 	@SuppressWarnings("unchecked")
 	TElement get(final int index)
+		throws ArrayIndexOutOfBoundsException
 	{
-		return (TElement) this.data[index];
+		return (TElement) data[index];
 	}
 
 	/**
@@ -120,8 +117,9 @@ final class DynamicArray<TElement>
 	 *             bounds.
 	 */
 	void set(final int index, final TElement val)
+		throws ArrayIndexOutOfBoundsException
 	{
-		this.data[index] = val;
+		data[index] = val;
 	}
 
 	/**
@@ -131,9 +129,9 @@ final class DynamicArray<TElement>
 	 * 
 	 * @param cap the new capacity.
 	 */
-	void reallocate(int cap)
+	void reallocate(final int cap)
 	{
-		this.data = new Object[cap];
+		data = new Object[cap];
 	}
 
 }

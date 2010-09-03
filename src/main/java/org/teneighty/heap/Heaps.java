@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2009 Fran Lattanzio
+ * Copyright (c) 2005-2010 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1097,29 +1097,6 @@ public final class Heaps
 
 			// Use self as mutex.
 			this.mutex = this;
-		}
-
-		/**
-		 * Constructor.
-		 * 
-		 * @param heap the backing heap.
-		 * @param mutex the object on which to synchronize.
-		 * @throws NullPointerException If <code>heap</code> or
-		 *             <code>mutex</code> are <code>null</code>.
-		 */
-		SynchronizedHeap(final Heap<TKey, TValue> heap, final Object mutex)
-				throws NullPointerException
-		{
-			super();
-
-			if (heap == null || mutex == null)
-			{
-				throw new NullPointerException();
-			}
-
-			// Store heap and mutex.
-			this.heap = heap;
-			this.mutex = mutex;
 		}
 
 		/**
