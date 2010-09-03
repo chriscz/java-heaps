@@ -115,7 +115,7 @@
 			</fileset>
 			<link href="http://java.sun.com/javase/6/docs/api/" />
 			<doctitle><![CDATA[<h1>teneighty heap API ${main.version}</h1>]]></doctitle>
-			<bottom><![CDATA[<i>Copyright &#169; 2005-2009 Fran Lattanzio. All Rights Reserved.</i><br>Generated on ${current.time}]]></bottom>
+			<bottom><![CDATA[<i>Copyright &#169; 2005-2010 Fran Lattanzio. All Rights Reserved.</i><br>Generated on ${current.time}]]></bottom>
 		</javadoc>
 	</target>
 

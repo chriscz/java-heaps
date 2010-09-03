@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2009 Fran Lattanzio
+ * Copyright (c) 2005-2010 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,6 @@ import java.lang.ref.WeakReference;
  */
 public abstract class AbstractLinkedHeap<TKey, TValue>
 	extends AbstractHeap<TKey, TValue>
-	implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>
 {
 
 	/**
@@ -71,15 +70,7 @@ public abstract class AbstractLinkedHeap<TKey, TValue>
 	}
 
 	/**
-	 * Check for infinite flag.
-	 * 
-	 * @param node1 the first node.
-	 * @param node2 the second node.
-	 * @return integer just like {@link java.lang.Comparable#compareTo(Object)}.
-	 * @throws ClassCastException If the keys of the nodes are not mutually
-	 *             comparable.
-	 * @throws NullPointerException If <code>node1</code> or <code>node2</code>
-	 *             are <code>null</code>. This probably shouldn't happen.
+	 * @see org.teneighty.heap.AbstractHeap#compare(org.teneighty.heap.Heap.Entry, org.teneighty.heap.Heap.Entry)
 	 */
 	@Override
 	protected int compare(final Entry<TKey, TValue> node1,
@@ -148,8 +139,8 @@ public abstract class AbstractLinkedHeap<TKey, TValue>
 			super(key, value);
 
 			// Store ref.
-			this.containing_ref = ref;
-			this.is_infinite = false;
+			containing_ref = ref;
+			is_infinite = false;
 		}
 
 		/**
@@ -158,11 +149,9 @@ public abstract class AbstractLinkedHeap<TKey, TValue>
 		 * @param heap the heap for which to test membership.
 		 * @return boolean true if this node is contained by the specified heap.
 		 * @throws NullPointerException If <code>heap</code> is
-		 *             <code>null</code>.
-		 *             Probably shouldn't happen.
+		 *             <code>null</code>. Probably shouldn't happen.
 		 */
-		protected final boolean isContainedBy(
-				final AbstractLinkedHeap<K, V> heap)
+		protected final boolean isContainedBy(final AbstractLinkedHeap<K, V> heap)
 			throws NullPointerException
 		{
 			if (heap == null)
@@ -170,7 +159,7 @@ public abstract class AbstractLinkedHeap<TKey, TValue>
 				throw new NullPointerException();
 			}
 
-			if (this.containing_ref == null)
+			if (containing_ref == null)
 			{
 				// Means that this node was orphaned from it's parent heap
 				// via a clear or garbage collect.
@@ -178,7 +167,7 @@ public abstract class AbstractLinkedHeap<TKey, TValue>
 			}
 
 			// Straight reference comparison.
-			return (this.containing_ref.getHeap() == heap);
+			return (containing_ref.getHeap() == heap);
 		}
 
 		/**
@@ -186,7 +175,7 @@ public abstract class AbstractLinkedHeap<TKey, TValue>
 		 */
 		protected final void clearSourceReference()
 		{
-			this.containing_ref = null;
+			containing_ref = null;
 		}
 
 	}
@@ -226,7 +215,7 @@ public abstract class AbstractLinkedHeap<TKey, TValue>
 			super();
 
 			// Create stuff.
-			this.heap_ref = new WeakReference<AbstractLinkedHeap>(fh);
+			heap_ref = new WeakReference<AbstractLinkedHeap>(fh);
 		}
 
 		/**
@@ -237,7 +226,7 @@ public abstract class AbstractLinkedHeap<TKey, TValue>
 		 */
 		protected final AbstractLinkedHeap getHeap()
 		{
-			return this.heap_ref.get();
+			return heap_ref.get();
 		}
 
 		/**
@@ -257,10 +246,10 @@ public abstract class AbstractLinkedHeap<TKey, TValue>
 			}
 
 			// Clear ref.
-			this.clearHeap();
+			clearHeap();
 
 			// Create new reference object.
-			this.heap_ref = new WeakReference<AbstractLinkedHeap>(heap);
+			heap_ref = new WeakReference<AbstractLinkedHeap>(heap);
 		}
 
 		/**
@@ -268,7 +257,7 @@ public abstract class AbstractLinkedHeap<TKey, TValue>
 		 */
 		protected final void clearHeap()
 		{
-			this.heap_ref.clear();
+			heap_ref.clear();
 		}
 
 	}

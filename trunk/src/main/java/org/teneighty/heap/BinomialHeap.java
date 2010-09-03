@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2009 Fran Lattanzio
+ * Copyright (c) 2005-2010 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,14 +111,12 @@ import java.io.Serializable;
  * @param <TKey> the key type.
  * @param <TValue> the value type.
  * @author Fran Lattanzio
- * @version $Revision$ $Date$
- * @see "Cormen, T. H.; Leiserson C. E.; Rivest R. L. & C. Stein (2001)
- *      <i>Introduction to Algorithms</i>. MIT Press."
+ * @version $Revision$ $Date: 2009-11-21 13:24:37 -0500 (Sat, 21 Nov 2009)$
+ * @see "Cormen, T. H.; Leiserson C. E.; Rivest R. L. & C. Stein (2001) <i>Introduction to Algorithms</i>. MIT Press."
  */
 public class BinomialHeap<TKey, TValue>
 	extends AbstractLinkedHeap<TKey, TValue>
-	implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
-	Serializable
+	implements Serializable
 {
 
 	/**
@@ -178,7 +176,7 @@ public class BinomialHeap<TKey, TValue>
 	 * <code>k2</code> in the heap.
 	 * 
 	 * @param comp the comparator to use. A <code>null</code> means the keys'
-	 *            natural ordering will be used.
+	 *        natural ordering will be used.
 	 */
 	public BinomialHeap(final Comparator<? super TKey> comp)
 	{
@@ -188,10 +186,10 @@ public class BinomialHeap<TKey, TValue>
 		this.comp = comp;
 
 		// Create heap source reference.
-		this.source_heap = new HeapReference(this);
+		source_heap = new HeapReference(this);
 
 		// Create root list.
-		this.head = null;
+		head = null;
 	}
 
 	/**
@@ -204,7 +202,7 @@ public class BinomialHeap<TKey, TValue>
 	 */
 	public Comparator<? super TKey> getComparator()
 	{
-		return (this.comp);
+		return (comp);
 	}
 
 	/**
@@ -213,13 +211,13 @@ public class BinomialHeap<TKey, TValue>
 	public void clear()
 	{
 		// Clear the root list.
-		this.head = null;
-		this.size = 0;
-		this.mod_count += 1;
-		this.source_heap.clearHeap();
+		head = null;
+		size = 0;
+		mod_count += 1;
+		source_heap.clearHeap();
 
 		// Recreate and such.
-		this.source_heap = new HeapReference(this);
+		source_heap = new HeapReference(this);
 	}
 
 	/**
@@ -229,7 +227,7 @@ public class BinomialHeap<TKey, TValue>
 	 */
 	public int getSize()
 	{
-		return this.size;
+		return size;
 	}
 
 	/**
@@ -246,17 +244,17 @@ public class BinomialHeap<TKey, TValue>
 	public Entry<TKey, TValue> getMinimum()
 		throws NoSuchElementException
 	{
-		if (this.isEmpty())
+		if (isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
 		// Look through root list for smallest node...
-		BinomialHeapEntry<TKey, TValue> min = this.head;
+		BinomialHeapEntry<TKey, TValue> min = head;
 		BinomialHeapEntry<TKey, TValue> next = min.sibling;
 		while (next != null)
 		{
-			if (this.compare(min, next) > 0)
+			if (compare(min, next) > 0)
 			{
 				min = next;
 			}
@@ -276,19 +274,19 @@ public class BinomialHeap<TKey, TValue>
 	public Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
-		if (this.isEmpty())
+		if (isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
 		// Find min and prev pointer to min...
-		BinomialHeapEntry<TKey, TValue> min = this.head;
+		BinomialHeapEntry<TKey, TValue> min = head;
 		BinomialHeapEntry<TKey, TValue> min_prev = null;
 		BinomialHeapEntry<TKey, TValue> next = min.sibling;
 		BinomialHeapEntry<TKey, TValue> prev = min;
 		while (next != null)
 		{
-			if (this.compare(min, next) > 0)
+			if (compare(min, next) > 0)
 			{
 				min_prev = prev;
 				min = next;
@@ -307,7 +305,7 @@ public class BinomialHeap<TKey, TValue>
 		else
 		{
 			// min better be head...
-			this.head = min.sibling;
+			head = min.sibling;
 		}
 
 		// Clear sibling ref!
@@ -344,12 +342,12 @@ public class BinomialHeap<TKey, TValue>
 			child = pv;
 
 			// new head is union of head and reversed children.
-			this.head = this.unionEntries(this.head, child);
+			head = unionEntries(head, child);
 		}
 
 		// Lame housekeeping.
-		this.size -= 1;
-		this.mod_count += 1;
+		size -= 1;
+		mod_count += 1;
 		min.clearSourceReference();
 
 		return min.proxy;
@@ -362,27 +360,26 @@ public class BinomialHeap<TKey, TValue>
 	 * @param value the node value.
 	 * @return the entry created.
 	 * @throws ClassCastException If the specified key is not mutually
-	 *             comparable
-	 *             with the other keys of this heap.
+	 *         comparable
+	 *         with the other keys of this heap.
 	 */
 	public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 		throws ClassCastException
 	{
-		BinomialHeapEntry<TKey, TValue> entry = new BinomialHeapEntry<TKey, TValue>(
-				key, value, this.source_heap);
+		BinomialHeapEntry<TKey, TValue> entry = new BinomialHeapEntry<TKey, TValue>(key, value, source_heap);
 
-		if (this.head == null)
+		if (head == null)
 		{
-			this.head = entry;
-			this.size = 1;
+			head = entry;
+			size = 1;
 		}
 		else
 		{
-			this.head = this.unionEntries(this.head, entry);
-			this.size += 1;
+			head = unionEntries(head, entry);
+			size += 1;
 		}
 
-		this.mod_count += 1;
+		mod_count += 1;
 
 		// Lame proxy hack.
 		HeapEntryProxy<TKey, TValue> proxy = new HeapEntryProxy<TKey, TValue>();
@@ -431,8 +428,7 @@ public class BinomialHeap<TKey, TValue>
 	 * @param y the first node.
 	 * @param z the second node.
 	 */
-	private void link(final BinomialHeapEntry<TKey, TValue> y,
-			final BinomialHeapEntry<TKey, TValue> z)
+	private void link(final BinomialHeapEntry<TKey, TValue> y, final BinomialHeapEntry<TKey, TValue> z)
 	{
 		y.parent = z;
 		y.sibling = z.child;
@@ -450,12 +446,11 @@ public class BinomialHeap<TKey, TValue>
 	 * @param two the second entry.
 	 * @return BinomialHeapEntry{@literal <K,V>} the unioned entries.
 	 */
-	private BinomialHeapEntry<TKey, TValue> unionEntries(
-			final BinomialHeapEntry<TKey, TValue> one,
+	private BinomialHeapEntry<TKey, TValue> unionEntries(final BinomialHeapEntry<TKey, TValue> one,
 			final BinomialHeapEntry<TKey, TValue> two)
 	{
 		// Merge the sibling lists into uber list increasing by degree.
-		BinomialHeapEntry<TKey, TValue> newhead = this.mergeEntries(one, two);
+		BinomialHeapEntry<TKey, TValue> newhead = mergeEntries(one, two);
 
 		if (newhead == null)
 		{
@@ -469,17 +464,16 @@ public class BinomialHeap<TKey, TValue>
 
 		while (next_x != null)
 		{
-			if (x.degree != next_x.degree
-					|| (next_x.sibling != null && next_x.sibling.degree == x.degree))
+			if (x.degree != next_x.degree || (next_x.sibling != null && next_x.sibling.degree == x.degree))
 			{
 				prev_x = x;
 				x = next_x;
 			}
-			else if (this.compare(x, next_x) <= 0)
+			else if (compare(x, next_x) <= 0)
 			{
 				// Same degrees, so link.
 				x.sibling = next_x.sibling;
-				this.link(next_x, x);
+				link(next_x, x);
 			}
 			else
 			{
@@ -493,7 +487,7 @@ public class BinomialHeap<TKey, TValue>
 				}
 
 				// Link 'em up.
-				this.link(x, next_x);
+				link(x, next_x);
 				x = next_x;
 			}
 
@@ -516,8 +510,7 @@ public class BinomialHeap<TKey, TValue>
 	 * @param two the second list.
 	 * @return the merged entry.
 	 */
-	private BinomialHeapEntry<TKey, TValue> mergeEntries(
-			BinomialHeapEntry<TKey, TValue> one,
+	private BinomialHeapEntry<TKey, TValue> mergeEntries(BinomialHeapEntry<TKey, TValue> one,
 			BinomialHeapEntry<TKey, TValue> two)
 	{
 		if (one == null)
@@ -584,7 +577,7 @@ public class BinomialHeap<TKey, TValue>
 		throws IllegalArgumentException, NullPointerException
 	{
 		// Check and cast.
-		if (this.holdsEntry(e) == false)
+		if (holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -597,10 +590,10 @@ public class BinomialHeap<TKey, TValue>
 		entry.is_infinite = true;
 
 		// Percolate the top,
-		this.decreaseKeyImpl(entry);
+		decreaseKeyImpl(entry);
 
 		// Remove.
-		px = (HeapEntryProxy<TKey, TValue>) this.extractMinimum();
+		px = (HeapEntryProxy<TKey, TValue>) extractMinimum();
 		entry = px.entry;
 
 		// Reset entry state.
@@ -616,17 +609,17 @@ public class BinomialHeap<TKey, TValue>
 	 * @param e the entry for which to decrease the key.
 	 * @param k the new key.
 	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *             <code>e</code>'s current key or <code>k</code> is not a
-	 *             member
-	 *             of this heap.
+	 *         <code>e</code>'s current key or <code>k</code> is not a
+	 *         member
+	 *         of this heap.
 	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *             other keys in the heap.
+	 *         other keys in the heap.
 	 */
 	public void decreaseKey(final Heap.Entry<TKey, TValue> e, final TKey k)
 		throws IllegalArgumentException, ClassCastException
 	{
 		// Check and cast.
-		if (this.holdsEntry(e) == false)
+		if (holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -636,7 +629,7 @@ public class BinomialHeap<TKey, TValue>
 		BinomialHeapEntry<TKey, TValue> x = px.entry;
 
 		// Check key... May throw class cast as well.
-		if (this.compareKeys(k, x.getKey()) > 0)
+		if (compareKeys(k, x.getKey()) > 0)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -645,7 +638,7 @@ public class BinomialHeap<TKey, TValue>
 		x.setKey(k);
 
 		// Restore the heap structure.
-		this.decreaseKeyImpl(x);
+		decreaseKeyImpl(x);
 	}
 
 	/**
@@ -653,7 +646,7 @@ public class BinomialHeap<TKey, TValue>
 	 * percolating <code>x</code> up the heap.
 	 * 
 	 * @param x the whose key has just been decreased and needs to be percolated
-	 *            toward the top of the heap.
+	 *        toward the top of the heap.
 	 */
 	private void decreaseKeyImpl(final BinomialHeapEntry<TKey, TValue> x)
 	{
@@ -666,7 +659,7 @@ public class BinomialHeap<TKey, TValue>
 		boolean inf;
 		HeapEntryProxy<TKey, TValue> prx = null;
 
-		while (z != null && this.compare(y, z) < 0)
+		while (z != null && compare(y, z) < 0)
 		{
 			key = y.getKey();
 			val = y.getValue();
@@ -703,14 +696,13 @@ public class BinomialHeap<TKey, TValue>
 	 * @param other the other heap.
 	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
 	 * @throws ClassCastException If the keys of the nodes are not mutally
-	 *             comparable.
+	 *         comparable.
 	 * @throws IllegalArgumentException If you attempt to union a heap with
-	 *             itself.
+	 *         itself.
 	 */
 	@SuppressWarnings("unchecked")
 	public void union(final Heap<TKey, TValue> other)
-		throws ClassCastException, NullPointerException,
-		IllegalArgumentException
+		throws ClassCastException, NullPointerException, IllegalArgumentException
 	{
 		if (other == null)
 		{
@@ -736,17 +728,17 @@ public class BinomialHeap<TKey, TValue>
 			{
 				// Simple check for comparability...
 				// Might throw CCE.
-				this.compare(this.head, that.head);
+				compare(head, that.head);
 
 				// Union root lists.
-				this.head = this.unionEntries(that.head, this.head);
+				head = unionEntries(that.head, head);
 
 				// Update heap fields.
-				this.size += that.size;
-				this.mod_count += 1;
+				size += that.size;
+				mod_count += 1;
 
 				// Change that heap's heap reference to point to this heap.
-				// Thus, all child of that become children of this.
+				// Thus, all child of that become children of
 				that.source_heap.setHeap(this);
 				that.source_heap = new HeapReference(that);
 			}
@@ -786,10 +778,10 @@ public class BinomialHeap<TKey, TValue>
 		throws IOException
 	{
 		// Write non-transient fields.
-		out.writeInt(this.size);
+		out.writeInt(size);
 
 		// Write out all key/value pairs.
-		Iterator<Heap.Entry<TKey, TValue>> it = this.iterator();
+		Iterator<Heap.Entry<TKey, TValue>> it = iterator();
 		Heap.Entry<TKey, TValue> et = null;
 		while (it.hasNext())
 		{
@@ -806,9 +798,7 @@ public class BinomialHeap<TKey, TValue>
 			catch (final ConcurrentModificationException cme)
 			{
 				// User's fault.
-				throw (IOException) new IOException(
-						"Heap structure changed during serialization")
-						.initCause(cme);
+				throw (IOException) new IOException("Heap structure changed during serialization").initCause(cme);
 			}
 		}
 	}
@@ -821,10 +811,10 @@ public class BinomialHeap<TKey, TValue>
 	 * 
 	 * @param in the stream from which to read data.
 	 * @throws IOException If this object cannot properly read from the
-	 *             specified
-	 *             stream.
+	 *         specified
+	 *         stream.
 	 * @throws ClassNotFoundException If deserialization tries to classload an
-	 *             undefined class.
+	 *         undefined class.
 	 */
 	@SuppressWarnings("unchecked")
 	private void readObject(final ObjectInputStream in)
@@ -834,8 +824,8 @@ public class BinomialHeap<TKey, TValue>
 		int rsize = in.readInt();
 
 		// Create new ref object.
-		this.source_heap = new HeapReference(this);
-		this.mod_count = 0;
+		source_heap = new HeapReference(this);
+		mod_count = 0;
 
 		// Read and insert all the keys and values.
 		TKey key;
@@ -844,7 +834,7 @@ public class BinomialHeap<TKey, TValue>
 		{
 			key = (TKey) in.readObject();
 			value = (TValue) in.readObject();
-			this.insert(key, value);
+			insert(key, value);
 		}
 	}
 
@@ -859,6 +849,7 @@ public class BinomialHeap<TKey, TValue>
 	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
 	 *          2009) $
 	 */
+	@SuppressWarnings("synthetic-access")
 	private class EntryIterator
 		extends Object
 		implements Iterator<Heap.Entry<TKey, TValue>>
@@ -882,10 +873,10 @@ public class BinomialHeap<TKey, TValue>
 			super();
 
 			// Start at min.
-			this.next = BinomialHeap.this.head;
+			next = BinomialHeap.this.head;
 
 			// Copy mod count.
-			this.my_mod_count = BinomialHeap.this.mod_count;
+			my_mod_count = BinomialHeap.this.mod_count;
 		}
 
 		/**
@@ -894,16 +885,16 @@ public class BinomialHeap<TKey, TValue>
 		 * @return <code>true</code> if there's another object;
 		 *         <code>false</code> otherwise.
 		 * @throws ConcurrentModificationException If concurrent modification
-		 *             occurs.
+		 *         occurs.
 		 */
 		public boolean hasNext()
 		{
-			if (this.my_mod_count != BinomialHeap.this.mod_count)
+			if (my_mod_count != BinomialHeap.this.mod_count)
 			{
 				throw new ConcurrentModificationException();
 			}
 
-			return (this.next != null);
+			return (next != null);
 		}
 
 		/**
@@ -912,19 +903,19 @@ public class BinomialHeap<TKey, TValue>
 		 * @return the next object.
 		 * @throws NoSuchElementException If the iterator has no more elements.
 		 * @throws ConcurrentModificationException If concurrent modification
-		 *             occurs.
+		 *         occurs.
 		 */
 		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
-			if (this.hasNext() == false)
+			if (hasNext() == false)
 			{
 				throw new NoSuchElementException();
 			}
 
 			// Get the next node.
-			BinomialHeapEntry<TKey, TValue> n = this.next;
-			this.next = this.eulerianSuccessor(this.next);
+			BinomialHeapEntry<TKey, TValue> n = next;
+			next = eulerianSuccessor(next);
 			return n.proxy;
 		}
 
@@ -950,8 +941,7 @@ public class BinomialHeap<TKey, TValue>
 		 * @param entry the given entry.
 		 * @return the successor entry.
 		 */
-		private BinomialHeapEntry<TKey, TValue> eulerianSuccessor(
-				final BinomialHeapEntry<TKey, TValue> entry)
+		private BinomialHeapEntry<TKey, TValue> eulerianSuccessor(final BinomialHeapEntry<TKey, TValue> entry)
 		{
 			if (entry == null)
 			{
@@ -1028,7 +1018,7 @@ public class BinomialHeap<TKey, TValue>
 				return (true);
 			}
 
-			return this.entry.equals(other);
+			return entry.equals(other);
 		}
 
 		/**
@@ -1039,7 +1029,7 @@ public class BinomialHeap<TKey, TValue>
 		@Override
 		public int hashCode()
 		{
-			return this.entry.hashCode();
+			return entry.hashCode();
 		}
 
 		/**
@@ -1049,7 +1039,7 @@ public class BinomialHeap<TKey, TValue>
 		 */
 		public TKey getKey()
 		{
-			return this.entry.getKey();
+			return entry.getKey();
 		}
 
 		/**
@@ -1059,7 +1049,7 @@ public class BinomialHeap<TKey, TValue>
 		 */
 		public TValue getValue()
 		{
-			return this.entry.getValue();
+			return entry.getValue();
 		}
 
 		/**
@@ -1070,7 +1060,7 @@ public class BinomialHeap<TKey, TValue>
 		 */
 		public TValue setValue(final TValue value)
 		{
-			return this.entry.setValue(value);
+			return entry.setValue(value);
 		}
 
 		/**
@@ -1081,7 +1071,7 @@ public class BinomialHeap<TKey, TValue>
 		@Override
 		public String toString()
 		{
-			return this.entry.toString();
+			return entry.toString();
 		}
 
 		/**
@@ -1089,10 +1079,9 @@ public class BinomialHeap<TKey, TValue>
 		 * 
 		 * @param in the stream from which to read data.
 		 * @throws IOException If this object cannot properly read from the
-		 *             specified stream.
+		 *         specified stream.
 		 * @throws ClassNotFoundException If deserialization tries to classload
-		 *             an
-		 *             undefined class.
+		 *         an undefined class.
 		 */
 		private void readObject(final ObjectInputStream in)
 			throws IOException, ClassNotFoundException
@@ -1100,8 +1089,8 @@ public class BinomialHeap<TKey, TValue>
 			// Read non-transient fields.
 			in.defaultReadObject();
 
-			// Reference proxy back to this...
-			this.entry.proxy = this;
+			// Reference proxy back to ..
+			entry.proxy = this;
 		}
 
 	}
@@ -1162,10 +1151,10 @@ public class BinomialHeap<TKey, TValue>
 			super(key, value, ref);
 
 			// Blah - store some stuff.
-			this.sibling = null;
-			this.child = null;
-			this.parent = null;
-			this.degree = 0;
+			sibling = null;
+			child = null;
+			parent = null;
+			degree = 0;
 		}
 
 	}

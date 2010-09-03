@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2009 Fran Lattanzio
+ * Copyright (c) 2005-2010 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -133,18 +133,13 @@ import java.util.Iterator;
  * @param <TKey> the key type.
  * @param <TValue> the value type.
  * @author Fran Lattanzio
- * @version $Revision$ $Date$
- * @see "<i>The pairing heap: A new form of self-adjusting heap</i>,
- *      <u>Algorithmica</u>, 1, March 1986, 111-129, by M. Fredman, R.
- *      Sedgewick, R. Sleator, and R. Tarjan"
- * @see "Mark Weiss (1999) <i>Data Structures and Algorithm Analysis in
- *      Java</i>.
- *      Addison Wesley Professional"
+ * @version $Revision$
+ * @see "<i>The pairing heap: A new form of self-adjusting heap</i>, <u>Algorithmica</u>, 1, March 1986, 111-129, by M. Fredman, R. Sedgewick, R. Sleator, and R. Tarjan"
+ * @see "Mark Weiss (1999) <i>Data Structures and Algorithm Analysis in Java</i>. Addison Wesley Professional"
  */
 public class PairingHeap<TKey, TValue>
 	extends AbstractLinkedHeap<TKey, TValue>
-	implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
-	Serializable
+	implements Serializable
 {
 
 	/**
@@ -244,15 +239,15 @@ public class PairingHeap<TKey, TValue>
 
 		// Store comp.
 		this.comp = comp;
-		this.source = new HeapReference(this);
+		source = new HeapReference(this);
 
 		// Other stuff.
-		this.size = 0;
-		this.mod_count = 0;
-		this.minimum = null;
+		size = 0;
+		mod_count = 0;
+		minimum = null;
 
 		// Not user configurable...
-		this.merge_type = ms;
+		merge_type = ms;
 	}
 
 	/**
@@ -265,7 +260,7 @@ public class PairingHeap<TKey, TValue>
 	 */
 	public MergeStrategy getMergeStrategy()
 	{
-		return this.merge_type;
+		return merge_type;
 	}
 
 	/**
@@ -278,7 +273,7 @@ public class PairingHeap<TKey, TValue>
 	 */
 	public void setMergeStrategy(final MergeStrategy strat)
 	{
-		this.merge_type = strat;
+		merge_type = strat;
 	}
 
 	/**
@@ -293,7 +288,7 @@ public class PairingHeap<TKey, TValue>
 	 */
 	public Comparator<? super TKey> getComparator()
 	{
-		return this.comp;
+		return comp;
 	}
 
 	/**
@@ -302,13 +297,13 @@ public class PairingHeap<TKey, TValue>
 	public void clear()
 	{
 		// Update happy fields.
-		this.minimum = null;
-		this.size = 0;
-		this.mod_count += 1;
+		minimum = null;
+		size = 0;
+		mod_count += 1;
 
 		// Clear source heap and recreate heap refrence.
-		this.source.clearHeap();
-		this.source = new HeapReference(this);
+		source.clearHeap();
+		source = new HeapReference(this);
 	}
 
 	/**
@@ -318,7 +313,7 @@ public class PairingHeap<TKey, TValue>
 	 */
 	public int getSize()
 	{
-		return this.size;
+		return size;
 	}
 
 	/**
@@ -337,22 +332,22 @@ public class PairingHeap<TKey, TValue>
 		throws ClassCastException, NullPointerException
 	{
 		PairingHeapEntry<TKey, TValue> entry = new PairingHeapEntry<TKey, TValue>(
-				key, value, this.source);
+				key, value, source);
 
-		if (this.isEmpty())
+		if (isEmpty())
 		{
 			// trivial case...
-			this.minimum = entry;
+			minimum = entry;
 		}
 		else
 		{
-			this.minimum = this.join(this.minimum, entry);
-			this.minimum.previous = null;
+			minimum = join(minimum, entry);
+			minimum.previous = null;
 		}
 
 		// Update stupid fields.
-		this.size += 1;
-		this.mod_count += 1;
+		size += 1;
+		mod_count += 1;
 
 		// Return new entry.
 		return entry;
@@ -370,12 +365,12 @@ public class PairingHeap<TKey, TValue>
 	public Entry<TKey, TValue> getMinimum()
 		throws NoSuchElementException
 	{
-		if (this.isEmpty())
+		if (isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
-		return this.minimum;
+		return minimum;
 	}
 
 	/**
@@ -394,7 +389,7 @@ public class PairingHeap<TKey, TValue>
 			return first;
 		}
 
-		if (this.compare(first, second) >= 0)
+		if (compare(first, second) >= 0)
 		{
 			// Make first the child of second.
 			second.previous = first.previous;
@@ -436,28 +431,28 @@ public class PairingHeap<TKey, TValue>
 	public Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
-		if (this.isEmpty())
+		if (isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
-		PairingHeapEntry<TKey, TValue> old_min = this.minimum;
+		PairingHeapEntry<TKey, TValue> old_min = minimum;
 
 		// Extricate the specified entry from this heap.
-		if (this.size == 1)
+		if (size == 1)
 		{
-			this.minimum = null;
+			minimum = null;
 		}
 		else
 		{
-			this.minimum = this.merge(this.minimum.child);
-			this.minimum.previous = null;
-			this.minimum.next = null;
+			minimum = merge(minimum.child);
+			minimum.previous = null;
+			minimum.next = null;
 		}
 
 		// Update lame fields.
-		this.size -= 1;
-		this.mod_count += 1;
+		size -= 1;
+		mod_count += 1;
 
 		// Clear source.
 		old_min.clearSourceReference();
@@ -481,7 +476,7 @@ public class PairingHeap<TKey, TValue>
 		throws IllegalArgumentException, NullPointerException
 	{
 		// Check and cast.
-		if (this.holdsEntry(e) == false)
+		if (holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -489,9 +484,9 @@ public class PairingHeap<TKey, TValue>
 		// Narrow.
 		PairingHeapEntry<TKey, TValue> entry = (PairingHeapEntry<TKey, TValue>) e;
 
-		if (entry == this.minimum)
+		if (entry == minimum)
 		{
-			this.extractMinimum();
+			extractMinimum();
 			return;
 		}
 
@@ -499,10 +494,10 @@ public class PairingHeap<TKey, TValue>
 		entry.is_infinite = true;
 
 		// Relink to top!
-		this.relink(entry);
+		relink(entry);
 
 		// Remove. Takes care of size stuff, mod count, all that jazz.
-		this.extractMinimum();
+		extractMinimum();
 
 		// Reset entry state.
 		entry.is_infinite = false;
@@ -529,7 +524,7 @@ public class PairingHeap<TKey, TValue>
 		throws IllegalArgumentException, ClassCastException,
 		NullPointerException
 	{
-		if (this.holdsEntry(e) == false)
+		if (holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -537,7 +532,7 @@ public class PairingHeap<TKey, TValue>
 		PairingHeapEntry<TKey, TValue> entry = (PairingHeapEntry<TKey, TValue>) e;
 
 		// Check key.
-		if (this.compareKeys(entry.getKey(), key) < 0)
+		if (compareKeys(entry.getKey(), key) < 0)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -546,10 +541,10 @@ public class PairingHeap<TKey, TValue>
 		entry.setKey(key);
 
 		// Re link
-		this.relink(entry);
+		relink(entry);
 
 		// We made a change!
-		this.mod_count += 1;
+		mod_count += 1;
 	}
 
 	/**
@@ -559,7 +554,7 @@ public class PairingHeap<TKey, TValue>
 	 */
 	private void relink(final PairingHeapEntry<TKey, TValue> entry)
 	{
-		if (entry != this.minimum)
+		if (entry != minimum)
 		{
 
 			if (entry.next != null)
@@ -583,9 +578,9 @@ public class PairingHeap<TKey, TValue>
 			entry.next = null;
 
 			// join with the root.
-			this.minimum = this.join(entry, this.minimum);
-			this.minimum.previous = null;
-			this.minimum.next = null;
+			minimum = join(entry, minimum);
+			minimum.previous = null;
+			minimum.next = null;
 		}
 	}
 
@@ -599,12 +594,12 @@ public class PairingHeap<TKey, TValue>
 	private PairingHeapEntry<TKey, TValue> merge(
 			final PairingHeapEntry<TKey, TValue> consol)
 	{
-		switch (this.merge_type)
+		switch (merge_type)
 		{
 			case TWO:
-				return this.twoPassMerge(consol);
+				return twoPassMerge(consol);
 			case MULTI:
-				return this.multiPassMerge(consol);
+				return multiPassMerge(consol);
 			default:
 				// Umm... right...
 				throw new InternalError();
@@ -664,7 +659,7 @@ public class PairingHeap<TKey, TValue>
 			one = entrylist.get(index);
 			two = entrylist.get((index + 1));
 
-			entrylist.set(index, this.join(one, two));
+			entrylist.set(index, join(one, two));
 		}
 
 		int jindex = index - 2;
@@ -674,7 +669,7 @@ public class PairingHeap<TKey, TValue>
 			one = entrylist.get(jindex);
 			two = entrylist.get((jindex + 2));
 
-			entrylist.set(jindex, this.join(one, two));
+			entrylist.set(jindex, join(one, two));
 		}
 
 		// Merge right to left.
@@ -685,7 +680,7 @@ public class PairingHeap<TKey, TValue>
 			two = entrylist.get((jindex - 2));
 
 			// Merge 'em
-			entrylist.set((jindex - 2), this.join(two, one));
+			entrylist.set((jindex - 2), join(two, one));
 			jindex -= 2;
 		}
 
@@ -750,11 +745,11 @@ public class PairingHeap<TKey, TValue>
 
 			if (one.next == null)
 			{
-				joined = this.join(one, two);
+				joined = join(one, two);
 			}
 			else
 			{
-				joined = this.join(two, one);
+				joined = join(two, one);
 			}
 
 			// Append to queue.
@@ -828,11 +823,11 @@ public class PairingHeap<TKey, TValue>
 				PairingHeap<TKey, TValue> ph = (PairingHeap<TKey, TValue>) other;
 
 				// Find the new minimum.
-				this.minimum = this.join(this.minimum, ph.minimum);
+				minimum = join(minimum, ph.minimum);
 
 				// Update stuff.
-				this.size += ph.size;
-				this.mod_count += 1;
+				size += ph.size;
+				mod_count += 1;
 
 				// Retarget source pointing.
 				ph.source.setHeap(this);
@@ -873,7 +868,7 @@ public class PairingHeap<TKey, TValue>
 	{
 		// Write non-transient fields.
 		out.defaultWriteObject();
-		out.writeInt(this.size);
+		out.writeInt(size);
 
 		// Write out all key/value pairs.
 		Iterator<Heap.Entry<TKey, TValue>> it = new EntryIterator();
@@ -922,7 +917,7 @@ public class PairingHeap<TKey, TValue>
 		int rsize = in.readInt();
 
 		// Create new ref object.
-		this.source = new HeapReference(this);
+		source = new HeapReference(this);
 
 		// Read and insert all the keys and values.
 		TKey key;
@@ -931,7 +926,7 @@ public class PairingHeap<TKey, TValue>
 		{
 			key = (TKey) in.readObject();
 			value = (TValue) in.readObject();
-			this.insert(key, value);
+			insert(key, value);
 		}
 	}
 
@@ -943,8 +938,7 @@ public class PairingHeap<TKey, TValue>
 	 * <code>UnsupportedOperationException</code>.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
-	 *          2009) $
+	 * @version $Revision$
 	 */
 	private class EntryIterator
 		extends Object
@@ -964,15 +958,16 @@ public class PairingHeap<TKey, TValue>
 		/**
 		 * Constructor.
 		 */
+		@SuppressWarnings("synthetic-access")
 		EntryIterator()
 		{
 			super();
 
 			// Copy mod count.
-			this.my_mod_count = PairingHeap.this.mod_count;
+			my_mod_count = PairingHeap.this.mod_count;
 
 			// Get minimum.
-			this.next = PairingHeap.this.minimum;
+			next = PairingHeap.this.minimum;
 		}
 
 		/**
@@ -983,14 +978,15 @@ public class PairingHeap<TKey, TValue>
 		 * @throws ConcurrentModificationException If concurrent modification
 		 *             occurs.
 		 */
+		@SuppressWarnings("synthetic-access")
 		public boolean hasNext()
 		{
-			if (this.my_mod_count != PairingHeap.this.mod_count)
+			if (my_mod_count != PairingHeap.this.mod_count)
 			{
 				throw new ConcurrentModificationException();
 			}
 
-			return (this.next != null);
+			return (next != null);
 		}
 
 		/**
@@ -1004,14 +1000,14 @@ public class PairingHeap<TKey, TValue>
 		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
-			if (this.hasNext() == false)
+			if (hasNext() == false)
 			{
 				throw new NoSuchElementException();
 			}
 
 			// Get eulerian successor so forth.
-			PairingHeapEntry<TKey, TValue> tmp = this.next;
-			this.next = this.getEulerianSuccessor(tmp);
+			PairingHeapEntry<TKey, TValue> tmp = next;
+			next = getEulerianSuccessor(tmp);
 			return tmp;
 		}
 
@@ -1037,6 +1033,7 @@ public class PairingHeap<TKey, TValue>
 		 * @param entry the entry for which to get the Eulerian successor.
 		 * @return the Eulerian successor.
 		 */
+		@SuppressWarnings("synthetic-access")
 		private PairingHeapEntry<TKey, TValue> getEulerianSuccessor(
 				PairingHeapEntry<TKey, TValue> entry)
 		{
@@ -1094,7 +1091,7 @@ public class PairingHeap<TKey, TValue>
 	 */
 	private static final class PairingHeapEntry<TKey, TValue>
 		extends AbstractLinkedHeap.AbstractLinkedHeapEntry<TKey, TValue>
-		implements Heap.Entry<TKey, TValue>, Serializable
+		implements Serializable
 	{
 
 		/**
@@ -1116,9 +1113,9 @@ public class PairingHeap<TKey, TValue>
 		 * The previous/parent node.
 		 * <p>
 		 * We maintain the invariant that a node is the leftmost child iff
-		 * <code>this.previous.child == this</code>. Otherwise, the previous
+		 * <code>previous.child == this</code>. Otherwise, the previous
 		 * pointer is used in such a way that
-		 * <code>this.next.previous == this</code>.
+		 * <code>next.previous == this</code>.
 		 */
 		transient PairingHeapEntry<TKey, TValue> previous;
 
@@ -1141,11 +1138,9 @@ public class PairingHeap<TKey, TValue>
 	 * Pairing heap merge strategy enumeration.
 	 * 
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
-	 *          2009) $
+	 * @version $Revision$
 	 */
 	public static enum MergeStrategy
-		implements Serializable
 	{
 
 		/**
@@ -1175,7 +1170,7 @@ public class PairingHeap<TKey, TValue>
 		 */
 		private MergeStrategy(final String d)
 		{
-			this.desc = d;
+			desc = d;
 		}
 
 		/**
@@ -1185,7 +1180,7 @@ public class PairingHeap<TKey, TValue>
 		 */
 		public String getDescription()
 		{
-			return this.desc;
+			return desc;
 		}
 
 	}

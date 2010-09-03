@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2009 Fran Lattanzio
+ * Copyright (c) 2005-2010 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -126,8 +126,7 @@ public abstract class AbstractHeap<TKey, TValue>
 	 * 
 	 * @param node1 the first node.
 	 * @param node2 the second node.
-	 * @return an integer as like {@link java.lang.Comparable#compareTo(Object)}
-	 *         .
+	 * @return an integer as like {@link java.lang.Comparable#compareTo(Object)}.
 	 * @throws ClassCastException If the keys of the nodes are not mutally
 	 *             comparable.
 	 * @throws NullPointerException If <code>node1</code> or <code>node2</code>
@@ -161,25 +160,14 @@ public abstract class AbstractHeap<TKey, TValue>
 	protected int compareKeys(final TKey k1, final TKey k2)
 		throws ClassCastException
 	{
-		return (this.getComparator() == null ? (((Comparable) k1).compareTo(k2))
+		return (this.getComparator() == null ? (((Comparable<TKey>) k1).compareTo(k2))
 				: this.getComparator().compare(k1, k2));
 	}
 
 	/**
-	 * Insert all the entries of the specified heap into this heap.
-	 * <p>
-	 * This method takes time <code>O(n * f(m + n))</code>, where <code>n</code>
-	 * is number of entries in the other heap, <code>m</code> is the number of
-	 * entries in this heap and <code>f(x)</code> is time taken by the insert
-	 * function of this heap.
-	 * 
-	 * @param other the other heap.
-	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
-	 * @throws ClassCastException If the keys of <code>other</code> are not
-	 *             mutually comparable to the keys of this heap.
-	 * @throws IllegalArgumentException If you attempt to insert a heap into
-	 *             itself.
+	 * @see org.teneighty.heap.Heap#insertAll(org.teneighty.heap.Heap)
 	 */
+	@Override
 	public void insertAll(final Heap<? extends TKey, ? extends TValue> other)
 		throws NullPointerException, ClassCastException,
 		IllegalArgumentException
@@ -213,27 +201,18 @@ public abstract class AbstractHeap<TKey, TValue>
 	}
 
 	/**
-	 * Is empty.
-	 * 
-	 * @return boolean true if empty.
+	 * @see org.teneighty.heap.Heap#isEmpty()
 	 */
+	@Override
 	public boolean isEmpty()
 	{
 		return (this.getSize() == 0);
 	}
 
 	/**
-	 * Perform the specified action on each element of this heap.
-	 * <p>
-	 * It's extremely unwise to attempt to modify the heap (e.g. decrease the
-	 * keys of all elements by one). Most implementations of this method are
-	 * likely to be implemented atop an iterator over the heap, and thus, if the
-	 * iterator is fail-fast and detects concurrent modification, any changes to
-	 * the heap will cause the iterator to die.
-	 * 
-	 * @param action the action to perform.
-	 * @throws NullPointerException If <code>action</code> is <code>null</code>.
+	 * @see org.teneighty.heap.Heap#forEach(org.teneighty.heap.Action)
 	 */
+	@Override
 	public void forEach(final Action<Heap.Entry<TKey, TValue>> action)
 		throws NullPointerException
 	{
@@ -295,19 +274,8 @@ public abstract class AbstractHeap<TKey, TValue>
 	}
 
 	/**
-	 * Return the hashcode for this Heap.
-	 * <p>
-	 * The hashcode for <i>any</i> heap is hereby defined to be sum of the
-	 * hashcodes of the entries which this heap <i>holds</i>. Like the equality
-	 * definition, this is not debatable. Note that this definition does not
-	 * violate the definition of <code>equals</code>, since if a heap
-	 * <i>holds</i> a set of entries it must also <i>contain</i> them.
-	 * <p>
-	 * Assume, of course, that you're assuming the canonically defined hashcode
-	 * for heap entries. (More precisely, this implementation will be correct if
-	 * you use the hashcode supplied by <code>AbstractHeapEntry</code>.)
-	 * 
-	 * @return the hashcode.
+	 * @see Heap#hashCode()
+	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode()
@@ -323,12 +291,7 @@ public abstract class AbstractHeap<TKey, TValue>
 	}
 
 	/**
-	 * A happier to string.
-	 * <p>
-	 * You can override this method if your heap implementation is extra
-	 * special.
-	 * 
-	 * @return a string representation of this object.
+	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString()
@@ -370,18 +333,9 @@ public abstract class AbstractHeap<TKey, TValue>
 	}
 
 	/**
-	 * Does this heap contain the specified entry? In other words, does this
-	 * heap
-	 * contain entry <code>e</code> such that <code>e.equals( entry )</code>.
-	 * Note that this does <i>not</i>
-	 * imply that <code>e == entry</code>: See {@link Heap.Entry#equals(Object)}
-	 * .
-	 * 
-	 * @param entry the entry to check.
-	 * @return <code>true</code> if this heap contains the specified entry;
-	 *         <code>false</code> otherwise.
-	 * @throws NullPointerException If <code>entry</code> is <code>null</code>.
+	 * @see org.teneighty.heap.Heap#containsEntry(org.teneighty.heap.Heap.Entry)
 	 */
+	@Override
 	public boolean containsEntry(final Entry<TKey, TValue> entry)
 		throws NullPointerException
 	{
@@ -407,20 +361,9 @@ public abstract class AbstractHeap<TKey, TValue>
 	}
 
 	/**
-	 * Returns a Collection view of the keys contained in this heap. The
-	 * Collection is backed by the heap, so changes to the heap are reflected in
-	 * the Collection, and vice-versa. (If the heap is modified while an
-	 * iteration
-	 * over the Collection is in progress, the results of the iteration are
-	 * undefined.) The returned collection is readonly.
-	 * <p>
-	 * The Collection is created the first time this method is called, and
-	 * returned in response to all subsequent calls. No synchronization is
-	 * performed, so there is a slight chance that multiple calls to this method
-	 * will not all return the same Collection.
-	 * 
-	 * @return a Collection view of the keys contained in this heap.
+	 * @see org.teneighty.heap.Heap#getKeys()
 	 */
+	@Override
 	public Collection<TKey> getKeys()
 	{
 		if (this.keys == null)
@@ -432,20 +375,9 @@ public abstract class AbstractHeap<TKey, TValue>
 	}
 
 	/**
-	 * Returns a collection view of the values contained in this heap. The
-	 * collection is backed by the heap, so changes to the heap are reflected in
-	 * the collection, and vice-versa. (If the heap is modified while an
-	 * iteration
-	 * over the collection is in progress, the results of the iteration are
-	 * undefined.) The returned collection is read-only.
-	 * <p>
-	 * The collection is created the first time this method is called, and
-	 * returned in response to all subsequent calls. No synchronization is
-	 * performed, so there is a slight chance that multiple calls to this method
-	 * will not all return the same Collection.
-	 * 
-	 * @return a collection view of the values contained in this heap.
+	 * @see org.teneighty.heap.Heap#getValues()
 	 */
+	@Override
 	public Collection<TValue> getValues()
 	{
 		if (this.values == null)
@@ -457,20 +389,9 @@ public abstract class AbstractHeap<TKey, TValue>
 	}
 
 	/**
-	 * Returns a Collection view of the entries contained in this heap. The
-	 * Collection is backed by the heap, so changes to the heap are reflected in
-	 * the Collection, and vice-versa. (If the heap is modified while an
-	 * iteration
-	 * over the Collection is in progress, the results of the iteration are
-	 * undefined.) The returned collection is readonly.
-	 * <p>
-	 * The Collection is created the first time this method is called, and
-	 * returned in response to all subsequent calls. No synchronization is
-	 * performed, so there is a slight chance that multiple calls to this method
-	 * will not all return the same Collection.
-	 * 
-	 * @return a Collection view of the entries contained in this heap.
+	 * @see org.teneighty.heap.Heap#getEntries()
 	 */
+	@Override
 	public Collection<Heap.Entry<TKey, TValue>> getEntries()
 	{
 		if (this.entries == null)
@@ -482,12 +403,7 @@ public abstract class AbstractHeap<TKey, TValue>
 	}
 
 	/**
-	 * Override clone to clear lame fields.
-	 * 
-	 * @throws CloneNotSupportedException If this object's class does not
-	 *             implement (and support) the {@link java.lang.Cloneable}
-	 *             interface.
-	 * @return a clone of this object.
+	 * @see java.lang.Object#clone()
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -517,7 +433,6 @@ public abstract class AbstractHeap<TKey, TValue>
 	 */
 	private abstract class AbstractHeapCollection<TElement>
 		extends AbstractCollection<TElement>
-		implements Collection<TElement>
 	{
 
 		/**
@@ -528,7 +443,6 @@ public abstract class AbstractHeap<TKey, TValue>
 		 */
 		protected AbstractHeapCollection()
 		{
-			super();
 		}
 
 		/**
@@ -724,23 +638,20 @@ public abstract class AbstractHeap<TKey, TValue>
 			// we have some work to do...
 
 			// erased cast... here so that if/when Java ever starts retaining
-			// generic
-			// type information
-			// at runtime, this method will be "more" correct.
+			// generic type information at runtime, this method will be "more"
+			// correct.
 			Collection<TElement> that = (Collection<TElement>) other;
 
 			// cheap check sizes.
-			if (that.size() != this.size())
+			if (that.size() != size())
 			{
 				return false;
 			}
 
 			// create shallow, mutable clones of both collections (this and
-			// that). We
-			// use linked lists here because they support removal at point (via
-			// their
-			// iterator) in O( 1 ) time, as well as O( 1 ) removal of the first
-			// element.
+			// that). We use linked lists here because they support removal at
+			// point (via their iterator) in O( 1 ) time, as well as O( 1 )
+			// removal of the first element.
 			List<TElement> itemsInThis = new LinkedList<TElement>(this);
 			List<TElement> itemsInThat = new LinkedList<TElement>(that);
 
@@ -802,7 +713,6 @@ public abstract class AbstractHeap<TKey, TValue>
 	 */
 	private final class EntryCollection
 		extends AbstractHeapCollection<Heap.Entry<TKey, TValue>>
-		implements Collection<Heap.Entry<TKey, TValue>>
 	{
 
 		/**
@@ -866,7 +776,6 @@ public abstract class AbstractHeap<TKey, TValue>
 	 */
 	private final class KeyCollection
 		extends AbstractHeapCollection<TKey>
-		implements Collection<TKey>
 	{
 
 		/**
@@ -914,7 +823,7 @@ public abstract class AbstractHeap<TKey, TValue>
 			{
 				super();
 
-				this.backingIterator = AbstractHeap.this.iterator();
+				backingIterator = AbstractHeap.this.iterator();
 			}
 
 			/**
@@ -924,7 +833,7 @@ public abstract class AbstractHeap<TKey, TValue>
 			 */
 			public boolean hasNext()
 			{
-				return this.backingIterator.hasNext();
+				return backingIterator.hasNext();
 			}
 
 			/**
@@ -934,7 +843,7 @@ public abstract class AbstractHeap<TKey, TValue>
 			 */
 			public TKey next()
 			{
-				return this.backingIterator.next().getKey();
+				return backingIterator.next().getKey();
 			}
 
 			/**
@@ -942,10 +851,11 @@ public abstract class AbstractHeap<TKey, TValue>
 			 */
 			public void remove()
 			{
-				this.backingIterator.remove();
+				backingIterator.remove();
 			}
 
 		}
+		
 	}
 
 	/**
@@ -957,7 +867,6 @@ public abstract class AbstractHeap<TKey, TValue>
 	 */
 	private final class ValueCollection
 		extends AbstractHeapCollection<TValue>
-		implements Collection<TValue>
 	{
 
 		/**
@@ -1007,7 +916,7 @@ public abstract class AbstractHeap<TKey, TValue>
 				super();
 
 				// get backing iterator.
-				this.backingIterator = AbstractHeap.this.iterator();
+				backingIterator = AbstractHeap.this.iterator();
 			}
 
 			/**
@@ -1017,7 +926,7 @@ public abstract class AbstractHeap<TKey, TValue>
 			 */
 			public boolean hasNext()
 			{
-				return this.backingIterator.hasNext();
+				return backingIterator.hasNext();
 			}
 
 			/**
@@ -1025,17 +934,19 @@ public abstract class AbstractHeap<TKey, TValue>
 			 * 
 			 * @return the next value.
 			 */
+			@Override
 			public TValue next()
 			{
-				return this.backingIterator.next().getValue();
+				return backingIterator.next().getValue();
 			}
 
 			/**
 			 * Remove the previously iterated value.
 			 */
+			@Override
 			public void remove()
 			{
-				this.backingIterator.remove();
+				backingIterator.remove();
 			}
 
 		}
@@ -1088,16 +999,14 @@ public abstract class AbstractHeap<TKey, TValue>
 			this.key = key;
 			this.value = value;
 		}
-
+	
 		/**
-		 * Get the key for this entry.
-		 * 
-		 * @return the key.
-		 * @see #setKey(Object)
+		 * @see org.teneighty.heap.Heap.Entry#getKey()
 		 */
+		@Override
 		public final TKey getKey()
 		{
-			return this.key;
+			return key;
 		}
 
 		/**
@@ -1117,23 +1026,18 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Get the value for this entry.
-		 * 
-		 * @return the value.
-		 * @see #setValue(Object)
+		 * @see org.teneighty.heap.Heap.Entry#getValue()
 		 */
+		@Override
 		public final TValue getValue()
 		{
-			return this.value;
+			return value;
 		}
 
 		/**
-		 * Set the value for this entry.
-		 * 
-		 * @param value the new value.
-		 * @return the old value.
-		 * @see #getValue()
+		 * @see org.teneighty.heap.Heap.Entry#setValue(java.lang.Object)
 		 */
+		@Override
 		public final TValue setValue(final TValue value)
 		{
 			TValue tmp = this.value;
@@ -1142,17 +1046,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Returns <code>true</code> if <code>o</code> equals this object.
-		 * <p>
-		 * Two heap nodes are defined to be equal if they have the same keys and
-		 * values. This method works even in the face of <code>null</code> keys
-		 * and values.
-		 * <p>
-		 * This method is <code>final</code> because it is implemented
-		 * correctly, as defined by the <code>Heap.Entry</code> interface.
-		 * 
-		 * @param other the other object.
-		 * @return <code>true</code> if equal.
+		 * @see Heap.Entry#equals(Object)
 		 */
 		@SuppressWarnings("unchecked")
 		@Override
@@ -1181,15 +1075,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Hashcode inline with equals.
-		 * <p>
-		 * Hashcode is defined to be the hashcodes of the key and value objects
-		 * (or 0 if these objects are <code>null</code>) XOR'ed with each other.
-		 * <p>
-		 * This method is <code>final</code> because it is implemented
-		 * correctly, as defined by the <code>Heap.Entry</code> interface.
-		 * 
-		 * @return the hashcode.
+		 * @see Heap.Entry#hashCode()
 		 */
 		@Override
 		public final int hashCode()
@@ -1198,10 +1084,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Return a string representation of this object... Only really useful
-		 * for debugging.
-		 * 
-		 * @return a string representation of this object.
+		 * @see java.lang.Object#toString()
 		 */
 		@Override
 		public String toString()

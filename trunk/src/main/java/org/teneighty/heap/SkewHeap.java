@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2009 Fran Lattanzio
+ * Copyright (c) 2005-2010 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,11 +93,11 @@ import java.io.Serializable;
  * @param <TKey> The key type.
  * @param <TValue> The value type.
  * @author Fran Lattanzio
- * @version $Revision$ $Date$
+ * @version $Revision$
  */
 public class SkewHeap<TKey, TValue>
 	extends AbstractLinkedHeap<TKey, TValue>
-	implements Heap<TKey, TValue>, Serializable
+	implements Serializable
 {
 
 	/**
@@ -154,68 +154,123 @@ public class SkewHeap<TKey, TValue>
 		this.comparator = comparator;
 
 		// initialize other stupid fields.
-		this.size = 0;
-		this.mod_count = 0;
-		this.root = null;
+		size = 0;
+		mod_count = 0;
+		root = null;
 
 		// create hideous weak back reference.
-		this.back_reference = new HeapReference(this);
+		back_reference = new HeapReference(this);
 	}
 
 	/**
-	 * Get the comparator used for key comparisons in this heap.
-	 * <p>
-	 * If this method returns <code>null</code> then this heap uses the keys'
-	 * <i>natural ordering</i>.
-	 * 
-	 * @return the comparator or <code>null</code>.
-	 * @see java.util.Comparator
-	 * @see java.lang.Comparable
+	 * @see org.teneighty.heap.Heap#getComparator()
 	 */
+	@Override
 	public Comparator<? super TKey> getComparator()
 	{
-		return this.comparator;
+		return comparator;
 	}
 
 	/**
-	 * Get the number of elements in this heap.
-	 * 
-	 * @return the number of elements in this heap.
+	 * @see org.teneighty.heap.Heap#getSize()
 	 */
+	@Override
 	public int getSize()
 	{
-		return this.size;
+		return size;
 	}
 
 	/**
-	 * Add a key/value pair to this heap.
-	 * 
-	 * @param key the node key.
-	 * @param value the node value.
-	 * @return the entry created.
-	 * @throws ClassCastException If the specified key is not mutually
-	 *             comparable
-	 *             with the other keys of this heap.
-	 * @throws NullPointerException If <code>key</code> is <code>null</code> and
-	 *             this heap does not support <code>null</code> keys.
+	 * @see org.teneighty.heap.Heap#holdsEntry(org.teneighty.heap.Heap.Entry)
 	 */
+	@Override
+	public boolean holdsEntry(final Entry<TKey, TValue> e)
+		throws NullPointerException
+	{
+		if (e == null)
+		{
+			throw new NullPointerException();
+		}
+
+		// Obvious check.
+		if (e.getClass().equals(SkewHeapEntry.class) == false)
+		{
+			return (false);
+		}
+
+		// Narrow.
+		SkewHeapEntry<TKey, TValue> entry = (SkewHeapEntry<TKey, TValue>) e;
+
+		// Use reference trickery.
+		return entry.isContainedBy(this);
+	}
+
+	/**
+	 * @see org.teneighty.heap.Heap#insert(java.lang.Object, java.lang.Object)
+	 */
+	@Override
 	public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 		throws ClassCastException, NullPointerException
 	{
-		SkewHeapEntry<TKey, TValue> newEntry = new SkewHeapEntry<TKey, TValue>(
-				key, value, this.back_reference);
+		SkewHeapEntry<TKey, TValue> newEntry = new SkewHeapEntry<TKey, TValue>(key, value, back_reference);
 
 		// new root = link of new + existing root. Note that link takes care of
-		// nulls
-		// for us.
-		this.root = this.link(this.root, newEntry);
+		// nulls for us.
+		root = link(root, newEntry);
 
 		// update size and mod count.
-		this.size += 1;
-		this.mod_count += 1;
+		size += 1;
+		mod_count += 1;
 
 		// FINIT!
 		return newEntry;
+	}
+
+	/**
+	 * @see org.teneighty.heap.Heap#union(org.teneighty.heap.Heap)
+	 */
+	@Override
+	public void union(final Heap<TKey, TValue> other)
+		throws ClassCastException, NullPointerException, IllegalArgumentException
+	{
+		if (other == null)
+		{
+			throw new NullPointerException();
+		}
+
+		if (other == this)
+		{
+			throw new IllegalArgumentException();
+		}
+
+		// erased cast.
+		SkewHeap<TKey, TValue> that = (SkewHeap<TKey, TValue>) other;
+
+		if (other.isEmpty())
+		{
+			return;
+		}
+
+		try
+		{
+			SkewHeapEntry<TKey, TValue> other_root = that.root;
+
+			// new root is link of two roots.
+			root = link(root, other_root);
+
+			// work some back reference magic.
+			that.back_reference.setHeap(this);
+			that.back_reference = new HeapReference(that);
+
+			// update size and psuedoversion.
+			size += that.size;
+			mod_count += 1;
+		}
+		finally
+		{
+			// always clear the other heap...
+			that.clear();
+		}
 	}
 
 	/**
@@ -230,13 +285,13 @@ public class SkewHeap<TKey, TValue>
 	public Entry<TKey, TValue> getMinimum()
 		throws NoSuchElementException
 	{
-		if (this.isEmpty())
+		if (isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
 		// just return the root.
-		return this.root;
+		return root;
 	}
 
 	/**
@@ -249,25 +304,25 @@ public class SkewHeap<TKey, TValue>
 	public Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
-		if (this.isEmpty())
+		if (isEmpty())
 		{
 			// die - user is DUMB.
 			throw new NoSuchElementException();
 		}
 
 		// remove the root and stuff.
-		SkewHeapEntry<TKey, TValue> returnValue = this.root;
+		SkewHeapEntry<TKey, TValue> returnValue = root;
 
 		// now, link the children together.
-		this.root = this.link(this.root.left, this.root.right);
+		root = link(root.left, root.right);
 
 		// null out parent link of root (only applies if root is not null
 		// of course, which just means that this heap is empty). the link
 		// method doesn't do this for us (this is a special case that really
 		// only applies to this method).
-		if (this.root != null)
+		if (root != null)
 		{
-			this.root.parent = null;
+			root.parent = null;
 		}
 
 		// cut root links, both to the children and to this heap.
@@ -276,10 +331,108 @@ public class SkewHeap<TKey, TValue>
 		returnValue.clearSourceReference();
 
 		// update and whatnot.
-		this.size -= 1;
-		this.mod_count += 1;
+		size -= 1;
+		mod_count += 1;
 
 		return returnValue;
+	}
+
+	/**
+	 * Delete the entry from this heap.
+	 * <p>
+	 * Note that <code>e</code> must be <i>held</i> by this heap, or a
+	 * <code>IllegalArgumentException</code> will be tossed.
+	 * 
+	 * @param e the entry to delete.
+	 * @throws IllegalArgumentException If <code>e</code> is not held by this
+	 *         heap.
+	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
+	 * @see #holdsEntry(Heap.Entry)
+	 */
+	public void delete(final Entry<TKey, TValue> e)
+		throws IllegalArgumentException, NullPointerException
+	{
+		if (e == null)
+		{
+			throw new NullPointerException();
+		}
+
+		// make sure we hold the specified entry.
+		if (holdsEntry(e) == false)
+		{
+			throw new IllegalArgumentException();
+		}
+
+		// erased cast, but this is OK because holds does an appropriate check
+		// for us.
+		SkewHeapEntry<TKey, TValue> entry = (SkewHeapEntry<TKey, TValue>) e;
+
+		if (entry == root)
+		{
+			// known case - this is just an extract min!
+			extractMinimum();
+			return;
+		}
+
+		// definitely not null, since we know this isn't the minimum.
+		SkewHeapEntry<TKey, TValue> parent = entry.parent;
+
+		// we have to replace entry with the link of it's children.
+		SkewHeapEntry<TKey, TValue> left = entry.left;
+		SkewHeapEntry<TKey, TValue> right = entry.right;
+
+		if (left == null && right == null)
+		{
+			// another special case: This node has no children. In this case,
+			// it's trivial to remove this node from the heap.
+			if (parent.left == entry)
+			{
+				parent.left = null;
+			}
+			else
+			{
+				parent.right = null;
+			}
+
+			// and we're done with this case!
+		}
+		else
+		{
+			// clear parent refs before linking...
+			if (left != null)
+			{
+				left.parent = null;
+			}
+
+			if (right != null)
+			{
+				right.parent = null;
+			}
+
+			// get replacement node by linking left and right children.
+			SkewHeapEntry<TKey, TValue> replacement = link(left, right);
+			replacement.parent = parent;
+
+			if (parent.left == entry)
+			{
+				parent.left = replacement;
+			}
+			else
+			{
+				parent.right = replacement;
+			}
+		}
+
+		// entry no longer held by this heap.
+		entry.clearSourceReference();
+
+		// clear stupid node pointers (for GC, but also makes debugging easier).
+		entry.parent = null;
+		entry.left = entry.right = null;
+
+		// update lame metadata fields.
+		size -= 1;
+		mod_count += 1;
 	}
 
 	/**
@@ -291,17 +444,16 @@ public class SkewHeap<TKey, TValue>
 	 * @param e the entry for which to decrease the key.
 	 * @param key the new key.
 	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *             <code>e</code>'s current key or <code>e</code> is held by
-	 *             this
-	 *             heap.
+	 *         <code>e</code>'s current key or <code>e</code> is held by
+	 *         this
+	 *         heap.
 	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *             other keys in the heap.
+	 *         other keys in the heap.
 	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
 	 * @see #holdsEntry(Heap.Entry)
 	 */
 	public void decreaseKey(final Entry<TKey, TValue> e, final TKey key)
-		throws IllegalArgumentException, ClassCastException,
-		NullPointerException
+		throws IllegalArgumentException, ClassCastException, NullPointerException
 	{
 		if (e == null)
 		{
@@ -309,13 +461,13 @@ public class SkewHeap<TKey, TValue>
 		}
 
 		// make sure key is smaller.
-		if (this.compareKeys(key, e.getKey()) > 0)
+		if (compareKeys(key, e.getKey()) > 0)
 		{
 			throw new IllegalArgumentException();
 		}
 
 		// make sure we hold the specified entry.
-		if (this.holdsEntry(e) == false)
+		if (holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -324,12 +476,12 @@ public class SkewHeap<TKey, TValue>
 		// check.
 		SkewHeapEntry<TKey, TValue> entry = (SkewHeapEntry<TKey, TValue>) e;
 
-		if (entry == this.root)
+		if (entry == root)
 		{
 			// stupid case: entry is already the root, so we have no work
 			// to do, really.
 			entry.setKey(key);
-			this.mod_count += 1;
+			mod_count += 1;
 			return;
 		}
 
@@ -377,7 +529,7 @@ public class SkewHeap<TKey, TValue>
 			}
 
 			// link of children forms replacement for the node to cut.
-			SkewHeapEntry<TKey, TValue> replacement = this.link(left, right);
+			SkewHeapEntry<TKey, TValue> replacement = link(left, right);
 			replacement.parent = parent;
 
 			if (parent.left == entry)
@@ -394,177 +546,10 @@ public class SkewHeap<TKey, TValue>
 		// key, and link with root. We've also cleared all outgoing references,
 		// so we're OK to link here...
 		entry.setKey(key);
-		this.root = this.link(this.root, entry);
+		root = link(root, entry);
 
 		// update version and we're done.
-		this.mod_count += 1;
-	}
-
-	/**
-	 * Delete the entry from this heap.
-	 * <p>
-	 * Note that <code>e</code> must be <i>held</i> by this heap, or a
-	 * <code>IllegalArgumentException</code> will be tossed.
-	 * 
-	 * @param e the entry to delete.
-	 * @throws IllegalArgumentException If <code>e</code> is not held by this
-	 *             heap.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
-	 * @see #holdsEntry(Heap.Entry)
-	 */
-	public void delete(final Entry<TKey, TValue> e)
-		throws IllegalArgumentException, NullPointerException
-	{
-		if (e == null)
-		{
-			throw new NullPointerException();
-		}
-
-		// make sure we hold the specified entry.
-		if (this.holdsEntry(e) == false)
-		{
-			throw new IllegalArgumentException();
-		}
-
-		// erased cast, but this is OK because holds does an appropriate check
-		// for
-		// us.
-		SkewHeapEntry<TKey, TValue> entry = (SkewHeapEntry<TKey, TValue>) e;
-
-		if (entry == this.root)
-		{
-			// known case - this is just an extract min!
-			this.extractMinimum();
-			return;
-		}
-
-		// definitely not null, since we know this isn't the minimum.
-		SkewHeapEntry<TKey, TValue> parent = entry.parent;
-
-		// we have to replace entry with the link of it's children.
-		SkewHeapEntry<TKey, TValue> left = entry.left;
-		SkewHeapEntry<TKey, TValue> right = entry.right;
-
-		if (left == null && right == null)
-		{
-			// another special case: This node has no children. In this case,
-			// it's
-			// it's trivial to remove this node from the heap.
-			if (parent.left == entry)
-			{
-				parent.left = null;
-			}
-			else
-			{
-				parent.right = null;
-			}
-
-			// and we're done with this case!
-		}
-		else
-		{
-			// clear parent refs before linking...
-			if (left != null)
-			{
-				left.parent = null;
-			}
-
-			if (right != null)
-			{
-				right.parent = null;
-			}
-
-			// get replacement node by linking left and right children.
-			SkewHeapEntry<TKey, TValue> replacement = this.link(left, right);
-			replacement.parent = parent;
-
-			if (parent.left == entry)
-			{
-				parent.left = replacement;
-			}
-			else
-			{
-				parent.right = replacement;
-			}
-		}
-
-		// entry no longer held by this heap.
-		entry.clearSourceReference();
-
-		// clear stupid node pointers (for GC, but also makes debugging easier).
-		entry.parent = null;
-		entry.left = entry.right = null;
-
-		// update lame metadata fields.
-		this.size -= 1;
-		this.mod_count += 1;
-	}
-
-	/**
-	 * Union this heap with another heap.
-	 * <p>
-	 * Only instances of the same class are capable of being unioned together.
-	 * This is a change from previous versions, when the union of different
-	 * types resulting in "insertAll" type behavior. However, this meant that
-	 * the union method had different semantics based on the runtime-type of the
-	 * other heap, which is definitely a bad thing.
-	 * <p>
-	 * After a union operation, this heap will both <i>contain</i> and
-	 * <i>hold</i> the entries of the other heap. The other heap is cleared in
-	 * the process of union.
-	 * 
-	 * @param other the other heap.
-	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
-	 * @throws ClassCastException If the keys of the nodes are not mutually
-	 *             comparable or the classes do not match.
-	 * @throws IllegalArgumentException If you attempt to union a heap with
-	 *             itself
-	 *             (i.e if <code>other == this</code>).
-	 * @see #insertAll(Heap)
-	 */
-	@SuppressWarnings("unchecked")
-	public void union(final Heap<TKey, TValue> other)
-		throws ClassCastException, NullPointerException,
-		IllegalArgumentException
-	{
-		if (other == null)
-		{
-			throw new NullPointerException();
-		}
-
-		if (other == this)
-		{
-			throw new IllegalArgumentException();
-		}
-
-		// erased cast.
-		SkewHeap<TKey, TValue> that = (SkewHeap<TKey, TValue>) other;
-
-		if (other.isEmpty())
-		{
-			return;
-		}
-
-		try
-		{
-			SkewHeapEntry<TKey, TValue> other_root = that.root;
-
-			// new root is link of two roots.
-			this.root = this.link(this.root, other_root);
-
-			// work some back reference magic.
-			that.back_reference.setHeap(this);
-			that.back_reference = new HeapReference(that);
-
-			// update size and psuedoversion.
-			this.size += that.size;
-			this.mod_count += 1;
-		}
-		finally
-		{
-			// always clear the other heap...
-			that.clear();
-		}
+		mod_count += 1;
 	}
 
 	/**
@@ -579,8 +564,7 @@ public class SkewHeap<TKey, TValue>
 	 * @param second the second node to link.
 	 * @return the new parent of the linked nodes.
 	 */
-	private SkewHeapEntry<TKey, TValue> link(
-			final SkewHeapEntry<TKey, TValue> first,
+	private SkewHeapEntry<TKey, TValue> link(final SkewHeapEntry<TKey, TValue> first,
 			final SkewHeapEntry<TKey, TValue> second)
 	{
 		if (first == null)
@@ -599,7 +583,7 @@ public class SkewHeap<TKey, TValue>
 		SkewHeapEntry<TKey, TValue> smaller;
 		SkewHeapEntry<TKey, TValue> bigger;
 
-		if (this.compare(first, second) < 0)
+		if (compare(first, second) < 0)
 		{
 			smaller = first;
 			bigger = second;
@@ -615,7 +599,7 @@ public class SkewHeap<TKey, TValue>
 		smaller.right = smaller.left;
 
 		// recursively merge the right child and the larger node.
-		tmp = this.link(tmp, bigger);
+		tmp = link(tmp, bigger);
 
 		// set parent and child references.
 		tmp.parent = smaller;
@@ -630,63 +614,15 @@ public class SkewHeap<TKey, TValue>
 	 */
 	public void clear()
 	{
-		this.root = null;
+		root = null;
 
 		// do some back reference magic.
-		this.back_reference.clearHeap();
-		this.back_reference = new HeapReference(this);
+		back_reference.clearHeap();
+		back_reference = new HeapReference(this);
 
 		// update other stupid fields.
-		this.size = 0;
-		this.mod_count += 1;
-	}
-
-	/**
-	 * Does this heap hold the specified entry? This method returns true iff
-	 * there
-	 * exists some entry <code>e</code> within this heap such that
-	 * <code>e == entry</code>.
-	 * <p>
-	 * This method can generally be implemented efficiently (i.e. using
-	 * <code>O(1)</code> time) if you are clever. See the specified
-	 * implementation for info on how long this operation will take.
-	 * <p>
-	 * Note there is a subtle, but very important, difference between this
-	 * method and <code>containsEntry</code>. This method checks to see if the
-	 * specified entry is held by this heap in the sense that the specific
-	 * object <code>entry</code> could be reached by hopping some arbitrary set
-	 * of references (be they weak, strong, etc.) starting from a strong
-	 * reference directly held by this object. This is different from
-	 * <code>containsEntry</code>, which checks if this heap contains an entry
-	 * with exactly the same key and value values. Obviously, if a heap
-	 * <i>holds</i> a specific entry it also <i>contains</i> that entry;
-	 * however, the reverse is not true.
-	 * 
-	 * @param e the entry to check.
-	 * @return <code>true</code> if this heap holds the specified entry;
-	 *         <code>false</code> otherwise.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
-	 * @see #containsEntry(Heap.Entry)
-	 */
-	public boolean holdsEntry(final Entry<TKey, TValue> e)
-		throws NullPointerException
-	{
-		if (e == null)
-		{
-			throw new NullPointerException();
-		}
-
-		// Obvious check.
-		if (e.getClass().equals(SkewHeapEntry.class) == false)
-		{
-			return (false);
-		}
-
-		// Narrow.
-		SkewHeapEntry<TKey, TValue> entry = (SkewHeapEntry<TKey, TValue>) e;
-
-		// Use reference trickery.
-		return entry.isContainedBy(this);
+		size = 0;
+		mod_count += 1;
 	}
 
 	/**
@@ -696,7 +632,7 @@ public class SkewHeap<TKey, TValue>
 	 */
 	public Iterator<Heap.Entry<TKey, TValue>> iterator()
 	{
-		return new EntryIterator();
+		return new EntryIterator(mod_count, root);
 	}
 
 	/**
@@ -711,11 +647,11 @@ public class SkewHeap<TKey, TValue>
 	private void writeObject(final ObjectOutputStream out)
 		throws IOException
 	{
-		out.writeObject(this.comparator);
-		out.writeInt(this.size);
+		out.writeObject(comparator);
+		out.writeInt(size);
 
 		// Write out all key/value pairs.
-		Iterator<Heap.Entry<TKey, TValue>> it = new EntryIterator();
+		Iterator<Heap.Entry<TKey, TValue>> it = iterator();
 		Heap.Entry<TKey, TValue> et = null;
 		while (it.hasNext())
 		{
@@ -732,9 +668,7 @@ public class SkewHeap<TKey, TValue>
 			catch (final ConcurrentModificationException cme)
 			{
 				// User's fault.
-				throw (IOException) new IOException(
-						"Heap structure changed during serialization")
-						.initCause(cme);
+				throw (IOException) new IOException("Heap structure changed during serialization").initCause(cme);
 			}
 		}
 	}
@@ -747,23 +681,22 @@ public class SkewHeap<TKey, TValue>
 	 * 
 	 * @param in the stream from which to read data.
 	 * @throws IOException If this object cannot properly read from the
-	 *             specified
-	 *             stream.
+	 *         specified stream.
 	 * @throws ClassNotFoundException If deserialization tries to classload an
-	 *             undefined class.
+	 *         undefined class.
 	 */
 	@SuppressWarnings("unchecked")
 	private void readObject(final ObjectInputStream in)
 		throws IOException, ClassNotFoundException
 	{
 		// deserialize the comparator...
-		this.comparator = (Comparator<? super TKey>) in.readObject();
+		comparator = (Comparator<? super TKey>) in.readObject();
 
 		// Read the size fields.
 		int rsize = in.readInt();
 
 		// Create new ref object.
-		this.back_reference = new HeapReference(this);
+		back_reference = new HeapReference(this);
 
 		// Read and insert all the keys and values.
 		TKey key;
@@ -772,7 +705,7 @@ public class SkewHeap<TKey, TValue>
 		{
 			key = (TKey) in.readObject();
 			value = (TValue) in.readObject();
-			this.insert(key, value);
+			insert(key, value);
 		}
 	}
 
@@ -803,26 +736,30 @@ public class SkewHeap<TKey, TValue>
 
 		/**
 		 * Constructor.
+		 * 
+		 * @param initialModCount Initial mod count.
+		 * @param start Entry/node from which to start.
 		 */
-		EntryIterator()
+		EntryIterator(final long initialModCount, final SkewHeapEntry<TKey, TValue> start)
 		{
 			super();
 
 			// initialize mod count and current/next element.
-			this.my_mod_count = SkewHeap.this.mod_count;
-			this.next = SkewHeap.this.root;
+			my_mod_count = initialModCount;
+			next = start;
 		}
 
 		/**
 		 * Check for concurrent modification.
 		 * 
 		 * @throws ConcurrentModificationException If we detect concurrent
-		 *             modification.
+		 *         modification.
 		 */
+		@SuppressWarnings("synthetic-access")
 		private void checkForConcurrentModification()
 			throws ConcurrentModificationException
 		{
-			if (this.my_mod_count != SkewHeap.this.mod_count)
+			if (my_mod_count != SkewHeap.this.mod_count)
 			{
 				throw new ConcurrentModificationException();
 			}
@@ -834,13 +771,13 @@ public class SkewHeap<TKey, TValue>
 		 * @return true if there more elements in this iterator; false
 		 *         otherwise.
 		 * @throws ConcurrentModificationException If concurrent modification is
-		 *             detected.
+		 *         detected.
 		 */
 		public boolean hasNext()
 			throws ConcurrentModificationException
 		{
-			this.checkForConcurrentModification();
-			return (this.next != null);
+			checkForConcurrentModification();
+			return (next != null);
 		}
 
 		/**
@@ -849,19 +786,19 @@ public class SkewHeap<TKey, TValue>
 		 * @return the next element in this iterator.
 		 * @throws NoSuchElementException If this iterator is empty.
 		 * @throws ConcurrentModificationException If concurrent modification is
-		 *             detected.
+		 *         detected.
 		 */
 		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
-			if (this.hasNext() == false)
+			if (hasNext() == false)
 			{
 				throw new NoSuchElementException();
 			}
 
 			// store current element and get the successor element.
-			SkewHeapEntry<TKey, TValue> current = this.next;
-			this.next = this.getSuccessor(this.next);
+			SkewHeapEntry<TKey, TValue> current = next;
+			next = getSuccessor(next);
 
 			// done return "next" element.
 			return current;
@@ -885,8 +822,7 @@ public class SkewHeap<TKey, TValue>
 		 * @param entry the entry.
 		 * @return the next node or <code>null</code>.
 		 */
-		private SkewHeapEntry<TKey, TValue> getSuccessor(
-				final SkewHeapEntry<TKey, TValue> entry)
+		private SkewHeapEntry<TKey, TValue> getSuccessor(final SkewHeapEntry<TKey, TValue> entry)
 		{
 			if (entry == null)
 			{
@@ -940,7 +876,7 @@ public class SkewHeap<TKey, TValue>
 	 */
 	private static final class SkewHeapEntry<TKey, TValue>
 		extends AbstractLinkedHeapEntry<TKey, TValue>
-		implements Heap.Entry<TKey, TValue>, Serializable
+		implements Serializable
 	{
 
 		/**
@@ -970,15 +906,14 @@ public class SkewHeap<TKey, TValue>
 		 * @param value the value.
 		 * @param ref the weak reference.
 		 */
-		SkewHeapEntry(final TKey key, final TValue value,
-				final HeapReference ref)
+		SkewHeapEntry(final TKey key, final TValue value, final HeapReference ref)
 		{
 			super(key, value, ref);
 
 			// initially, we have NO children.
-			this.left = null;
-			this.right = null;
-			this.parent = null;
+			left = null;
+			right = null;
+			parent = null;
 		}
 
 	}
