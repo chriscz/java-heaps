@@ -53,14 +53,7 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	}
 
 	/**
-	 * Compare two objects.
-	 * 
-	 * @param o1 the first object.
-	 * @param o2 the second object.
-	 * @return like you'd expect from a
-	 *         {@link java.util.Comparator#compare(Object, Object)} call.
-	 * @throws NullPointerException If <code>o1</code> or <code>o2</code> are
-	 *             <code>null</code>.
+	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
 	public int compare(final T o1, final T o2)
 		throws NullPointerException
@@ -83,6 +76,7 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	 * @param other the other object.
 	 * @return <code>true</code> if <code>other</code> is of the same class as
 	 *         this object; <code>false</code> otherwise.
+	 * @see Object#equals(Object)
 	 */
 	@Override
 	public boolean equals(final Object other)
@@ -105,7 +99,8 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	 * <p>
 	 * In accordance with the definition of equals, this returns a constant.
 	 * 
-	 * @return the hashcode.
+	 * @return The hashcode.
+	 * @see Object#hashCode()
 	 */
 	@Override
 	public int hashCode()
@@ -114,9 +109,7 @@ public class NaturalOrderComparator<T extends Object & Comparable<? super T>>
 	}
 
 	/**
-	 * Get a (better) string representation of this object.
-	 * 
-	 * @return The class name, actually.
+	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString()

@@ -150,32 +150,32 @@ public class PairingHeap<TKey, TValue>
 	/**
 	 * Comparator to use.
 	 */
-	private Comparator<? super TKey> comp;
+	private final Comparator<? super TKey> comp;
 
+	/**
+	 * The minimum entry.
+	 */
+	transient PairingHeapEntry<TKey, TValue> minimum;
+
+	/**
+	 * Merge strategy
+	 */
+	private MergeStrategy merge_type;
+	
 	/**
 	 * The size of this heap.
 	 */
 	private transient int size;
 
 	/**
-	 * The mod count.
-	 */
-	private transient volatile int mod_count;
-
-	/**
-	 * The minimum entry!
-	 */
-	private transient PairingHeapEntry<TKey, TValue> minimum;
-
-	/**
 	 * Heap reference.
 	 */
 	private transient HeapReference source;
-
+	
 	/**
-	 * Merge strategy
+	 * The mod count.
 	 */
-	private MergeStrategy merge_type;
+	transient volatile int mod_count;
 
 	/**
 	 * Constructor.
@@ -230,8 +230,6 @@ public class PairingHeap<TKey, TValue>
 			final MergeStrategy ms)
 			throws NullPointerException
 	{
-		super();
-
 		if (ms == null)
 		{
 			throw new NullPointerException();
@@ -253,7 +251,7 @@ public class PairingHeap<TKey, TValue>
 	/**
 	 * Get the merge strategy.
 	 * <p>
-	 * This method is not specified by the heap interface, obviously.
+	 * This method is not specified by the {@link Heap} interface, obviously.
 	 * 
 	 * @return the strategy.
 	 * @see #setMergeStrategy(org.teneighty.heap.PairingHeap.MergeStrategy)
@@ -266,7 +264,7 @@ public class PairingHeap<TKey, TValue>
 	/**
 	 * Set the merge strategy.
 	 * <p>
-	 * This method is not specified in the heap interface.
+	 * This method is not specified in the {@link Heap} interface.
 	 * 
 	 * @param strat the new strategy.
 	 * @see #getMergeStrategy()
@@ -277,14 +275,7 @@ public class PairingHeap<TKey, TValue>
 	}
 
 	/**
-	 * Get the comparator used for decision in this heap.
-	 * <p>
-	 * If this method returns <code>null</code> then this heap uses the keys'
-	 * <i>natural ordering</i>.
-	 * 
-	 * @return the comparator or <code>null</code>.
-	 * @see java.util.Comparator
-	 * @see java.lang.Comparable
+	 * @see org.teneighty.heap.Heap#getComparator()
 	 */
 	public Comparator<? super TKey> getComparator()
 	{
@@ -790,17 +781,8 @@ public class PairingHeap<TKey, TValue>
 	}
 
 	/**
-	 * Union this heap with another heap.
-	 * 
-	 * @param other the other heap.
-	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
-	 * @throws ClassCastException If the keys of the nodes are not mutally
-	 *             comparable.
-	 * @throws IllegalArgumentException If you attempt to union a heap with
-	 *             itself
-	 *             (i.e if <code>other == this</code>).
+	 * @see org.teneighty.heap.Heap#union(org.teneighty.heap.Heap)
 	 */
-	@SuppressWarnings("unchecked")
 	public void union(final Heap<TKey, TValue> other)
 		throws ClassCastException, NullPointerException,
 		IllegalArgumentException
@@ -880,8 +862,7 @@ public class PairingHeap<TKey, TValue>
 				et = it.next();
 
 				// May result in NotSerializableExceptions, but we there's not a
-				// whole
-				// helluva lot we can do about that.
+				// whole helluva lot we can do about that.
 				out.writeObject(et.getKey());
 				out.writeObject(et.getValue());
 			}
@@ -958,7 +939,6 @@ public class PairingHeap<TKey, TValue>
 		/**
 		 * Constructor.
 		 */
-		@SuppressWarnings("synthetic-access")
 		EntryIterator()
 		{
 			super();
@@ -978,7 +958,6 @@ public class PairingHeap<TKey, TValue>
 		 * @throws ConcurrentModificationException If concurrent modification
 		 *             occurs.
 		 */
-		@SuppressWarnings("synthetic-access")
 		public boolean hasNext()
 		{
 			if (my_mod_count != PairingHeap.this.mod_count)
@@ -1033,7 +1012,6 @@ public class PairingHeap<TKey, TValue>
 		 * @param entry the entry for which to get the Eulerian successor.
 		 * @return the Eulerian successor.
 		 */
-		@SuppressWarnings("synthetic-access")
 		private PairingHeapEntry<TKey, TValue> getEulerianSuccessor(
 				PairingHeapEntry<TKey, TValue> entry)
 		{
@@ -1086,8 +1064,7 @@ public class PairingHeap<TKey, TValue>
 	 * @param <TKey> the key type.
 	 * @param <TValue> the value type.
 	 * @author Fran Lattanzio
-	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
-	 *          2009) $
+	 * @version $Revision$
 	 */
 	private static final class PairingHeapEntry<TKey, TValue>
 		extends AbstractLinkedHeap.AbstractLinkedHeapEntry<TKey, TValue>
@@ -1164,7 +1141,7 @@ public class PairingHeap<TKey, TValue>
 		private String desc;
 
 		/**
-		 * Initializer.
+		 * Initializer/constructor.
 		 * 
 		 * @param d the description.
 		 */

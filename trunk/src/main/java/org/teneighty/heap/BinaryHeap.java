@@ -138,7 +138,7 @@ public class BinaryHeap<TKey, TValue>
 	/**
 	 * The mod count.
 	 */
-	private volatile int mod_count;
+	volatile int mod_count;
 
 	/**
 	 * Comparator.
@@ -818,7 +818,6 @@ public class BinaryHeap<TKey, TValue>
 	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
 	 *          2009) $
 	 */
-	@SuppressWarnings("synthetic-access")
 	private final class EntryIterator
 		extends Object
 		implements Iterator<Heap.Entry<TKey, TValue>>
@@ -849,14 +848,9 @@ public class BinaryHeap<TKey, TValue>
 		}
 
 		/**
-		 * Has next.
-		 * 
-		 * @return <code>true</code> if a next entry exists; <code>false</code>
-		 *         otherwise.
-		 * @throws ConcurrentModificationException If concurrent modification
-		 *             occurs.
+		 * @see java.util.Iterator#hasNext()
 		 */
-		
+		@Override
 		public boolean hasNext()
 			throws ConcurrentModificationException
 		{
@@ -867,15 +861,12 @@ public class BinaryHeap<TKey, TValue>
 
 			return (it_count <= getSize());
 		}
-
+		
 		/**
-		 * Get the next element and advance.
-		 * 
-		 * @return the next element.
-		 * @throws NoSuchElementException If there is no next element.
-		 * @throws ConcurrentModificationException If concurrent modification
-		 *             occurs.
+		 * @see java.util.Iterator#next()
 		 */
+		@Override
+		@SuppressWarnings("synthetic-access")
 		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
@@ -887,12 +878,11 @@ public class BinaryHeap<TKey, TValue>
 			// Return and advance.
 			return BinaryHeap.this.heap.get(it_count++);
 		}
-
+		
 		/**
-		 * Not supported.
-		 * 
-		 * @throws UnsupportedOperationException always.
+		 * @see java.util.Iterator#remove()
 		 */
+		@Override
 		public void remove()
 			throws UnsupportedOperationException
 		{
@@ -915,7 +905,7 @@ public class BinaryHeap<TKey, TValue>
 	 */
 	private static final class BinaryHeapEntry<TKey, TValue>
 		extends AbstractHeap.AbstractHeapEntry<TKey, TValue>
-		implements Heap.Entry<TKey, TValue>, Cloneable, Serializable
+		implements Cloneable, Serializable
 	{
 
 		/**
@@ -944,9 +934,7 @@ public class BinaryHeap<TKey, TValue>
 		}
 
 		/**
-		 * Clone this entry.
-		 * 
-		 * @return a clone of this object.
+		 * @see Object#clone()
 		 */
 		@Override
 		public Object clone()
