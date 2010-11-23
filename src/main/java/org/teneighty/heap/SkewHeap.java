@@ -106,29 +106,29 @@ public class SkewHeap<TKey, TValue>
 	private static final long serialVersionUID = 183483493L;
 
 	/**
-	 * The root of this heap.
-	 */
-	private SkewHeapEntry<TKey, TValue> root;
-
-	/**
 	 * The comparator to use for key comparisons.
 	 */
-	private Comparator<? super TKey> comparator;
+	private final Comparator<? super TKey> comparator;
+	
+	/**
+	 * The root of this heap.
+	 */
+	transient SkewHeapEntry<TKey, TValue> root;
 
 	/**
 	 * The number of elements in this heap.
 	 */
-	private int size;
+	private transient int size;
 
 	/**
 	 * Weak back reference for containment checks and stuff.
 	 */
-	private HeapReference back_reference;
+	private transient HeapReference back_reference;
 
 	/**
 	 * The modification count.
 	 */
-	private volatile long mod_count;
+	transient volatile long mod_count;
 
 	/**
 	 * Constructor.
@@ -486,9 +486,8 @@ public class SkewHeap<TKey, TValue>
 		}
 
 		// harder case: We have to cut the specified node from the heap, repair
-		// the
-		// damage,
-		// set the new key on the entry, and then link it back with the root.
+		// the damage, set the new key on the entry, and then link it back with
+		// the root.
 
 		// we know parent is not null because this is not the root entry.
 		SkewHeapEntry<TKey, TValue> parent = entry.parent;
@@ -632,7 +631,7 @@ public class SkewHeap<TKey, TValue>
 	 */
 	public Iterator<Heap.Entry<TKey, TValue>> iterator()
 	{
-		return new EntryIterator(mod_count, root);
+		return new EntryIterator();
 	}
 
 	/**
@@ -647,10 +646,12 @@ public class SkewHeap<TKey, TValue>
 	private void writeObject(final ObjectOutputStream out)
 		throws IOException
 	{
-		out.writeObject(comparator);
+		out.defaultWriteObject();
+		
+		// manually write the size.
 		out.writeInt(size);
-
-		// Write out all key/value pairs.
+		
+		// Write out all key/value pairs.		
 		Iterator<Heap.Entry<TKey, TValue>> it = iterator();
 		Heap.Entry<TKey, TValue> et = null;
 		while (it.hasNext())
@@ -660,8 +661,7 @@ public class SkewHeap<TKey, TValue>
 				et = it.next();
 
 				// May result in NotSerializableExceptions, but we there's not a
-				// whole
-				// helluva lot we can do about that.
+				// whole helluva lot we can do about that.
 				out.writeObject(et.getKey());
 				out.writeObject(et.getValue());
 			}
@@ -689,15 +689,18 @@ public class SkewHeap<TKey, TValue>
 	private void readObject(final ObjectInputStream in)
 		throws IOException, ClassNotFoundException
 	{
-		// deserialize the comparator...
-		comparator = (Comparator<? super TKey>) in.readObject();
-
-		// Read the size fields.
-		int rsize = in.readInt();
-
+		// read all non-transients.
+		in.defaultReadObject();
+		
 		// Create new ref object.
 		back_reference = new HeapReference(this);
-
+		
+		// Read the size fields.
+		int rsize = in.readInt();
+		
+		// reset size to zero.
+		size = 0;
+		
 		// Read and insert all the keys and values.
 		TKey key;
 		TValue value;
@@ -736,17 +739,14 @@ public class SkewHeap<TKey, TValue>
 
 		/**
 		 * Constructor.
-		 * 
-		 * @param initialModCount Initial mod count.
-		 * @param start Entry/node from which to start.
 		 */
-		EntryIterator(final long initialModCount, final SkewHeapEntry<TKey, TValue> start)
+		EntryIterator()
 		{
 			super();
 
 			// initialize mod count and current/next element.
-			my_mod_count = initialModCount;
-			next = start;
+			my_mod_count = SkewHeap.this.mod_count;
+			next = SkewHeap.this.root;
 		}
 
 		/**
@@ -755,7 +755,6 @@ public class SkewHeap<TKey, TValue>
 		 * @throws ConcurrentModificationException If we detect concurrent
 		 *         modification.
 		 */
-		@SuppressWarnings("synthetic-access")
 		private void checkForConcurrentModification()
 			throws ConcurrentModificationException
 		{

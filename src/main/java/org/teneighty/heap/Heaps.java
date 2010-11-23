@@ -151,8 +151,7 @@ public final class Heaps
 	 */
 	private static final class EmptyHeap<TKey, TValue>
 		extends Object
-		implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
-		Serializable
+		implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>, Serializable
 	{
 
 		/**

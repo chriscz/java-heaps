@@ -111,8 +111,7 @@ import java.io.Serializable;
  */
 public class LeftistHeap<TKey, TValue>
 	extends AbstractLinkedHeap<TKey, TValue>
-	implements Heap<TKey, TValue>, Iterable<Heap.Entry<TKey, TValue>>,
-	Serializable
+	implements Serializable
 {
 
 	/**
@@ -123,12 +122,7 @@ public class LeftistHeap<TKey, TValue>
 	/**
 	 * Comparator.
 	 */
-	private Comparator<? super TKey> comp;
-
-	/**
-	 * The heap reference.
-	 */
-	private transient HeapReference source_heap;
+	private final Comparator<? super TKey> comp;
 
 	/**
 	 * The root/minimum node.
@@ -141,9 +135,14 @@ public class LeftistHeap<TKey, TValue>
 	private transient int size;
 
 	/**
+	 * The heap reference.
+	 */
+	private transient HeapReference source_heap;
+	
+	/**
 	 * The mod count.
 	 */
-	private transient volatile int mod_count;
+	transient volatile int mod_count;
 
 	/**
 	 * Constructor.
@@ -489,7 +488,6 @@ public class LeftistHeap<TKey, TValue>
 	 * @throws IllegalArgumentException If you attempt to union a heap with
 	 *             itself.
 	 */
-	@SuppressWarnings("unchecked")
 	public void union(final Heap<TKey, TValue> other)
 		throws ClassCastException, NullPointerException,
 		IllegalArgumentException
@@ -676,7 +674,8 @@ public class LeftistHeap<TKey, TValue>
 	{
 		// Write non-transient fields.
 		out.defaultWriteObject();
-
+		
+		// write the size.
 		out.writeInt(this.size);
 
 		// Write out all key/value pairs.
@@ -689,8 +688,7 @@ public class LeftistHeap<TKey, TValue>
 				et = it.next();
 
 				// May result in NotSerializableExceptions, but we there's not a
-				// whole
-				// helluva lot we can do about that.
+				// wholehelluva lot we can do about that.
 				out.writeObject(et.getKey());
 				out.writeObject(et.getValue());
 			}
@@ -724,10 +722,11 @@ public class LeftistHeap<TKey, TValue>
 		// Read non-transient fields.
 		in.defaultReadObject();
 
-		int rsize = in.readInt();
-
 		// Create new ref object.
-		this.source_heap = new HeapReference(this);
+		source_heap = new HeapReference(this);
+
+		// read the size.
+		int rsize = in.readInt();
 
 		// Read and insert all the keys and values.
 		TKey key;
@@ -736,7 +735,7 @@ public class LeftistHeap<TKey, TValue>
 		{
 			key = (TKey) in.readObject();
 			value = (TValue) in.readObject();
-			this.insert(key, value);
+			insert(key, value);
 		}
 	}
 
@@ -761,7 +760,7 @@ public class LeftistHeap<TKey, TValue>
 	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
 	 *          2009) $
 	 */
-	private class EntryIterator
+	private final class EntryIterator
 		extends Object
 		implements Iterator<Heap.Entry<TKey, TValue>>
 	{
@@ -901,7 +900,7 @@ public class LeftistHeap<TKey, TValue>
 	 */
 	private static final class LeftistHeapEntry<K, V>
 		extends AbstractLinkedHeap.AbstractLinkedHeapEntry<K, V>
-		implements Heap.Entry<K, V>, Serializable
+		implements Serializable
 	{
 
 		/**

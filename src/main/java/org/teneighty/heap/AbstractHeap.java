@@ -136,7 +136,7 @@ public abstract class AbstractHeap<TKey, TValue>
 			final Entry<TKey, TValue> node2)
 		throws ClassCastException, NullPointerException
 	{
-		return this.compareKeys(node1.getKey(), node2.getKey());
+		return compareKeys(node1.getKey(), node2.getKey());
 	}
 
 	/**
@@ -160,8 +160,8 @@ public abstract class AbstractHeap<TKey, TValue>
 	protected int compareKeys(final TKey k1, final TKey k2)
 		throws ClassCastException
 	{
-		return (this.getComparator() == null ? (((Comparable<TKey>) k1).compareTo(k2))
-				: this.getComparator().compare(k1, k2));
+		return (getComparator() == null ? (((Comparable<TKey>) k1).compareTo(k2))
+				: getComparator().compare(k1, k2));
 	}
 
 	/**
@@ -196,7 +196,7 @@ public abstract class AbstractHeap<TKey, TValue>
 			entry = it.next();
 
 			// Might throw class cast.
-			this.insert(entry.getKey(), entry.getValue());
+			insert(entry.getKey(), entry.getValue());
 		}
 	}
 
@@ -206,7 +206,7 @@ public abstract class AbstractHeap<TKey, TValue>
 	@Override
 	public boolean isEmpty()
 	{
-		return (this.getSize() == 0);
+		return (getSize() == 0);
 	}
 
 	/**
@@ -225,7 +225,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		// iterator detects concurrent modification - we'll die right here
 		// with a ConcurrentModificationException (or something equally
 		// sinister).
-		Iterator<Heap.Entry<TKey, TValue>> entryIterator = this.iterator();
+		Iterator<Heap.Entry<TKey, TValue>> entryIterator = iterator();
 		while (entryIterator.hasNext())
 		{
 			action.action(entryIterator.next());
@@ -270,7 +270,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		// erased cast... a little bit evil. We should also figure out
 		// here if we want to just cast to Heap<K,V>.
 		Heap<? extends TKey, ? extends TValue> that = (Heap<? extends TKey, ? extends TValue>) other;
-		return this.getEntries().equals(that.getEntries());
+		return getEntries().equals(that.getEntries());
 	}
 
 	/**
@@ -281,7 +281,7 @@ public abstract class AbstractHeap<TKey, TValue>
 	public int hashCode()
 	{
 		int code = 0;
-		Iterator<Heap.Entry<TKey, TValue>> it = this.getEntries().iterator();
+		Iterator<Heap.Entry<TKey, TValue>> it = getEntries().iterator();
 		while (it.hasNext())
 		{
 			code += it.next().hashCode();
@@ -297,13 +297,13 @@ public abstract class AbstractHeap<TKey, TValue>
 	public String toString()
 	{
 		StringBuilder buffer = new StringBuilder();
-		buffer.append(this.getClass().getName());
+		buffer.append(getClass().getName());
 		buffer.append("(");
-		buffer.append(this.getSize());
+		buffer.append(getSize());
 		buffer.append(") ");
 		buffer.append("[");
 
-		Iterator<Heap.Entry<TKey, TValue>> it = this.getEntries().iterator();
+		Iterator<Heap.Entry<TKey, TValue>> it = getEntries().iterator();
 		boolean next = it.hasNext();
 		Heap.Entry<TKey, TValue> entry = null;
 		TKey k = null;
@@ -345,7 +345,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		// Iterate over all entries...
-		Iterator<Heap.Entry<TKey, TValue>> it = this.getEntries().iterator();
+		Iterator<Heap.Entry<TKey, TValue>> it = getEntries().iterator();
 		Entry<TKey, TValue> next = null;
 		while (it.hasNext())
 		{
@@ -366,12 +366,12 @@ public abstract class AbstractHeap<TKey, TValue>
 	@Override
 	public Collection<TKey> getKeys()
 	{
-		if (this.keys == null)
+		if (keys == null)
 		{
-			this.keys = new KeyCollection();
+			keys = new KeyCollection();
 		}
 
-		return this.keys;
+		return keys;
 	}
 
 	/**
@@ -380,12 +380,12 @@ public abstract class AbstractHeap<TKey, TValue>
 	@Override
 	public Collection<TValue> getValues()
 	{
-		if (this.values == null)
+		if (values == null)
 		{
-			this.values = new ValueCollection();
+			values = new ValueCollection();
 		}
 
-		return this.values;
+		return values;
 	}
 
 	/**
@@ -394,12 +394,12 @@ public abstract class AbstractHeap<TKey, TValue>
 	@Override
 	public Collection<Heap.Entry<TKey, TValue>> getEntries()
 	{
-		if (this.entries == null)
+		if (entries == null)
 		{
-			this.entries = new EntryCollection();
+			entries = new EntryCollection();
 		}
 
-		return this.entries;
+		return entries;
 	}
 
 	/**
@@ -411,8 +411,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		throws CloneNotSupportedException
 	{
 		// May throw clone not supported.
-		AbstractHeap<TKey, TValue> ah = (AbstractHeap<TKey, TValue>) super
-				.clone();
+		AbstractHeap<TKey, TValue> ah = (AbstractHeap<TKey, TValue>) super.clone();
 
 		// Clear lame fields.
 		ah.keys = null;
@@ -455,7 +454,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		@Override
 		public final int size()
 		{
-			return AbstractHeap.this.getSize();
+			return getSize();
 		}
 
 		/**
@@ -482,8 +481,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		 *             readonly.
 		 */
 		@Override
-		public boolean addAll(
-				final Collection<? extends TElement> collectionToAdd)
+		public boolean addAll(final Collection<? extends TElement> collectionToAdd)
 			throws UnsupportedOperationException
 		{
 			throw new UnsupportedOperationException();
@@ -599,7 +597,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		{
 			int hashCode = 0;
 
-			Iterator<TElement> iterator = this.iterator();
+			Iterator<TElement> iterator = iterator();
 			TElement next;
 			while (iterator.hasNext())
 			{
@@ -760,7 +758,7 @@ public abstract class AbstractHeap<TKey, TValue>
 			}
 
 			Heap.Entry<TKey, TValue> e = (Heap.Entry<TKey, TValue>) o;
-			return AbstractHeap.this.containsEntry(e);
+			return containsEntry(e);
 		}
 
 	}
@@ -1040,7 +1038,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		@Override
 		public final TValue setValue(final TValue value)
 		{
-			TValue tmp = this.value;
+			TValue tmp = value;
 			this.value = value;
 			return tmp;
 		}
@@ -1070,8 +1068,8 @@ public abstract class AbstractHeap<TKey, TValue>
 			Heap.Entry that = (Heap.Entry) other;
 
 			// Use happier version to check for null.
-			return (objectEquals(this.key, that.getKey()) && objectEquals(
-					this.value, that.getValue()));
+			return (objectEquals(key, that.getKey()) && objectEquals(
+					value, that.getValue()));
 		}
 
 		/**
@@ -1080,7 +1078,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		@Override
 		public final int hashCode()
 		{
-			return (objectHashCode(this.key) ^ objectHashCode(this.value));
+			return (objectHashCode(key) ^ objectHashCode(value));
 		}
 
 		/**
@@ -1090,11 +1088,11 @@ public abstract class AbstractHeap<TKey, TValue>
 		public String toString()
 		{
 			StringBuilder sb = new StringBuilder();
-			sb.append(this.getKey() == this ? "[self-reference]" : String
-					.valueOf(this.getKey()));
+			sb.append(getKey() == this ? "[self-reference]" : String
+					.valueOf(getKey()));
 			sb.append("->");
-			sb.append(this.getValue() == this ? "[self-reference]" : String
-					.valueOf(this.getValue()));
+			sb.append(getValue() == this ? "[self-reference]" : String
+					.valueOf(getValue()));
 			return sb.toString();
 		}
 
