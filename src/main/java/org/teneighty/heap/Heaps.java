@@ -133,7 +133,7 @@ public final class Heaps
 	 * @param two the second object.
 	 * @return true if reference equal; false otherwise.
 	 */
-	static boolean ReferenceEquals(final Object one, final Object two)
+	static boolean referenceEquals(final Object one, final Object two)
 	{
 		return (one == two);
 	}
@@ -231,7 +231,7 @@ public final class Heaps
 				throw new NullPointerException();
 			}
 
-			if (ReferenceEquals(other, this))
+			if (referenceEquals(other, this))
 			{
 				throw new IllegalArgumentException();
 			}
@@ -492,7 +492,7 @@ public final class Heaps
 		 * @throws NullPointerException If <code>action</code> is
 		 *             <code>null</code>.
 		 */
-		public void forEach(Action<Heap.Entry<TKey, TValue>> action)
+		public void forEach(final Action<Heap.Entry<TKey, TValue>> action)
 			throws NullPointerException
 		{
 			if (action == null)
@@ -607,8 +607,8 @@ public final class Heaps
 				throw new NullPointerException();
 			}
 
-			if (ReferenceEquals(other, this)
-					|| ReferenceEquals(other, this.heap))
+			if (referenceEquals(other, this)
+					|| referenceEquals(other, this.heap))
 			{
 				throw new IllegalArgumentException();
 			}
@@ -1170,8 +1170,8 @@ public final class Heaps
 				throw new NullPointerException();
 			}
 
-			if (ReferenceEquals(other, this)
-					|| ReferenceEquals(other, this.heap))
+			if (referenceEquals(other, this)
+					|| referenceEquals(other, this.heap))
 			{
 				throw new IllegalArgumentException();
 			}

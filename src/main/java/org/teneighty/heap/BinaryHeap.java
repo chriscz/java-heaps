@@ -126,29 +126,29 @@ public class BinaryHeap<TKey, TValue>
 	private static final int DEFAULT_HEAP_CAPACITY = 16;
 
 	/**
+	 * Comparator.
+	 */
+	private final Comparator<? super TKey> comp;
+
+	/**
 	 * The array of entries.
 	 */
-	private DynamicArray<BinaryHeapEntry<TKey, TValue>> heap;
+	private transient DynamicArray<BinaryHeapEntry<TKey, TValue>> heap;
 
 	/**
 	 * The size of this heap.
 	 */
-	private int size;
+	private transient int size;
 
 	/**
 	 * The mod count.
 	 */
-	volatile int mod_count;
-
-	/**
-	 * Comparator.
-	 */
-	private Comparator<? super TKey> comp;
+	volatile transient int mod_count;
 
 	/**
 	 * Recommended capacity.
 	 */
-	private int rec_capacity;
+	private transient int rec_capacity;
 
 	/**
 	 * The constructor.
@@ -242,6 +242,15 @@ public class BinaryHeap<TKey, TValue>
 	}
 
 	/**
+	 * @see org.teneighty.heap.Heap#getComparator()
+	 */
+	@Override
+	public Comparator<? super TKey> getComparator()
+	{
+		return comp;
+	}
+	
+	/**
 	 * @see org.teneighty.heap.Heap#getSize()
 	 */
 	@Override
@@ -263,32 +272,37 @@ public class BinaryHeap<TKey, TValue>
 	}
 	
 	/**
-	 * @see org.teneighty.heap.Heap#getComparator()
+	 * @see org.teneighty.heap.Heap#holdsEntry(org.teneighty.heap.Heap.Entry)
 	 */
 	@Override
-	public Comparator<? super TKey> getComparator()
+	public boolean holdsEntry(final Entry<TKey, TValue> e)
+		throws NullPointerException
 	{
-		return comp;
-	}
-
-	/**
-	 * @see org.teneighty.heap.Heap#clear()
-	 */
-	@Override
-	public void clear()
-	{
-		size = 0;
-		mod_count += 1;
-
-		// Clear backing array, entry by entry!
-		int index = 1;
-		while (heap.get(index) != null)
+		if (e == null)
 		{
-			heap.set(index, null);
+			throw new NullPointerException();
 		}
 
-		// Reallocate back to original size.
-		heap.reallocate(rec_capacity);
+		if (e.getClass().equals(BinaryHeapEntry.class) == false)
+		{
+			return false;
+		}
+
+		// Narrow.
+		BinaryHeapEntry<TKey, TValue> bhe = (BinaryHeapEntry<TKey, TValue>) e;
+
+		if (bhe.heap_index >= heap.capacity())
+		{
+			return false;
+		}
+
+		if (heap.get(bhe.heap_index) != bhe)
+		{
+			return false;
+		}
+
+		// And it's OK!
+		return true;
 	}
 
 	/**
@@ -325,6 +339,98 @@ public class BinaryHeap<TKey, TValue>
 
 		// Return new node.
 		return node;
+	}
+	
+	/**
+	 * Heapify on the specified index.
+	 * <p>
+	 * Basically taken from CLR, but modified to be iterative instead of
+	 * recursive. The code is slightly more bloated, but will (theoretically)
+	 * run more quickly on very large heaps.
+	 * <p>
+	 * This method is capable of doing both up and down percolations. Note that
+	 * in many implementations, these two methods are split; however, these
+	 * implementations generally conform to the <code>PriorityQueue</code>
+	 * interface, in which there is no <code>delete</code> operation. Since
+	 * <code>delete</code> may need percolation up or down, it's easier to
+	 * simply write this method to do both...
+	 * 
+	 * @param index the index on which to heapify.
+	 */
+	private void heapify(final int index)
+	{
+		// Now we have to heapify. Code based on/stolen from CLR
+		int left = index;
+		int right = index;
+		int smallest = index;
+		int at_node = index;
+		int parent = index;
+
+		// A useful temporary ref.
+		BinaryHeapEntry<TKey, TValue> tmp = null;
+
+		while (true)
+		{
+			parent = (at_node / 2);
+
+			if (parent >= 1
+					&& compare(heap.get(parent), heap
+							.get(at_node)) > 0)
+			{
+				// Swap' em.
+				tmp = heap.get(at_node);
+
+				// Double ditto.
+				heap.set(at_node, heap.get(parent));
+				heap.get(at_node).heap_index = at_node;
+
+				// Triple ditto.
+				heap.set(parent, tmp);
+				tmp.heap_index = parent;
+
+				// Continue.
+				at_node = parent;
+				continue;
+			}
+
+			left = at_node << 1;
+			right = left + 1;
+			smallest = at_node;
+
+			// Is the left child's priority smaller than its parent's???
+			if (left <= size
+					&& compare(heap.get(left), heap
+							.get(smallest)) < 0)
+			{
+				smallest = left;
+			}
+
+			if (right <= size
+					&& compare(heap.get(right), heap
+							.get(smallest)) < 0)
+			{
+				smallest = right;
+			}
+
+			if (smallest == at_node)
+			{
+				// D.U.N. done.
+				break;
+			}
+
+			// Otherwise, swap the parent and the child of smaller priority.
+			tmp = heap.get(at_node);
+
+			// SWAP!
+			heap.set(at_node, heap.get(smallest));
+			heap.get(at_node).heap_index = at_node;
+
+			heap.set(smallest, tmp);
+			tmp.heap_index = smallest;
+
+			// Keep going up the heap.
+			at_node = smallest;
+		}
 	}
 	
 	/**
@@ -452,46 +558,11 @@ public class BinaryHeap<TKey, TValue>
 	}
 
 	/**
-	 * @see org.teneighty.heap.Heap#holdsEntry(org.teneighty.heap.Heap.Entry)
-	 */
-	@Override
-	public boolean holdsEntry(final Entry<TKey, TValue> e)
-		throws NullPointerException
-	{
-		if (e == null)
-		{
-			throw new NullPointerException();
-		}
-
-		if (e.getClass().equals(BinaryHeapEntry.class) == false)
-		{
-			return false;
-		}
-
-		// Narrow.
-		BinaryHeapEntry<TKey, TValue> bhe = (BinaryHeapEntry<TKey, TValue>) e;
-
-		if (bhe.heap_index >= heap.capacity())
-		{
-			return false;
-		}
-
-		if (heap.get(bhe.heap_index) != bhe)
-		{
-			return false;
-		}
-
-		// And it's OK!
-		return true;
-	}
-
-	/**
 	 * @see org.teneighty.heap.Heap#union(org.teneighty.heap.Heap)
 	 */
 	@Override
 	public void union(final Heap<TKey, TValue> other)
-		throws ClassCastException, NullPointerException,
-		IllegalArgumentException
+		throws ClassCastException, NullPointerException, IllegalArgumentException
 	{
 		if (other == null)
 		{
@@ -520,10 +591,8 @@ public class BinaryHeap<TKey, TValue>
 				for (int index = size + 1, jindex = 1; jindex <= that.size; jindex++, index++)
 				{
 					// set into heap - we have to set the heap index here,
-					// because
-					// heapifying
-					// may not move the entry (and hence set/reset the heap
-					// index).
+					// because heapifying may not move the entry (and hence
+					// set/reset the heap index).
 					thatEntry = that.heap.get(jindex);
 					thatEntry.heap_index = index;
 
@@ -597,101 +666,39 @@ public class BinaryHeap<TKey, TValue>
 	}
 
 	/**
-	 * Heapify on the specified index.
-	 * <p>
-	 * Basically taken from CLR, but modified to be iterative instead of
-	 * recursive. The code is slightly more bloated, but will (theoretically)
-	 * run more quickly on very large heaps.
-	 * <p>
-	 * This method is capable of doing both up and down percolations. Note that
-	 * in many implementations, these two methods are split; however, these
-	 * implementations generally conform to the <code>PriorityQueue</code>
-	 * interface, in which there is no <code>delete</code> operation. Since
-	 * <code>delete</code> may need percolation up or down, it's easier to
-	 * simply write this method to do both...
-	 * 
-	 * @param index the index on which to heapify.
+	 * @see org.teneighty.heap.Heap#clear()
 	 */
-	private void heapify(final int index)
+	@Override
+	public void clear()
 	{
-		// Now we have to heapify. Code based on/stolen from CLR
-		int left = index;
-		int right = index;
-		int smallest = index;
-		int at_node = index;
-		int parent = index;
+		size = 0;
+		mod_count += 1;
 
-		// A useful temporary ref.
-		BinaryHeapEntry<TKey, TValue> tmp = null;
-
-		while (true)
+		// Clear backing array, entry by entry!
+		int index = 1;
+		while (heap.get(index) != null)
 		{
-			parent = (at_node / 2);
-
-			if (parent >= 1
-					&& compare(heap.get(parent), heap
-							.get(at_node)) > 0)
-			{
-				// Swap' em.
-				tmp = heap.get(at_node);
-
-				// Double ditto.
-				heap.set(at_node, heap.get(parent));
-				heap.get(at_node).heap_index = at_node;
-
-				// Triple ditto.
-				heap.set(parent, tmp);
-				tmp.heap_index = parent;
-
-				// Continue.
-				at_node = parent;
-				continue;
-			}
-
-			left = at_node << 1;
-			right = left + 1;
-			smallest = at_node;
-
-			// Is the left child's priority smaller than its parent's???
-			if (left <= size
-					&& compare(heap.get(left), heap
-							.get(smallest)) < 0)
-			{
-				smallest = left;
-			}
-
-			if (right <= size
-					&& compare(heap.get(right), heap
-							.get(smallest)) < 0)
-			{
-				smallest = right;
-			}
-
-			if (smallest == at_node)
-			{
-				// D.U.N. done.
-				break;
-			}
-
-			// Otherwise, swap the parent and the child of smaller priority.
-			tmp = heap.get(at_node);
-
-			// SWAP!
-			heap.set(at_node, heap.get(smallest));
-			heap.get(at_node).heap_index = at_node;
-
-			heap.set(smallest, tmp);
-			tmp.heap_index = smallest;
-
-			// Keep going up the heap.
-			at_node = smallest;
+			heap.set(index, null);
 		}
+
+		// Reallocate back to original size.
+		heap.reallocate(rec_capacity);
+	}
+	
+	/**
+	 * @see org.teneighty.heap.Heap#iterator()
+	 */
+	@Override
+	public Iterator<Entry<TKey, TValue>> iterator()
+	{
+		return new EntryIterator();
 	}
 
 	/**
 	 * Create and return a shallow clone of this heap.
 	 * 
 	 * @return a shallow copy of this heap.
+	 * @see Object#clone()
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
@@ -738,7 +745,7 @@ public class BinaryHeap<TKey, TValue>
 		throws IOException
 	{
 		// write comparator.
-		out.writeObject(comp);
+		out.defaultWriteObject();
 
 		// Write "capacity" and size.
 		out.writeInt(heap.capacity());
@@ -772,7 +779,7 @@ public class BinaryHeap<TKey, TValue>
 	private void readObject(final ObjectInputStream in)
 		throws IOException, ClassNotFoundException
 	{
-		comp = (Comparator<? super TKey>) in.readObject();
+		in.defaultReadObject();
 
 		// Read old heap size.
 		int capacity = in.readInt();
@@ -799,16 +806,6 @@ public class BinaryHeap<TKey, TValue>
 	}
 
 	/**
-	 * Get an iterator over this heap's entry collection.
-	 * 
-	 * @return an iterator over the entries.
-	 */
-	public Iterator<Entry<TKey, TValue>> iterator()
-	{
-		return new EntryIterator();
-	}
-
-	/**
 	 * Binary heap iterator class.
 	 * <p>
 	 * Cheats a little bit and touches the dynamic array and mod count fields of
@@ -831,7 +828,7 @@ public class BinaryHeap<TKey, TValue>
 		/**
 		 * Iterator mod count.
 		 */
-		private int it_mod_count;
+		private final int it_mod_count;
 
 		/**
 		 * Constructor.

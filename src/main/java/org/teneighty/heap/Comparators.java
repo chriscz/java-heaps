@@ -91,12 +91,9 @@ public final class Comparators
 		}
 
 		/**
-		 * Compare the specified objects.
-		 * 
-		 * @param o1 the first object
-		 * @param o2 the second object.
-		 * @return the opposite of what the underlying comparator does.
+		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 */
+		@Override
 		public int compare(final TCompare o1, final TCompare o2)
 		{
 			return comp.compare(o2, o1);
@@ -107,6 +104,7 @@ public final class Comparators
 		 * 
 		 * @param other the other object.
 		 * @return true if equal.
+		 * @see Object#equals(Object)
 		 */
 		@SuppressWarnings("unchecked")
 		@Override
@@ -130,11 +128,9 @@ public final class Comparators
 
 			return false;
 		}
-
+		
 		/**
-		 * Get a hashcode, inline with equals.
-		 * 
-		 * @return the hashcode.
+		 * @see java.lang.Object#hashCode()
 		 */
 		@Override
 		public int hashCode()
@@ -143,9 +139,7 @@ public final class Comparators
 		}
 
 		/**
-		 * Produce a happy string version of this class.
-		 * 
-		 * @return a string.
+		 * @see java.lang.Object#toString()
 		 */
 		@Override
 		public String toString()
