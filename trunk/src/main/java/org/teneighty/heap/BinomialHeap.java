@@ -127,27 +127,27 @@ public class BinomialHeap<TKey, TValue>
 	/**
 	 * Comparator.
 	 */
-	private Comparator<? super TKey> comp;
-
-	/**
-	 * The heap reference.
-	 */
-	private HeapReference source_heap;
-
-	/**
-	 * The size of this heap.
-	 */
-	private int size;
-
-	/**
-	 * The mod count.
-	 */
-	private volatile long mod_count;
+	private final Comparator<? super TKey> comp;
 
 	/**
 	 * Head pointer.
 	 */
-	private BinomialHeapEntry<TKey, TValue> head;
+	transient BinomialHeapEntry<TKey, TValue> head;
+
+	/**
+	 * The size of this heap.
+	 */
+	private transient int size;
+
+	/**
+	 * The heap reference.
+	 */
+	private transient HeapReference source_heap;
+
+	/**
+	 * The mod count.
+	 */
+	transient volatile int mod_count;
 
 	/**
 	 * Constructor.
@@ -193,54 +193,299 @@ public class BinomialHeap<TKey, TValue>
 	}
 
 	/**
-	 * Get the the Comparator.
-	 * <p>
-	 * If this method returns <code>null</code>, then this heap uses the keys'
-	 * <i>natural ordering</i>.
-	 * 
-	 * @return the Comparator or <code>null</code>.
+	 * @see org.teneighty.heap.Heap#getComparator()
 	 */
+	@Override
 	public Comparator<? super TKey> getComparator()
 	{
 		return (comp);
 	}
-
+	
 	/**
-	 * Clear this heap.
+	 * @see org.teneighty.heap.Heap#getSize()
 	 */
-	public void clear()
-	{
-		// Clear the root list.
-		head = null;
-		size = 0;
-		mod_count += 1;
-		source_heap.clearHeap();
-
-		// Recreate and such.
-		source_heap = new HeapReference(this);
-	}
-
-	/**
-	 * Get the number of entries in this heap.
-	 * 
-	 * @return the entry count.
-	 */
+	@Override
 	public int getSize()
 	{
 		return size;
 	}
 
 	/**
-	 * Get the entry with the minimum key.
-	 * <p>
-	 * This method does <u>not</u> remove the returned entry.
-	 * <p>
-	 * Code based basically exactly on CLRS.
+	 * Does this heap hold the specified entry?
 	 * 
-	 * @return the entry.
-	 * @throws NoSuchElementException If this heap is empty.
-	 * @see #extractMinimum()
+	 * @param e entry to check.
+	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
+	 * @return <code>true</code> if this heap holds <code>e</code>;
+	 *         <code>false</code> otherwise.
 	 */
+	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
+		throws NullPointerException
+	{
+		if (e == null)
+		{
+			throw new NullPointerException();
+		}
+
+		// Obvious check.
+		if (e.getClass().equals(HeapEntryProxy.class) == false)
+		{
+			return false;
+		}
+
+		// Narrow.
+		HeapEntryProxy<TKey, TValue> proxy = (HeapEntryProxy<TKey, TValue>) e;
+
+		// Use reference trickery.
+		return proxy.entry.isContainedBy(this);
+	}
+	
+	/**
+	 * Add a mapping to this heap.
+	 * 
+	 * @param key the node key.
+	 * @param value the node value.
+	 * @return the entry created.
+	 * @throws ClassCastException If the specified key is not mutually
+	 *         comparable
+	 *         with the other keys of this heap.
+	 */
+	public Entry<TKey, TValue> insert(final TKey key, final TValue value)
+		throws ClassCastException
+	{
+		BinomialHeapEntry<TKey, TValue> entry = new BinomialHeapEntry<TKey, TValue>(key, value, source_heap);
+
+		if (head == null)
+		{
+			head = entry;
+			size = 1;
+		}
+		else
+		{
+			head = unionEntries(head, entry);
+			size += 1;
+		}
+
+		mod_count += 1;
+
+		// Lame proxy hack.
+		HeapEntryProxy<TKey, TValue> proxy = new HeapEntryProxy<TKey, TValue>();
+		proxy.entry = entry;
+		entry.proxy = proxy;
+
+		return proxy;
+	}
+
+	/**
+	 * Union the specified entries together into one uber entry, which is
+	 * returned.
+	 * <p>
+	 * Code based on CLRS.
+	 * 
+	 * @param one the first entry.
+	 * @param two the second entry.
+	 * @return BinomialHeapEntry{@literal <K,V>} the unioned entries.
+	 */
+	private BinomialHeapEntry<TKey, TValue> unionEntries(final BinomialHeapEntry<TKey, TValue> one,
+			final BinomialHeapEntry<TKey, TValue> two)
+	{
+		// Merge the sibling lists into uber list increasing by degree.
+		BinomialHeapEntry<TKey, TValue> newhead = mergeEntries(one, two);
+
+		if (newhead == null)
+		{
+			return null;
+		}
+
+		// References from CLRS.
+		BinomialHeapEntry<TKey, TValue> prev_x = null;
+		BinomialHeapEntry<TKey, TValue> x = newhead;
+		BinomialHeapEntry<TKey, TValue> next_x = x.sibling;
+
+		while (next_x != null)
+		{
+			if (x.degree != next_x.degree || (next_x.sibling != null && next_x.sibling.degree == x.degree))
+			{
+				prev_x = x;
+				x = next_x;
+			}
+			else if (compare(x, next_x) <= 0)
+			{
+				// Same degrees, so link.
+				x.sibling = next_x.sibling;
+				link(next_x, x);
+			}
+			else
+			{
+				if (prev_x == null)
+				{
+					newhead = next_x;
+				}
+				else
+				{
+					prev_x.sibling = next_x;
+				}
+
+				// Link 'em up.
+				link(x, next_x);
+				x = next_x;
+			}
+
+			// Advance happy pointer.
+			next_x = x.sibling;
+		}
+
+		// Ok, finit!
+		return newhead;
+	}
+	
+	/**
+	 * Merge the specified list of sibling pointed to by the specified entries,
+	 * such that the node list returned is sorted in non-decreasing order by
+	 * degree.
+	 * <p>
+	 * This is the old list merging algorithm, as found in mergesort and such.
+	 * 
+	 * @param one the first list.
+	 * @param two the second list.
+	 * @return the merged entry.
+	 */
+	private BinomialHeapEntry<TKey, TValue> mergeEntries(BinomialHeapEntry<TKey, TValue> one,
+			BinomialHeapEntry<TKey, TValue> two)
+	{
+		if (one == null)
+		{
+			return two;
+		}
+
+		if (two == null)
+		{
+			return one;
+		}
+
+		BinomialHeapEntry<TKey, TValue> min = null;
+		if (one.degree < two.degree)
+		{
+			min = one;
+			one = one.sibling;
+		}
+		else
+		{
+			min = two;
+			two = two.sibling;
+		}
+
+		BinomialHeapEntry<TKey, TValue> last = min;
+
+		while (one != null && two != null)
+		{
+			if (one.degree < two.degree)
+			{
+				last.sibling = one;
+				one = one.sibling;
+			}
+			else
+			{
+				last.sibling = two;
+				two = two.sibling;
+			}
+
+			// Cannot be null.
+			last = last.sibling;
+		}
+
+		if (one == null)
+		{
+			last.sibling = two;
+		}
+		else
+		{
+			last.sibling = one;
+		}
+
+		return min;
+	}
+	
+	/**
+	 * Link the specified entries: This function links two trees of
+	 * <code>k-1</code> to form a new tree of size <code>k</code>. It does so
+	 * by making <code>z</code> the parent of <code>y</code>.
+	 * <p>
+	 * Stolen from CLRS. And yet I feel no remorse.
+	 * 
+	 * @param y the first node.
+	 * @param z the second node.
+	 */
+	private void link(final BinomialHeapEntry<TKey, TValue> y, final BinomialHeapEntry<TKey, TValue> z)
+	{
+		y.parent = z;
+		y.sibling = z.child;
+		z.child = y;
+		z.degree += 1;
+	}
+	
+	/**
+	 * @see org.teneighty.heap.Heap#union(org.teneighty.heap.Heap)
+	 */
+	@Override
+	@SuppressWarnings("unchecked")
+	public void union(final Heap<TKey, TValue> other)
+		throws ClassCastException, NullPointerException, IllegalArgumentException
+	{
+		if (other == null)
+		{
+			throw new NullPointerException();
+		}
+
+		if (this == other)
+		{
+			throw new IllegalArgumentException();
+		}
+
+		if (other.isEmpty())
+		{
+			return;
+		}
+
+		if (other.getClass().equals(BinomialHeap.class))
+		{
+			// Get other root.
+			BinomialHeap<TKey, TValue> that = (BinomialHeap) other;
+
+			try
+			{
+				// Simple check for comparability...
+				// Might throw CCE.
+				compare(head, that.head);
+
+				// Union root lists.
+				head = unionEntries(that.head, head);
+
+				// Update heap fields.
+				size += that.size;
+				mod_count += 1;
+
+				// Change that heap's heap reference to point to this heap.
+				// Thus, all child of that become children of
+				that.source_heap.setHeap(this);
+				that.source_heap = new HeapReference(that);
+			}
+			finally
+			{
+				// Clear other heap regardless...
+				that.clear();
+			}
+
+		}
+		else
+		{
+			throw new ClassCastException();
+		}
+	}
+	
+	/**
+	 * @see org.teneighty.heap.Heap#getMinimum()
+	 */
+	@Override
 	public Entry<TKey, TValue> getMinimum()
 		throws NoSuchElementException
 	{
@@ -263,14 +508,11 @@ public class BinomialHeap<TKey, TValue>
 
 		return min.proxy;
 	}
-
+	
 	/**
-	 * Remove and return the entry minimum key.
-	 * 
-	 * @return the entry.
-	 * @throws NoSuchElementException If the heap is empty.
-	 * @see #getMinimum()
+	 * @see org.teneighty.heap.Heap#extractMinimum()
 	 */
+	@Override
 	public Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
@@ -354,225 +596,9 @@ public class BinomialHeap<TKey, TValue>
 	}
 
 	/**
-	 * Add a mapping to this heap.
-	 * 
-	 * @param key the node key.
-	 * @param value the node value.
-	 * @return the entry created.
-	 * @throws ClassCastException If the specified key is not mutually
-	 *         comparable
-	 *         with the other keys of this heap.
+	 * @see org.teneighty.heap.Heap#delete(org.teneighty.heap.Heap.Entry)
 	 */
-	public Entry<TKey, TValue> insert(final TKey key, final TValue value)
-		throws ClassCastException
-	{
-		BinomialHeapEntry<TKey, TValue> entry = new BinomialHeapEntry<TKey, TValue>(key, value, source_heap);
-
-		if (head == null)
-		{
-			head = entry;
-			size = 1;
-		}
-		else
-		{
-			head = unionEntries(head, entry);
-			size += 1;
-		}
-
-		mod_count += 1;
-
-		// Lame proxy hack.
-		HeapEntryProxy<TKey, TValue> proxy = new HeapEntryProxy<TKey, TValue>();
-		proxy.entry = entry;
-		entry.proxy = proxy;
-
-		return proxy;
-	}
-
-	/**
-	 * Does this heap hold the specified entry?
-	 * 
-	 * @param e entry to check.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
-	 * @return <code>true</code> if this heap holds <code>e</code>;
-	 *         <code>false</code> otherwise.
-	 */
-	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
-		throws NullPointerException
-	{
-		if (e == null)
-		{
-			throw new NullPointerException();
-		}
-
-		// Obvious check.
-		if (e.getClass().equals(HeapEntryProxy.class) == false)
-		{
-			return false;
-		}
-
-		// Narrow.
-		HeapEntryProxy<TKey, TValue> proxy = (HeapEntryProxy<TKey, TValue>) e;
-
-		// Use reference trickery.
-		return proxy.entry.isContainedBy(this);
-	}
-
-	/**
-	 * Link the specified entries: This function links two trees of
-	 * <code>k-1</code> to form a new tree of size <code>k</code>. It does so
-	 * by making <code>z</code> the parent of <code>y</code>.
-	 * <p>
-	 * Stolen from CLRS. And yet I feel no remorse.
-	 * 
-	 * @param y the first node.
-	 * @param z the second node.
-	 */
-	private void link(final BinomialHeapEntry<TKey, TValue> y, final BinomialHeapEntry<TKey, TValue> z)
-	{
-		y.parent = z;
-		y.sibling = z.child;
-		z.child = y;
-		z.degree += 1;
-	}
-
-	/**
-	 * Union the specified entries together into one uber entry, which is
-	 * returned.
-	 * <p>
-	 * Code based on CLRS.
-	 * 
-	 * @param one the first entry.
-	 * @param two the second entry.
-	 * @return BinomialHeapEntry{@literal <K,V>} the unioned entries.
-	 */
-	private BinomialHeapEntry<TKey, TValue> unionEntries(final BinomialHeapEntry<TKey, TValue> one,
-			final BinomialHeapEntry<TKey, TValue> two)
-	{
-		// Merge the sibling lists into uber list increasing by degree.
-		BinomialHeapEntry<TKey, TValue> newhead = mergeEntries(one, two);
-
-		if (newhead == null)
-		{
-			return null;
-		}
-
-		// References from CLRS.
-		BinomialHeapEntry<TKey, TValue> prev_x = null;
-		BinomialHeapEntry<TKey, TValue> x = newhead;
-		BinomialHeapEntry<TKey, TValue> next_x = x.sibling;
-
-		while (next_x != null)
-		{
-			if (x.degree != next_x.degree || (next_x.sibling != null && next_x.sibling.degree == x.degree))
-			{
-				prev_x = x;
-				x = next_x;
-			}
-			else if (compare(x, next_x) <= 0)
-			{
-				// Same degrees, so link.
-				x.sibling = next_x.sibling;
-				link(next_x, x);
-			}
-			else
-			{
-				if (prev_x == null)
-				{
-					newhead = next_x;
-				}
-				else
-				{
-					prev_x.sibling = next_x;
-				}
-
-				// Link 'em up.
-				link(x, next_x);
-				x = next_x;
-			}
-
-			// Advance happy pointer.
-			next_x = x.sibling;
-		}
-
-		// Ok, finit!
-		return newhead;
-	}
-
-	/**
-	 * Merge the specified list of sibling pointed to by the specified entries,
-	 * such that the node list returned is sorted in non-decreasing order by
-	 * degree.
-	 * <p>
-	 * This is the old list merging algorithm, as found in mergesort and such.
-	 * 
-	 * @param one the first list.
-	 * @param two the second list.
-	 * @return the merged entry.
-	 */
-	private BinomialHeapEntry<TKey, TValue> mergeEntries(BinomialHeapEntry<TKey, TValue> one,
-			BinomialHeapEntry<TKey, TValue> two)
-	{
-		if (one == null)
-		{
-			return two;
-		}
-
-		if (two == null)
-		{
-			return one;
-		}
-
-		BinomialHeapEntry<TKey, TValue> min = null;
-		if (one.degree < two.degree)
-		{
-			min = one;
-			one = one.sibling;
-		}
-		else
-		{
-			min = two;
-			two = two.sibling;
-		}
-
-		BinomialHeapEntry<TKey, TValue> last = min;
-
-		while (one != null && two != null)
-		{
-			if (one.degree < two.degree)
-			{
-				last.sibling = one;
-				one = one.sibling;
-			}
-			else
-			{
-				last.sibling = two;
-				two = two.sibling;
-			}
-
-			// Cannot be null.
-			last = last.sibling;
-		}
-
-		if (one == null)
-		{
-			last.sibling = two;
-		}
-		else
-		{
-			last.sibling = one;
-		}
-
-		return min;
-	}
-
-	/**
-	 * Delete the specified entry.
-	 * 
-	 * @param e entry to delete.
-	 * @throws IllegalArgumentException If <code>e</code> is not in this heap.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
-	 */
+	@Override
 	public void delete(final Heap.Entry<TKey, TValue> e)
 		throws IllegalArgumentException, NullPointerException
 	{
@@ -601,20 +627,9 @@ public class BinomialHeap<TKey, TValue>
 	}
 
 	/**
-	 * Decrease the key of the given element.
-	 * <p>
-	 * This class can always cheaply determine of <code>e</code> is not a member
-	 * of this heap (in <code>O(1)</code> time, thanks to reference magic).
-	 * 
-	 * @param e the entry for which to decrease the key.
-	 * @param k the new key.
-	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *         <code>e</code>'s current key or <code>k</code> is not a
-	 *         member
-	 *         of this heap.
-	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *         other keys in the heap.
+	 * @see org.teneighty.heap.Heap#decreaseKey(org.teneighty.heap.Heap.Entry, java.lang.Object)
 	 */
+	@Override
 	public void decreaseKey(final Heap.Entry<TKey, TValue> e, final TKey k)
 		throws IllegalArgumentException, ClassCastException
 	{
@@ -687,79 +702,25 @@ public class BinomialHeap<TKey, TValue>
 	}
 
 	/**
-	 * Union with another heap.
-	 * <p>
-	 * This operation takes time <code>O(log n)</code> if <code>other</code> is
-	 * an instance of <code>BinomialHeap</code> and <code>O(n log n)</code> time
-	 * otherwise.
-	 * 
-	 * @param other the other heap.
-	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
-	 * @throws ClassCastException If the keys of the nodes are not mutally
-	 *         comparable.
-	 * @throws IllegalArgumentException If you attempt to union a heap with
-	 *         itself.
+	 * @see org.teneighty.heap.Heap#clear()
 	 */
-	@SuppressWarnings("unchecked")
-	public void union(final Heap<TKey, TValue> other)
-		throws ClassCastException, NullPointerException, IllegalArgumentException
+	@Override
+	public void clear()
 	{
-		if (other == null)
-		{
-			throw new NullPointerException();
-		}
+		// Clear the root list.
+		head = null;
+		size = 0;
+		mod_count += 1;
+		source_heap.clearHeap();
 
-		if (this == other)
-		{
-			throw new IllegalArgumentException();
-		}
-
-		if (other.isEmpty())
-		{
-			return;
-		}
-
-		if (other.getClass().equals(BinomialHeap.class))
-		{
-			// Get other root.
-			BinomialHeap<TKey, TValue> that = (BinomialHeap) other;
-
-			try
-			{
-				// Simple check for comparability...
-				// Might throw CCE.
-				compare(head, that.head);
-
-				// Union root lists.
-				head = unionEntries(that.head, head);
-
-				// Update heap fields.
-				size += that.size;
-				mod_count += 1;
-
-				// Change that heap's heap reference to point to this heap.
-				// Thus, all child of that become children of
-				that.source_heap.setHeap(this);
-				that.source_heap = new HeapReference(that);
-			}
-			finally
-			{
-				// Clear other heap regardless...
-				that.clear();
-			}
-
-		}
-		else
-		{
-			throw new ClassCastException();
-		}
+		// Recreate and such.
+		source_heap = new HeapReference(this);
 	}
-
+	
 	/**
-	 * Get an iterator over this heap entry set.
-	 * 
-	 * @return an iterator over the entry set.
+	 * @see org.teneighty.heap.Heap#iterator()
 	 */
+	@Override
 	public Iterator<Heap.Entry<TKey, TValue>> iterator()
 	{
 		return new EntryIterator();
@@ -778,6 +739,7 @@ public class BinomialHeap<TKey, TValue>
 		throws IOException
 	{
 		// Write non-transient fields.
+		out.defaultWriteObject();
 		out.writeInt(size);
 
 		// Write out all key/value pairs.
@@ -821,6 +783,7 @@ public class BinomialHeap<TKey, TValue>
 		throws IOException, ClassNotFoundException
 	{
 		// Read non-transient fields.
+		in.defaultReadObject();
 		int rsize = in.readInt();
 
 		// Create new ref object.
@@ -849,7 +812,6 @@ public class BinomialHeap<TKey, TValue>
 	 * @version $Revision$ $Date: 2009-10-29 23:54:44 -0400 (Thu, 29 Oct
 	 *          2009) $
 	 */
-	@SuppressWarnings("synthetic-access")
 	private class EntryIterator
 		extends Object
 		implements Iterator<Heap.Entry<TKey, TValue>>
@@ -863,7 +825,7 @@ public class BinomialHeap<TKey, TValue>
 		/**
 		 * Local modification count.
 		 */
-		private final long my_mod_count;
+		private final int my_mod_count;
 
 		/**
 		 * Constructor.
@@ -880,13 +842,9 @@ public class BinomialHeap<TKey, TValue>
 		}
 
 		/**
-		 * Does this iterator have another object?
-		 * 
-		 * @return <code>true</code> if there's another object;
-		 *         <code>false</code> otherwise.
-		 * @throws ConcurrentModificationException If concurrent modification
-		 *         occurs.
+		 * @see java.util.Iterator#hasNext()
 		 */
+		@Override
 		public boolean hasNext()
 		{
 			if (my_mod_count != BinomialHeap.this.mod_count)
@@ -896,15 +854,11 @@ public class BinomialHeap<TKey, TValue>
 
 			return (next != null);
 		}
-
+		
 		/**
-		 * Get the next object from this iterator.
-		 * 
-		 * @return the next object.
-		 * @throws NoSuchElementException If the iterator has no more elements.
-		 * @throws ConcurrentModificationException If concurrent modification
-		 *         occurs.
+		 * @see java.util.Iterator#next()
 		 */
+		@Override
 		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
@@ -919,16 +873,6 @@ public class BinomialHeap<TKey, TValue>
 			return n.proxy;
 		}
 
-		/**
-		 * Not supported.
-		 * 
-		 * @throws UnsupportedOperationException always.
-		 */
-		public void remove()
-			throws UnsupportedOperationException
-		{
-			throw new UnsupportedOperationException();
-		}
 
 		/**
 		 * Return the successor entry to the specified entry, in the context of
@@ -961,6 +905,16 @@ public class BinomialHeap<TKey, TValue>
 				// Could also be null, when you think about it!
 				return entry.parent.sibling;
 			}
+		}
+		
+		/**
+		 * @see java.util.Iterator#remove()
+		 */
+		@Override
+		public void remove()
+			throws UnsupportedOperationException
+		{
+			throw new UnsupportedOperationException();
 		}
 
 	}
@@ -1106,7 +1060,7 @@ public class BinomialHeap<TKey, TValue>
 	 */
 	private static final class BinomialHeapEntry<K, V>
 		extends AbstractLinkedHeapEntry<K, V>
-		implements Heap.Entry<K, V>, Serializable
+		implements Serializable
 	{
 
 		/**

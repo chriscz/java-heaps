@@ -128,7 +128,7 @@ public class SkewHeap<TKey, TValue>
 	/**
 	 * The modification count.
 	 */
-	transient volatile long mod_count;
+	transient volatile int mod_count;
 
 	/**
 	 * Constructor.
@@ -436,22 +436,9 @@ public class SkewHeap<TKey, TValue>
 	}
 
 	/**
-	 * Decrease the key of the given element.
-	 * <p>
-	 * Note that <code>e</code> must be <i>held</i> by this heap, or a
-	 * <code>IllegalArgumentException</code> will be tossed.
-	 * 
-	 * @param e the entry for which to decrease the key.
-	 * @param key the new key.
-	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *         <code>e</code>'s current key or <code>e</code> is held by
-	 *         this
-	 *         heap.
-	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *         other keys in the heap.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
-	 * @see #holdsEntry(Heap.Entry)
+	 * @see org.teneighty.heap.Heap#decreaseKey(org.teneighty.heap.Heap.Entry, java.lang.Object)
 	 */
+	@Override
 	public void decreaseKey(final Entry<TKey, TValue> e, final TKey key)
 		throws IllegalArgumentException, ClassCastException, NullPointerException
 	{
@@ -725,17 +712,17 @@ public class SkewHeap<TKey, TValue>
 	{
 
 		/**
-		 * Iterator version number.
-		 */
-		private final long my_mod_count;
-
-		/**
 		 * The next node.
 		 * <p>
 		 * We use <code>null</code> as a sentinel value to indicate that this
 		 * iterator has finished.
 		 */
 		private SkewHeapEntry<TKey, TValue> next;
+
+		/**
+		 * Iterator version number.
+		 */
+		private final int my_mod_count;
 
 		/**
 		 * Constructor.
@@ -750,42 +737,22 @@ public class SkewHeap<TKey, TValue>
 		}
 
 		/**
-		 * Check for concurrent modification.
-		 * 
-		 * @throws ConcurrentModificationException If we detect concurrent
-		 *         modification.
+		 * @see java.util.Iterator#hasNext()
 		 */
-		private void checkForConcurrentModification()
+		@Override
+		public boolean hasNext()
 			throws ConcurrentModificationException
 		{
 			if (my_mod_count != SkewHeap.this.mod_count)
 			{
 				throw new ConcurrentModificationException();
 			}
-		}
-
-		/**
-		 * Check if this iterator has a next element.
-		 * 
-		 * @return true if there more elements in this iterator; false
-		 *         otherwise.
-		 * @throws ConcurrentModificationException If concurrent modification is
-		 *         detected.
-		 */
-		public boolean hasNext()
-			throws ConcurrentModificationException
-		{
-			checkForConcurrentModification();
+			
 			return (next != null);
 		}
 
 		/**
-		 * Advance this iterator, returning the next value.
-		 * 
-		 * @return the next element in this iterator.
-		 * @throws NoSuchElementException If this iterator is empty.
-		 * @throws ConcurrentModificationException If concurrent modification is
-		 *         detected.
+		 * @see java.util.Iterator#next()
 		 */
 		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
@@ -801,17 +768,6 @@ public class SkewHeap<TKey, TValue>
 
 			// done return "next" element.
 			return current;
-		}
-
-		/**
-		 * Remove the current element.
-		 * 
-		 * @throws UnsupportedOperationException Always.
-		 */
-		public void remove()
-			throws UnsupportedOperationException
-		{
-			throw new UnsupportedOperationException();
 		}
 
 		/**
@@ -860,6 +816,16 @@ public class SkewHeap<TKey, TValue>
 				child = parent;
 				parent = parent.parent;
 			}
+		}
+		
+		/**
+		 * @see java.util.Iterator#remove()
+		 */
+		@Override
+		public void remove()
+			throws UnsupportedOperationException
+		{
+			throw new UnsupportedOperationException();
 		}
 
 	}

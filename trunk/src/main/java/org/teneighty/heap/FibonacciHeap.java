@@ -96,7 +96,7 @@ import java.io.IOException;
  * <p>
  * The serialization mechanism of this class warrants some discussion. The full
  * heap structure is not serialized to the stream. It would fairly stupid to do
- * this. Instead, this class serializes only the key/value pairs, and restores
+ *  Instead, this class serializes only the key/value pairs, and restores
  * the heap completely "flat". In other words, any internal balancing that was
  * performed by the serialized instance will be forgotten and not restored by
  * any deserialized versions. Of course, a deserialized version will exhibit the
@@ -122,29 +122,29 @@ public class FibonacciHeap<TKey, TValue>
 	private static final long serialVersionUID = 9802348L;
 
 	/**
+	 * Comparator.
+	 */
+	private final Comparator<? super TKey> comp;
+	
+	/**
 	 * The minimum entry of this heap.
 	 */
-	private FibonacciHeapEntry<TKey, TValue> minimum;
+	transient FibonacciHeapEntry<TKey, TValue> minimum;
 
 	/**
 	 * The size of this heap.
 	 */
-	private int size;
+	private transient int size;
 
 	/**
 	 * The mod count.
 	 */
-	private volatile int mod_count;
-
-	/**
-	 * Comparator.
-	 */
-	private Comparator<? super TKey> comp;
+	transient volatile int mod_count;
 
 	/**
 	 * The heap reference.
 	 */
-	private HeapReference source_heap;
+	private transient HeapReference source_heap;
 
 	/**
 	 * Constructor.
@@ -180,20 +180,11 @@ public class FibonacciHeap<TKey, TValue>
 		super();
 
 		// Null min.
-		this.minimum = null;
-		this.size = 0;
-		this.mod_count = 0;
+		minimum = null;
+		size = 0;
+		mod_count = 0;
 		this.comp = comp;
-		this.source_heap = new HeapReference(this);
-	}
-
-	/**
-	 * @see org.teneighty.heap.Heap#getSize()
-	 */
-	@Override
-	public int getSize()
-	{
-		return this.size;
+		source_heap = new HeapReference(this);
 	}
 
 	/**
@@ -202,9 +193,43 @@ public class FibonacciHeap<TKey, TValue>
 	@Override
 	public Comparator<? super TKey> getComparator()
 	{
-		return this.comp;
+		return comp;
+	}
+	
+	/**
+	 * @see org.teneighty.heap.Heap#getSize()
+	 */
+	@Override
+	public int getSize()
+	{
+		return size;
 	}
 
+	/**
+	 * @see org.teneighty.heap.Heap#holdsEntry(org.teneighty.heap.Heap.Entry)
+	 */
+	@Override
+	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
+		throws NullPointerException
+	{
+		if (e == null)
+		{
+			throw new NullPointerException();
+		}
+
+		// Obvious check.
+		if (e.getClass().equals(FibonacciHeapEntry.class) == false)
+		{
+			return false;
+		}
+
+		// Narrow.
+		FibonacciHeapEntry<TKey, TValue> entry = (FibonacciHeapEntry<TKey, TValue>) e;
+
+		// Use reference trickery.
+		return entry.isContainedBy(this);
+	}
+	
 	/**
 	 * @see org.teneighty.heap.Heap#insert(java.lang.Object, java.lang.Object)
 	 */
@@ -212,7 +237,7 @@ public class FibonacciHeap<TKey, TValue>
 	public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 		throws ClassCastException, NullPointerException
 	{
-		FibonacciHeapEntry<TKey, TValue> node = new FibonacciHeapEntry<TKey, TValue>(key, value, this.source_heap);
+		FibonacciHeapEntry<TKey, TValue> node = new FibonacciHeapEntry<TKey, TValue>(key, value, source_heap);
 
 		// Do some node housekeeping.
 		node.degree = 0;
@@ -222,39 +247,109 @@ public class FibonacciHeap<TKey, TValue>
 		node.child = null;
 
 		// Connect to root node.
-		if (this.minimum == null)
+		if (minimum == null)
 		{
-			this.minimum = node;
+			minimum = node;
 		}
 		else
 		{
 			// Check for key compatibility before inserting.
 			// May throw class cast...
-			int cmp = compare(node, this.minimum);
+			int cmp = compare(node, minimum);
 
 			// Insert into root list.
-			this.minimum.right.left = node;
-			node.right = this.minimum.right;
-			this.minimum.right = node;
-			node.left = this.minimum;
+			minimum.right.left = node;
+			node.right = minimum.right;
+			minimum.right = node;
+			node.left = minimum;
 
 			// We have a new winner...
 			if (cmp < 0)
 			{
-				this.minimum = node;
+				minimum = node;
 			}
 		}
 
 		// Inc size
-		this.size += 1;
+		size += 1;
 
 		// Inc mod cout.
-		this.mod_count += 1;
+		mod_count += 1;
 
 		// Return the new node.
 		return node;
 	}
 
+	/**
+	 * @see org.teneighty.heap.Heap#union(org.teneighty.heap.Heap)
+	 */
+	@Override
+	public void union(final Heap<TKey, TValue> other)
+		throws ClassCastException, NullPointerException, IllegalArgumentException
+	{
+		if (other == null)
+		{
+			throw new NullPointerException();
+		}
+
+		if (this == other)
+		{
+			throw new IllegalArgumentException();
+		}
+
+		if (other.isEmpty())
+		{
+			return;
+		}
+
+		if (other.getClass().equals(FibonacciHeap.class))
+		{
+			// Get other root.
+			FibonacciHeap<TKey, TValue> that = (FibonacciHeap<TKey, TValue>) other;
+
+			try
+			{
+				int cmp = 0;
+				if (minimum != null && that.minimum != null)
+				{
+					// May throw class cast.
+					cmp = compare(that.minimum, minimum);
+				}
+
+				// Cat root list of other heap together with this one's.
+				minimum.left.right = that.minimum.right;
+				that.minimum.right.left = minimum.left;
+				minimum.left = that.minimum;
+				that.minimum.right = minimum;
+
+				if (cmp < 0)
+				{
+					// Point to new min.
+					minimum = that.minimum;
+				}
+
+				// Update stuff.
+				size += that.size;
+				mod_count += 1;
+
+				// Change that heap's heap reference to point to this heap.
+				// Thus, all children of that become children of 
+				that.source_heap.setHeap(this);
+				that.source_heap = new HeapReference(that);
+			}
+			finally
+			{
+				// Actually clear the other heap. Always done!
+				that.clear();
+			}
+		}
+		else
+		{
+			throw new ClassCastException();
+		}
+	}
+
+	
 	/**
 	 * @see org.teneighty.heap.Heap#extractMinimum()
 	 */
@@ -262,7 +357,7 @@ public class FibonacciHeap<TKey, TValue>
 	public Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
-		if (this.isEmpty())
+		if (isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
@@ -270,7 +365,7 @@ public class FibonacciHeap<TKey, TValue>
 		// References that will be needed. See CLRS.
 		FibonacciHeapEntry<TKey, TValue> t;
 		FibonacciHeapEntry<TKey, TValue> w;
-		FibonacciHeapEntry<TKey, TValue> z = this.minimum;
+		FibonacciHeapEntry<TKey, TValue> z = minimum;
 
 		if (z.child != null)
 		{
@@ -286,10 +381,10 @@ public class FibonacciHeap<TKey, TValue>
 			while (t != w);
 
 			// Add the children to the root list.
-			this.minimum.left.right = w.right;
-			w.right.left = this.minimum.left;
-			this.minimum.left = w;
-			w.right = this.minimum;
+			minimum.left.right = w.right;
+			w.right.left = minimum.left;
+			minimum.left = w;
+			w.right = minimum;
 		}
 
 		// Remove z from the root list.
@@ -299,18 +394,18 @@ public class FibonacciHeap<TKey, TValue>
 		if (z == z.right)
 		{
 			// We hope the heap is now empty...
-			this.minimum = null;
+			minimum = null;
 		}
 		else
 		{
 			// We have some work to do.
-			this.minimum = z.right;
-			this.consolidate();
+			minimum = z.right;
+			consolidate();
 		}
 
 		// Dec size, inc mod.
-		this.size -= 1;
-		this.mod_count += 1;
+		size -= 1;
+		mod_count += 1;
 
 		// Clear old heap reference.
 		z.clearSourceReference();
@@ -326,13 +421,13 @@ public class FibonacciHeap<TKey, TValue>
 	public Entry<TKey, TValue> getMinimum()
 		throws NoSuchElementException
 	{
-		if (this.isEmpty())
+		if (isEmpty())
 		{
 			throw new NoSuchElementException();
 		}
 
 		// Return it.
-		return this.minimum;
+		return minimum;
 	}
 
 	/**
@@ -344,11 +439,11 @@ public class FibonacciHeap<TKey, TValue>
 	private void consolidate()
 	{
 		// Create the auxiliary array.
-		int dn = (int) Math.floor(Math.log(this.size) / Math.log(2)) + 2;
+		int dn = (int) Math.floor(Math.log(size) / Math.log(2)) + 2;
 		FibonacciHeapEntry[] a = new FibonacciHeapEntry[dn];
 
 		// Iterating node - node at which to stop iterating...
-		FibonacciHeapEntry<TKey, TValue> iter = this.minimum;
+		FibonacciHeapEntry<TKey, TValue> iter = minimum;
 
 		// The node we're on now; w from CLRS.
 		FibonacciHeapEntry<TKey, TValue> w = iter;
@@ -384,7 +479,7 @@ public class FibonacciHeap<TKey, TValue>
 					}
 
 					// Make y a child of x.
-					this.link(y, x);
+					link(y, x);
 					iter = x;
 					w = x;
 					a[d] = null;
@@ -400,16 +495,16 @@ public class FibonacciHeap<TKey, TValue>
 		while (w != iter);
 
 		// Reset... we need to iterate over the root list again.
-		this.minimum = iter;
+		minimum = iter;
 		w = iter;
 
 		// Find the new minimum in the root list (if we don't already have it).
 		do
 		{
-			if (compare(w, this.minimum) < 0)
+			if (compare(w, minimum) < 0)
 			{
 				// Found a new minimum node.
-				this.minimum = w;
+				minimum = w;
 			}
 
 			// Next.
@@ -455,35 +550,6 @@ public class FibonacciHeap<TKey, TValue>
 	}
 
 	/**
-	 * @see org.teneighty.heap.Heap#delete(org.teneighty.heap.Heap.Entry)
-	 */
-	@Override
-	public void delete(final Heap.Entry<TKey, TValue> e)
-		throws IllegalArgumentException, NullPointerException
-	{
-		// Check and cast.
-		if (this.holdsEntry(e) == false)
-		{
-			throw new IllegalArgumentException();
-		}
-
-		// Narrow.
-		FibonacciHeapEntry<TKey, TValue> entry = (FibonacciHeapEntry<TKey, TValue>) e;
-
-		// Make it infinitely small.
-		entry.is_infinite = true;
-
-		// Percolate the top,
-		this.decreaseKeyImpl(entry);
-
-		// Remove.
-		this.extractMinimum();
-
-		// Reset entry state.
-		entry.is_infinite = false;
-	}
-
-	/**
 	 * @see org.teneighty.heap.Heap#decreaseKey(org.teneighty.heap.Heap.Entry, java.lang.Object)
 	 */
 	@Override
@@ -491,7 +557,7 @@ public class FibonacciHeap<TKey, TValue>
 		throws IllegalArgumentException, ClassCastException
 	{
 		// Check and cast.
-		if (this.holdsEntry(e) == false)
+		if (holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -500,7 +566,7 @@ public class FibonacciHeap<TKey, TValue>
 		FibonacciHeapEntry<TKey, TValue> x = (FibonacciHeapEntry<TKey, TValue>) e;
 
 		// Check key... May throw class cast as well.
-		if (this.compareKeys(k, x.getKey()) > 0)
+		if (compareKeys(k, x.getKey()) > 0)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -509,9 +575,9 @@ public class FibonacciHeap<TKey, TValue>
 		x.setKey(k);
 
 		// Restore the heap structure.
-		this.decreaseKeyImpl(x);
+		decreaseKeyImpl(x);
 	}
-
+	
 	/**
 	 * Decrease key implementation. Basically, we restore the heap structure by
 	 * cutting <code>x</code> from it's parent (if necessary) and making it's
@@ -529,44 +595,19 @@ public class FibonacciHeap<TKey, TValue>
 		// in the root list) then we have work to do.
 		if (y != null && compare(x, y) < 0)
 		{
-			this.cut(x, y);
-			this.cascadingCut(y);
+			cut(x, y);
+			cascadingCut(y);
 		}
 
 		// See if the new node is smaller.
-		if (compare(x, this.minimum) < 0)
+		if (compare(x, minimum) < 0)
 		{
-			this.minimum = x;
+			minimum = x;
 		}
 
-		this.mod_count += 1;
+		mod_count += 1;
 	}
-
-	/**
-	 * @see org.teneighty.heap.Heap#holdsEntry(org.teneighty.heap.Heap.Entry)
-	 */
-	@Override
-	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
-		throws NullPointerException
-	{
-		if (e == null)
-		{
-			throw new NullPointerException();
-		}
-
-		// Obvious check.
-		if (e.getClass().equals(FibonacciHeapEntry.class) == false)
-		{
-			return false;
-		}
-
-		// Narrow.
-		FibonacciHeapEntry<TKey, TValue> entry = (FibonacciHeapEntry<TKey, TValue>) e;
-
-		// Use reference trickery.
-		return entry.isContainedBy(this);
-	}
-
+	
 	/**
 	 * Remove <code>x</code> from the child list of <code>y</code> and add
 	 * <code>x</code> to the root list.
@@ -595,10 +636,10 @@ public class FibonacciHeap<TKey, TValue>
 		y.degree -= 1;
 
 		// Add x to the root list.
-		this.minimum.right.left = x;
-		x.right = this.minimum.right;
-		this.minimum.right = x;
-		x.left = this.minimum;
+		minimum.right.left = x;
+		x.right = minimum.right;
+		minimum.right = x;
+		x.left = minimum;
 		x.parent = null;
 
 		// Unmark x, since it has just been cut.
@@ -626,79 +667,39 @@ public class FibonacciHeap<TKey, TValue>
 			else
 			{
 				// Otherwise, cut y and recursively cascade on z.
-				this.cut(y, z);
-				this.cascadingCut(z);
+				cut(y, z);
+				cascadingCut(z);
 			}
 		}
 	}
-
+	
 	/**
-	 * @see org.teneighty.heap.Heap#union(org.teneighty.heap.Heap)
+	 * @see org.teneighty.heap.Heap#delete(org.teneighty.heap.Heap.Entry)
 	 */
 	@Override
-	public void union(final Heap<TKey, TValue> other)
-		throws ClassCastException, NullPointerException, IllegalArgumentException
+	public void delete(final Heap.Entry<TKey, TValue> e)
+		throws IllegalArgumentException, NullPointerException
 	{
-		if (other == null)
-		{
-			throw new NullPointerException();
-		}
-
-		if (this == other)
+		// Check and cast.
+		if (holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
 
-		if (other.isEmpty())
-		{
-			return;
-		}
+		// Narrow.
+		FibonacciHeapEntry<TKey, TValue> entry = (FibonacciHeapEntry<TKey, TValue>) e;
 
-		if (other.getClass().equals(FibonacciHeap.class))
-		{
-			// Get other root.
-			FibonacciHeap<TKey, TValue> that = (FibonacciHeap<TKey, TValue>) other;
+		// Make it infinitely small.
+		entry.is_infinite = true;
 
-			try
-			{
-				int cmp = 0;
-				if (this.minimum != null && that.minimum != null)
-				{
-					// May throw class cast.
-					cmp = compare(that.minimum, this.minimum);
-				}
+		// Percolate the top,
+		decreaseKeyImpl(entry);
 
-				// Cat root list of other heap together with this one's.
-				this.minimum.left.right = that.minimum.right;
-				that.minimum.right.left = this.minimum.left;
-				this.minimum.left = that.minimum;
-				that.minimum.right = this.minimum;
+		// Remove.
+		extractMinimum();
 
-				if (cmp < 0)
-				{
-					// Point to new min.
-					this.minimum = that.minimum;
-				}
-
-				// Update stuff.
-				this.size += that.size;
-				this.mod_count += 1;
-
-				// Change that heap's heap reference to point to this heap.
-				// Thus, all children of that become children of this.
-				that.source_heap.setHeap(this);
-				that.source_heap = new HeapReference(that);
-			}
-			finally
-			{
-				// Actually clear the other heap. Always done!
-				that.clear();
-			}
-		}
-		else
-		{
-			throw new ClassCastException();
-		}
+		// Reset entry state.
+		entry.is_infinite = false;
 	}
 
 	/**
@@ -708,23 +709,22 @@ public class FibonacciHeap<TKey, TValue>
 	public void clear()
 	{
 		// Clear lame fields.
-		this.minimum = null;
-		this.size = 0;
-		this.mod_count += 1;
+		minimum = null;
+		size = 0;
+		mod_count += 1;
 
 		// Clear the heap ref that all the existing nodes have been using.
 		// All contained nodes now have null containing heap.
-		this.source_heap.clearHeap();
+		source_heap.clearHeap();
 
 		// Recreate the reference object.
-		this.source_heap = new HeapReference(this);
+		source_heap = new HeapReference(this);
 	}
 
 	/**
-	 * Get an iterator over this heap entry set.
-	 * 
-	 * @return an iterator.
+	 * @see org.teneighty.heap.Heap#iterator()
 	 */
+	@Override
 	public Iterator<Heap.Entry<TKey, TValue>> iterator()
 	{
 		return new EntryIterator();
@@ -742,9 +742,8 @@ public class FibonacciHeap<TKey, TValue>
 	private void writeObject(final ObjectOutputStream out)
 		throws IOException
 	{
-		// write comparator and size.
-		out.writeObject(this.comp);
-		out.writeInt(this.size);
+		out.defaultWriteObject();
+		out.writeInt(size);
 
 		// Write out all key/value pairs.
 		Iterator<Heap.Entry<TKey, TValue>> it = new EntryIterator();
@@ -756,8 +755,7 @@ public class FibonacciHeap<TKey, TValue>
 				et = it.next();
 
 				// May result in NotSerializableExceptions, but we there's not a
-				// whole
-				// helluva lot we can do about that.
+				// whole helluva lot we can do about that.
 				out.writeObject(et.getKey());
 				out.writeObject(et.getValue());
 			}
@@ -786,12 +784,14 @@ public class FibonacciHeap<TKey, TValue>
 	private void readObject(final ObjectInputStream in)
 		throws IOException, ClassNotFoundException
 	{
+		// do the magic.
+		in.defaultReadObject();
+		
 		// get comparator and size.
-		this.comp = (Comparator<? super TKey>) in.readObject();
 		int rsize = in.readInt();
 
 		// Create new ref object.
-		this.source_heap = new HeapReference(this);
+		source_heap = new HeapReference(this);
 
 		// Read and insert all the keys and values.
 		TKey key;
@@ -800,7 +800,7 @@ public class FibonacciHeap<TKey, TValue>
 		{
 			key = (TKey) in.readObject();
 			value = (TValue) in.readObject();
-			this.insert(key, value);
+			insert(key, value);
 		}
 	}
 
@@ -827,72 +827,52 @@ public class FibonacciHeap<TKey, TValue>
 		/**
 		 * The mod count.
 		 */
-		private int my_mod_count;
+		private final int my_mod_count;
 
 		/**
 		 * Constructor.
 		 */
-		@SuppressWarnings("synthetic-access")
 		EntryIterator()
 		{
 			super();
 
 			// Start at min.
-			this.next = FibonacciHeap.this.minimum;
+			next = FibonacciHeap.this.minimum;
 
 			// Copy mod count.
-			this.my_mod_count = FibonacciHeap.this.mod_count;
+			my_mod_count = FibonacciHeap.this.mod_count;
 		}
-
+		
 		/**
-		 * Does this iterator have another object?
-		 * 
-		 * @return <code>true</code> if there's another object;
-		 *         <code>false</code> otherwise.
-		 * @throws ConcurrentModificationException If concurrent modification
-		 *         occurs.
+		 * @see java.util.Iterator#hasNext()
 		 */
+		@Override
 		public boolean hasNext()
 		{
-			if (this.my_mod_count != FibonacciHeap.this.mod_count)
+			if (my_mod_count != FibonacciHeap.this.mod_count)
 			{
 				throw new ConcurrentModificationException();
 			}
 
-			return (this.next != null);
+			return (next != null);
 		}
 
 		/**
-		 * Get the next object from this iterator.
-		 * 
-		 * @return the next object.
-		 * @throws NoSuchElementException If the iterator has no more elements.
-		 * @throws ConcurrentModificationException If concurrent modification
-		 *         occurs.
+		 * @see java.util.Iterator#next()
 		 */
+		@Override
 		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
-			if (this.hasNext() == false)
+			if (hasNext() == false)
 			{
 				throw new NoSuchElementException();
 			}
 
 			// Get the next node.
-			FibonacciHeapEntry<TKey, TValue> n = this.next;
-			this.next = this.getSuccessor(this.next);
+			FibonacciHeapEntry<TKey, TValue> n = next;
+			next = getSuccessor(next);
 			return n;
-		}
-
-		/**
-		 * Not supported.
-		 * 
-		 * @throws UnsupportedOperationException Always.
-		 */
-		public void remove()
-			throws UnsupportedOperationException
-		{
-			throw new UnsupportedOperationException();
 		}
 
 		/**
@@ -901,7 +881,6 @@ public class FibonacciHeap<TKey, TValue>
 		 * @param entry the given entry.
 		 * @return the successor entry.
 		 */
-		@SuppressWarnings("synthetic-access")
 		private FibonacciHeapEntry<TKey, TValue> getSuccessor(FibonacciHeapEntry<TKey, TValue> entry)
 		{
 			if (entry.child != null)
@@ -929,6 +908,16 @@ public class FibonacciHeap<TKey, TValue>
 
 			// Reached the root node, no more successors.
 			return null;
+		}
+
+		/**
+		 * @see java.util.Iterator#remove()
+		 */
+		@Override
+		public void remove()
+			throws UnsupportedOperationException
+		{
+			throw new UnsupportedOperationException();
 		}
 
 	}

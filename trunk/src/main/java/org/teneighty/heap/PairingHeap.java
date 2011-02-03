@@ -277,48 +277,50 @@ public class PairingHeap<TKey, TValue>
 	/**
 	 * @see org.teneighty.heap.Heap#getComparator()
 	 */
+	@Override
 	public Comparator<? super TKey> getComparator()
 	{
 		return comp;
 	}
 
 	/**
-	 * Clear this heap.
+	 * @see org.teneighty.heap.Heap#getSize()
 	 */
-	public void clear()
-	{
-		// Update happy fields.
-		minimum = null;
-		size = 0;
-		mod_count += 1;
-
-		// Clear source heap and recreate heap refrence.
-		source.clearHeap();
-		source = new HeapReference(this);
-	}
-
-	/**
-	 * Get the number of key/value pairs (i.e. the size) of this heap.
-	 * 
-	 * @return the size.
-	 */
+	@Override
 	public int getSize()
 	{
 		return size;
 	}
+	
+	/**
+	 * @see org.teneighty.heap.Heap#holdsEntry(org.teneighty.heap.Heap.Entry)
+	 */
+	@Override
+	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
+		throws NullPointerException
+	{
+		if (e == null)
+		{
+			throw new NullPointerException();
+		}
+
+		// Obvious check.
+		if (e.getClass().equals(PairingHeapEntry.class) == false)
+		{
+			return false;
+		}
+
+		// Narrow.
+		PairingHeapEntry<TKey, TValue> entry = (PairingHeapEntry<TKey, TValue>) e;
+
+		// Use reference trickery.
+		return entry.isContainedBy(this);
+	}
 
 	/**
-	 * Add a key/value pair to this heap.
-	 * 
-	 * @param key the node key.
-	 * @param value the node value.
-	 * @return the entry created.
-	 * @throws ClassCastException If the specified key is not mutually
-	 *             comparable
-	 *             with the other keys of this heap.
-	 * @throws NullPointerException If <code>key</code> is <code>null</code> and
-	 *             this heap does not support <code>null</code> keys.
+	 * @see org.teneighty.heap.Heap#insert(java.lang.Object, java.lang.Object)
 	 */
+	@Override
 	public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 		throws ClassCastException, NullPointerException
 	{
@@ -345,25 +347,52 @@ public class PairingHeap<TKey, TValue>
 	}
 
 	/**
-	 * Get the entry with the minimum key.
-	 * <p>
-	 * This method does <u>not</u> remove the returned entry.
-	 * 
-	 * @return the entry.
-	 * @throws NoSuchElementException If this heap is empty.
-	 * @see #extractMinimum()
+	 * @see org.teneighty.heap.Heap#union(org.teneighty.heap.Heap)
 	 */
-	public Entry<TKey, TValue> getMinimum()
-		throws NoSuchElementException
+	@Override
+	public void union(final Heap<TKey, TValue> other)
+		throws ClassCastException, NullPointerException,
+		IllegalArgumentException
 	{
-		if (isEmpty())
+		if (other == null)
 		{
-			throw new NoSuchElementException();
+			throw new NullPointerException();
 		}
 
-		return minimum;
-	}
+		if (other == this)
+		{
+			throw new IllegalArgumentException();
+		}
 
+		if (other.getClass().equals(PairingHeap.class))
+		{
+			try
+			{
+				// erased cast - hence we have to suppress unchecked.
+				PairingHeap<TKey, TValue> ph = (PairingHeap<TKey, TValue>) other;
+
+				// Find the new minimum.
+				minimum = join(minimum, ph.minimum);
+
+				// Update stuff.
+				size += ph.size;
+				mod_count += 1;
+
+				// Retarget source pointing.
+				ph.source.setHeap(this);
+				ph.source = new HeapReference(ph);
+			}
+			finally
+			{
+				other.clear();
+			}
+		}
+		else
+		{
+			throw new ClassCastException();
+		}
+	}
+	
 	/**
 	 * Join together the specified entries together.
 	 * 
@@ -413,12 +442,24 @@ public class PairingHeap<TKey, TValue>
 	}
 
 	/**
-	 * Remove and return the entry minimum key.
-	 * 
-	 * @return the entry.
-	 * @throws NoSuchElementException If the heap is empty.
-	 * @see #getMinimum()
+	 * @see org.teneighty.heap.Heap#getMinimum()
 	 */
+	@Override
+	public Entry<TKey, TValue> getMinimum()
+		throws NoSuchElementException
+	{
+		if (isEmpty())
+		{
+			throw new NoSuchElementException();
+		}
+
+		return minimum;
+	}
+
+	/**
+	 * @see org.teneighty.heap.Heap#extractMinimum()
+	 */
+	@Override
 	public Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
@@ -455,14 +496,40 @@ public class PairingHeap<TKey, TValue>
 	}
 
 	/**
-	 * Delete the specified entry.
-	 * <p>
-	 * This method is implemented in terms of <code>decreaseKey()</code>.
-	 * 
-	 * @param e entry to delete.
-	 * @throws IllegalArgumentException If <code>e</code> is not in this heap.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
+	 * @see org.teneighty.heap.Heap#decreaseKey(org.teneighty.heap.Heap.Entry, java.lang.Object)
 	 */
+	@Override
+	public void decreaseKey(final Entry<TKey, TValue> e, final TKey key)
+		throws IllegalArgumentException, ClassCastException,
+		NullPointerException
+	{
+		if (holdsEntry(e) == false)
+		{
+			throw new IllegalArgumentException();
+		}
+
+		PairingHeapEntry<TKey, TValue> entry = (PairingHeapEntry<TKey, TValue>) e;
+
+		// Check key.
+		if (compareKeys(entry.getKey(), key) < 0)
+		{
+			throw new IllegalArgumentException();
+		}
+
+		// Update key.
+		entry.setKey(key);
+
+		// Re link
+		relink(entry);
+
+		// We made a change!
+		mod_count += 1;
+	}
+
+	/**
+	 * @see org.teneighty.heap.Heap#delete(org.teneighty.heap.Heap.Entry)
+	 */
+	@Override
 	public void delete(final Heap.Entry<TKey, TValue> e)
 		throws IllegalArgumentException, NullPointerException
 	{
@@ -494,50 +561,7 @@ public class PairingHeap<TKey, TValue>
 		entry.is_infinite = false;
 	}
 
-	/**
-	 * Decrease the key of the given element.
-	 * <p>
-	 * Note that <code>e</code> must be <i>held</i> by this heap, or a
-	 * <code>IllegalArgumentException</code> will be tossed.
-	 * 
-	 * @param e the entry for which to decrease the key.
-	 * @param key the new key.
-	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *             <code>e</code>'s current key or <code>e</code> is held by
-	 *             this
-	 *             heap.
-	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *             other keys in the heap.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
-	 * @see #holdsEntry(Heap.Entry)
-	 */
-	public void decreaseKey(final Entry<TKey, TValue> e, final TKey key)
-		throws IllegalArgumentException, ClassCastException,
-		NullPointerException
-	{
-		if (holdsEntry(e) == false)
-		{
-			throw new IllegalArgumentException();
-		}
-
-		PairingHeapEntry<TKey, TValue> entry = (PairingHeapEntry<TKey, TValue>) e;
-
-		// Check key.
-		if (compareKeys(entry.getKey(), key) < 0)
-		{
-			throw new IllegalArgumentException();
-		}
-
-		// Update key.
-		entry.setKey(key);
-
-		// Re link
-		relink(entry);
-
-		// We made a change!
-		mod_count += 1;
-	}
-
+	
 	/**
 	 * Relink the specified element, whose key has just been decreased.
 	 * 
@@ -752,85 +776,25 @@ public class PairingHeap<TKey, TValue>
 	}
 
 	/**
-	 * Does this heap hold the specified entry?
-	 * 
-	 * @param e entry to check.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
-	 * @return <code>true</code> if this heap holds <code>e</code>;
-	 *         <code>false</code> otherwise.
+	 * @see org.teneighty.heap.Heap#clear()
 	 */
-	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
-		throws NullPointerException
+	@Override
+	public void clear()
 	{
-		if (e == null)
-		{
-			throw new NullPointerException();
-		}
+		// Update happy fields.
+		minimum = null;
+		size = 0;
+		mod_count += 1;
 
-		// Obvious check.
-		if (e.getClass().equals(PairingHeapEntry.class) == false)
-		{
-			return false;
-		}
-
-		// Narrow.
-		PairingHeapEntry<TKey, TValue> entry = (PairingHeapEntry<TKey, TValue>) e;
-
-		// Use reference trickery.
-		return entry.isContainedBy(this);
-	}
+		// Clear source heap and recreate heap refrence.
+		source.clearHeap();
+		source = new HeapReference(this);
+	}	
 
 	/**
-	 * @see org.teneighty.heap.Heap#union(org.teneighty.heap.Heap)
+	 * @see org.teneighty.heap.Heap#iterator()
 	 */
-	public void union(final Heap<TKey, TValue> other)
-		throws ClassCastException, NullPointerException,
-		IllegalArgumentException
-	{
-		if (other == null)
-		{
-			throw new NullPointerException();
-		}
-
-		if (other == this)
-		{
-			throw new IllegalArgumentException();
-		}
-
-		if (other.getClass().equals(PairingHeap.class))
-		{
-			try
-			{
-				// erased cast - hence we have to suppress unchecked.
-				PairingHeap<TKey, TValue> ph = (PairingHeap<TKey, TValue>) other;
-
-				// Find the new minimum.
-				minimum = join(minimum, ph.minimum);
-
-				// Update stuff.
-				size += ph.size;
-				mod_count += 1;
-
-				// Retarget source pointing.
-				ph.source.setHeap(this);
-				ph.source = new HeapReference(ph);
-			}
-			finally
-			{
-				other.clear();
-			}
-		}
-		else
-		{
-			throw new ClassCastException();
-		}
-	}
-
-	/**
-	 * Get an iterator over this heap entry set.
-	 * 
-	 * @return an iterator over the entry set.
-	 */
+	@Override
 	public Iterator<Heap.Entry<TKey, TValue>> iterator()
 	{
 		return new EntryIterator();
@@ -927,15 +891,15 @@ public class PairingHeap<TKey, TValue>
 	{
 
 		/**
-		 * The mod count.
-		 */
-		private int my_mod_count;
-
-		/**
 		 * The next node.
 		 */
 		private PairingHeapEntry<TKey, TValue> next;
 
+		/**
+		 * The mod count.
+		 */
+		private final int my_mod_count;
+		
 		/**
 		 * Constructor.
 		 */
@@ -951,13 +915,9 @@ public class PairingHeap<TKey, TValue>
 		}
 
 		/**
-		 * Does this iterator have another object?
-		 * 
-		 * @return <code>true</code> if this iterator has another entry;
-		 *         <code>false</code> otherwise.
-		 * @throws ConcurrentModificationException If concurrent modification
-		 *             occurs.
+		 * @see java.util.Iterator#hasNext()
 		 */
+		@Override
 		public boolean hasNext()
 		{
 			if (my_mod_count != PairingHeap.this.mod_count)
@@ -967,15 +927,11 @@ public class PairingHeap<TKey, TValue>
 
 			return (next != null);
 		}
-
+		
 		/**
-		 * Get the next object from this iterator.
-		 * 
-		 * @return the next object.
-		 * @throws NoSuchElementException If the iterator has no more elements.
-		 * @throws ConcurrentModificationException If concurrent modification
-		 *             occurs.
+		 * @see java.util.Iterator#next()
 		 */
+		@Override
 		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
@@ -988,17 +944,6 @@ public class PairingHeap<TKey, TValue>
 			PairingHeapEntry<TKey, TValue> tmp = next;
 			next = getEulerianSuccessor(tmp);
 			return tmp;
-		}
-
-		/**
-		 * Not supported.
-		 * 
-		 * @throws UnsupportedOperationException Always.
-		 */
-		public void remove()
-			throws UnsupportedOperationException
-		{
-			throw new UnsupportedOperationException();
 		}
 
 		/**
@@ -1054,6 +999,16 @@ public class PairingHeap<TKey, TValue>
 					entry = entry.previous;
 				}
 			}
+		}
+		
+		/**
+		 * @see java.util.Iterator#remove()
+		 */
+		@Override
+		public void remove()
+			throws UnsupportedOperationException
+		{
+			throw new UnsupportedOperationException();
 		}
 
 	}
@@ -1123,12 +1078,12 @@ public class PairingHeap<TKey, TValue>
 		/**
 		 * The two-pass strategy
 		 */
-		TWO("Two pass strategy"),
+		TWO("Two pass merge"),
 
 		/**
 		 * Multi pass
 		 */
-		MULTI("Multi pass strategy");
+		MULTI("Multi-pass merge");
 
 		/**
 		 * Serial verison

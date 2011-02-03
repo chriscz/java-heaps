@@ -127,7 +127,7 @@ public class LeftistHeap<TKey, TValue>
 	/**
 	 * The root/minimum node.
 	 */
-	private transient LeftistHeapEntry<TKey, TValue> minimum;
+	transient LeftistHeapEntry<TKey, TValue> minimum;
 
 	/**
 	 * The size of this heap.
@@ -181,134 +181,264 @@ public class LeftistHeap<TKey, TValue>
 		this.comp = comp;
 
 		// Create heap source reference.
-		this.source_heap = new HeapReference(this);
+		source_heap = new HeapReference(this);
 
 		// Set fields, initially.
-		this.minimum = null;
-		this.size = 0;
-		this.mod_count = 0;
+		minimum = null;
+		size = 0;
+		mod_count = 0;
 	}
 
 	/**
-	 * Get the the Comparator.
-	 * <p>
-	 * If this method returns <code>null</code>, then this heap uses the keys'
-	 * <i>natural ordering</i>.
-	 * 
-	 * @return the Comparator or <code>null</code>.
+	 * @see org.teneighty.heap.Heap#getComparator()
 	 */
+	@Override
 	public Comparator<? super TKey> getComparator()
 	{
-		return this.comp;
+		return comp;
 	}
 
 	/**
-	 * Get the number of entries in this heap.
-	 * 
-	 * @return the mapping count.
+	 * @see org.teneighty.heap.Heap#getSize()
 	 */
+	@Override
 	public int getSize()
 	{
-		return this.size;
+		return size;
 	}
-
+	
 	/**
-	 * Clear this heap.
+	 * @see org.teneighty.heap.Heap#holdsEntry(org.teneighty.heap.Heap.Entry)
 	 */
-	public void clear()
+	@Override
+	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
+		throws NullPointerException
 	{
-		// Clear all the basic fields.
-		this.minimum = null;
-		this.size = 0;
+		if (e == null)
+		{
+			throw new NullPointerException();
+		}
 
-		// I think this qualifies as a modification.
-		this.mod_count += 1;
+		// Obvious check.
+		if (e.getClass().equals(LeftistHeapEntry.class) == false)
+		{
+			return false;
+		}
 
-		// Clear source heap and recreate heap refrence.
-		this.source_heap.clearHeap();
-		this.source_heap = new HeapReference(this);
+		// Narrow.
+		LeftistHeapEntry<TKey, TValue> entry = (LeftistHeapEntry<TKey, TValue>) e;
+
+		// Use reference trickery.
+		return entry.isContainedBy(this);
 	}
 
 	/**
-	 * Insert the given key/value pair into this heap, returning the entry in
-	 * which the new pair is stored.
-	 * 
-	 * @param key the key to insert.
-	 * @param value the value.
-	 * @return the newly created and inserted Entry.
-	 * @throws ClassCastException If the key of <code>node</code> is not
-	 *             mutually comparable with the keys of other nodes already in
-	 *             this
-	 *             heap.
-	 * @throws NullPointerException If <code>node</code> is <code>null</code>.
+	 * @see org.teneighty.heap.Heap#insert(java.lang.Object, java.lang.Object)
 	 */
+	@Override
 	public Entry<TKey, TValue> insert(final TKey key, final TValue value)
 		throws ClassCastException, NullPointerException
 	{
 		LeftistHeapEntry<TKey, TValue> lhe = new LeftistHeapEntry<TKey, TValue>(
-				key, value, this.source_heap);
+				key, value, source_heap);
 
 		// Link new entry with current minimum.
-		this.minimum = this.link(this.minimum, lhe);
+		minimum = link(minimum, lhe);
 
 		// Increment size, etc.
-		this.size += 1;
-		this.mod_count += 1;
+		size += 1;
+		mod_count += 1;
 
 		// Ok, done.
 		return lhe;
 	}
 
 	/**
-	 * Get the entry with the minimum key.
+	 * Link the specified entries, returning the entry which forms the new
+	 * parent
+	 * of the linked nodes.
 	 * <p>
-	 * This method does <u>not</u> remove the returned entry.
+	 * Either <code>e1</code> or <code>e2</code> may be <code>null</code>; if
+	 * both are, this method will throw a big fat exception (and this class has
+	 * a serious programming error).
 	 * 
-	 * @return the minimum entry.
-	 * @throws NoSuchElementException If this heap is empty.
-	 * @see #extractMinimum()
+	 * @param e1 the first entry to link.
+	 * @param e2 the second entry to link.
+	 * @return the entry which is now the parent of tree containing both
+	 *         <code>e1</code> and <code>e2</code>.
 	 */
+	private LeftistHeapEntry<TKey, TValue> link(
+			final LeftistHeapEntry<TKey, TValue> e1,
+			final LeftistHeapEntry<TKey, TValue> e2)
+	{
+		if (e1 == null)
+		{
+			// Simple case: There's nothing to which to link!
+			return e2;
+		}
+		else if (e2 == null)
+		{
+			// Same as above, but different.
+			return e1;
+		}
+		else if (compare(e1, e2) < 0)
+		{
+			linkLeft(e1, e2);
+			return e1;
+		}
+		else
+		{
+			linkLeft(e2, e1);
+			return e2;
+		}
+	}
+
+	/**
+	 * Link <code>newleft</code> with parent, making <code>newleft</code> the
+	 * new left side of <code>parent</code> (if possible). Otherwise,
+	 * <code>newleft</code> will be linked with <code>parent</code>'s right
+	 * side.
+	 * 
+	 * @param parent the parent node.
+	 * @param newleft the new left side.
+	 * @throws NullPointerException If <code>parent</code> or
+	 *             <code>newleft</code> are <code>null</code>.
+	 */
+	private void linkLeft(final LeftistHeapEntry<TKey, TValue> parent,
+			final LeftistHeapEntry<TKey, TValue> newleft)
+		throws NullPointerException
+	{
+		if (parent.left == null)
+		{
+			// The easy case...
+			parent.left = newleft;
+			newleft.parent = parent;
+		}
+		else
+		{
+			// The annoying case.
+
+			// First, link the parent's right and the new left (which isn't so
+			// left anymore).
+			LeftistHeapEntry<TKey, TValue> newright = link(parent.right,
+					newleft);
+
+			// Set dumb references.
+			parent.right = newright;
+			newright.parent = parent;
+
+			// Compare the null path lengths - we will want the larger null path
+			// length on the left.
+			if (parent.right.nullPathLength > parent.left.nullPathLength)
+			{
+				// Swap them!
+				LeftistHeapEntry<TKey, TValue> happy = parent.right;
+				parent.right = parent.left;
+				parent.left = happy;
+			}
+
+			// Set the parent's null path length.
+			parent.nullPathLength = (parent.right.nullPathLength + 1);
+		}
+	}
+	
+	/**
+	 * @see org.teneighty.heap.Heap#union(org.teneighty.heap.Heap)
+	 */
+	@Override
+	public void union(final Heap<TKey, TValue> other)
+		throws ClassCastException, NullPointerException,
+		IllegalArgumentException
+	{
+		if (other == null)
+		{
+			throw new NullPointerException();
+		}
+
+		if (this == other)
+		{
+			throw new IllegalArgumentException();
+		}
+
+		if (other.isEmpty())
+		{
+			return;
+		}
+
+		if (other.getClass().equals(LeftistHeap.class))
+		{
+			LeftistHeap<TKey, TValue> that = (LeftistHeap<TKey, TValue>) other;
+
+			try
+			{
+				// Link the root nodes... Easy enough, right? Lame javac hack
+				// here. Avert your eyes...
+				minimum = link(minimum, that.minimum);
+
+				// Update stuff.
+				size += that.size;
+				mod_count += 1;
+
+				// Adopt all children.
+				that.source_heap.setHeap(this);
+
+				// New heap reference for other heap.
+				that.source_heap = new HeapReference(that);
+			}
+			finally
+			{
+				// Clear the other heap...
+				that.clear();
+			}
+		}
+		else
+		{
+			throw new ClassCastException();
+		}
+	}
+	
+	/**
+	 * @see org.teneighty.heap.Heap#getMinimum()
+	 */
+	@Override
 	public Entry<TKey, TValue> getMinimum()
 		throws NoSuchElementException
 	{
-		if (this.minimum == null)
+		if (minimum == null)
 		{
 			throw new NoSuchElementException();
 		}
 
-		return this.minimum;
+		return minimum;
 	}
 
 	/**
-	 * Remove and return the entry minimum key.
-	 * 
-	 * @return the minimum entry.
-	 * @throws NoSuchElementException If the heap is empty.
-	 * @see #getMinimum()
+	 * @see org.teneighty.heap.Heap#extractMinimum()
 	 */
+	@Override
 	public Entry<TKey, TValue> extractMinimum()
 		throws NoSuchElementException
 	{
-		if (this.minimum == null)
+		if (minimum == null)
 		{
 			throw new NoSuchElementException();
 		}
 
 		// Temp pointer...
-		LeftistHeapEntry<TKey, TValue> min = this.minimum;
+		LeftistHeapEntry<TKey, TValue> min = minimum;
 
 		// Replace the minimum.
-		this.minimum = this.link(min.left, min.right);
+		minimum = link(min.left, min.right);
 
-		if (this.minimum != null)
+		if (minimum != null)
 		{
 			// Clear parent pointer, if necessary.
-			this.minimum.parent = null;
+			minimum.parent = null;
 		}
 
 		// Dec size, etc.
-		this.size -= 1;
-		this.mod_count += 1;
+		size -= 1;
+		mod_count += 1;
 
 		// Clear source pointers.
 		min.clearSourceReference();
@@ -321,20 +451,53 @@ public class LeftistHeap<TKey, TValue>
 	}
 
 	/**
-	 * Delete the specified entry.
-	 * <p>
-	 * This class can always cheaply determine of <code>e</code> is not a member
-	 * of this heap (in <code>O(1)</code> time).
-	 * 
-	 * @param e entry to delete.
-	 * @throws IllegalArgumentException If <code>e</code> is not in this heap.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
+	 * @see org.teneighty.heap.Heap#decreaseKey(org.teneighty.heap.Heap.Entry, java.lang.Object)
 	 */
+	@Override
+	public void decreaseKey(final Heap.Entry<TKey, TValue> e, final TKey k)
+		throws IllegalArgumentException, ClassCastException
+	{
+		// Check and cast.
+		if (holdsEntry(e) == false)
+		{
+			throw new IllegalArgumentException();
+		}
+
+		// Narrow.
+		LeftistHeapEntry<TKey, TValue> x = (LeftistHeapEntry<TKey, TValue>) e;
+
+		// Check key... May throw class cast as well.
+		if (compareKeys(k, x.getKey()) > 0)
+		{
+			throw new IllegalArgumentException();
+		}
+
+		if (x == minimum)
+		{
+			// Very easy case.
+			x.setKey(k);
+			return;
+		}
+
+		// Cut the node from the heap.
+		cut(x);
+
+		// Store the new key value.
+		x.setKey(k);
+
+		// Merge node with minimum.
+		minimum = link(minimum, x);
+	}
+	
+	/**
+	 * @see org.teneighty.heap.Heap#delete(org.teneighty.heap.Heap.Entry)
+	 */
+	@Override
 	public void delete(final Heap.Entry<TKey, TValue> e)
 		throws IllegalArgumentException, NullPointerException
 	{
 		// Check and cast.
-		if (this.holdsEntry(e) == false)
+		if (holdsEntry(e) == false)
 		{
 			throw new IllegalArgumentException();
 		}
@@ -342,19 +505,19 @@ public class LeftistHeap<TKey, TValue>
 		// Narrow.
 		LeftistHeapEntry<TKey, TValue> entry = (LeftistHeapEntry<TKey, TValue>) e;
 
-		if (entry == this.minimum)
+		if (entry == minimum)
 		{
 			// Easy case.
-			this.extractMinimum();
+			extractMinimum();
 			return;
 		}
 
 		// Cut the entry from this heap.
-		this.cut(entry);
+		cut(entry);
 
 		// Dec size, etc.
-		this.size -= 1;
-		this.mod_count += 1;
+		size -= 1;
+		mod_count += 1;
 
 		// Clear source reference.
 		entry.clearSourceReference();
@@ -373,7 +536,7 @@ public class LeftistHeap<TKey, TValue>
 		boolean left = (entry.parent.left == entry);
 
 		// Find the replacemnet.
-		LeftistHeapEntry<TKey, TValue> replacement = this.link(entry.left,
+		LeftistHeapEntry<TKey, TValue> replacement = link(entry.left,
 				entry.right);
 
 		// Definitely not null...
@@ -427,239 +590,32 @@ public class LeftistHeap<TKey, TValue>
 	}
 
 	/**
-	 * Decrease the key of the given element.
-	 * <p>
-	 * This class can always cheaply determine of <code>e</code> is not a member
-	 * of this heap (in <code>O(1)</code> time, thanks to reference magic).
-	 * 
-	 * @param e the entry for which to decrease the key.
-	 * @param k the new key.
-	 * @throws IllegalArgumentException If <code>k</code> is larger than
-	 *             <code>e</code>'s current key or <code>k</code> is not a
-	 *             member
-	 *             of this heap.
-	 * @throws ClassCastException If the new key is not mutually comparable with
-	 *             other keys in the heap.
+	 * @see org.teneighty.heap.Heap#clear()
 	 */
-	public void decreaseKey(final Heap.Entry<TKey, TValue> e, final TKey k)
-		throws IllegalArgumentException, ClassCastException
+	@Override
+	public void clear()
 	{
-		// Check and cast.
-		if (this.holdsEntry(e) == false)
-		{
-			throw new IllegalArgumentException();
-		}
+		// Clear all the basic fields.
+		minimum = null;
+		size = 0;
 
-		// Narrow.
-		LeftistHeapEntry<TKey, TValue> x = (LeftistHeapEntry<TKey, TValue>) e;
+		// I think this qualifies as a modification.
+		mod_count += 1;
 
-		// Check key... May throw class cast as well.
-		if (this.compareKeys(k, x.getKey()) > 0)
-		{
-			throw new IllegalArgumentException();
-		}
-
-		if (x == this.minimum)
-		{
-			// Very easy case.
-			x.setKey(k);
-			return;
-		}
-
-		// Cut the node from the heap.
-		this.cut(x);
-
-		// Store the new key value.
-		x.setKey(k);
-
-		// Merge node with minimum.
-		this.minimum = this.link(this.minimum, x);
+		// Clear source heap and recreate heap refrence.
+		source_heap.clearHeap();
+		source_heap = new HeapReference(this);
 	}
-
+	
 	/**
-	 * Union with another heap.
-	 * <p>
-	 * This operation takes <code>O(1)</code> time.
-	 * 
-	 * @param other the other heap.
-	 * @throws NullPointerException If <code>other</code> is <code>null</code>.
-	 * @throws ClassCastException If the keys of the nodes are not mutally
-	 *             comparable.
-	 * @throws IllegalArgumentException If you attempt to union a heap with
-	 *             itself.
+	 * @see org.teneighty.heap.Heap#iterator()
 	 */
-	public void union(final Heap<TKey, TValue> other)
-		throws ClassCastException, NullPointerException,
-		IllegalArgumentException
+	@Override
+	public Iterator<Heap.Entry<TKey, TValue>> iterator()
 	{
-		if (other == null)
-		{
-			throw new NullPointerException();
-		}
-
-		if (this == other)
-		{
-			throw new IllegalArgumentException();
-		}
-
-		if (other.isEmpty())
-		{
-			return;
-		}
-
-		if (other.getClass().equals(LeftistHeap.class))
-		{
-			LeftistHeap<TKey, TValue> that = (LeftistHeap<TKey, TValue>) other;
-
-			try
-			{
-				// Link the root nodes... Easy enough, right? Lame javac hack
-				// here.
-				// Avert
-				// your eyes...
-				this.minimum = this.link(this.minimum, that.minimum);
-
-				// Update stuff.
-				this.size += that.size;
-				this.mod_count += 1;
-
-				// Adopt all children.
-				that.source_heap.setHeap(this);
-
-				// New heap reference for other heap.
-				that.source_heap = new HeapReference(that);
-			}
-			finally
-			{
-				// Clear the other heap...
-				that.clear();
-			}
-		}
-		else
-		{
-			throw new ClassCastException();
-		}
+		return new EntryIterator();
 	}
-
-	/**
-	 * Link the specified entries, returning the entry which forms the new
-	 * parent
-	 * of the linked nodes.
-	 * <p>
-	 * Either <code>e1</code> or <code>e2</code> may be <code>null</code>; if
-	 * both are, this method will throw a big fat exception (and this class has
-	 * a serious programming error).
-	 * 
-	 * @param e1 the first entry to link.
-	 * @param e2 the second entry to link.
-	 * @return the entry which is now the parent of tree containing both
-	 *         <code>e1</code> and <code>e2</code>.
-	 */
-	private LeftistHeapEntry<TKey, TValue> link(
-			final LeftistHeapEntry<TKey, TValue> e1,
-			final LeftistHeapEntry<TKey, TValue> e2)
-	{
-		if (e1 == null)
-		{
-			// Simple case: There's nothing to which to link!
-			return e2;
-		}
-		else if (e2 == null)
-		{
-			// Same as above, but different.
-			return e1;
-		}
-		else if (this.compare(e1, e2) < 0)
-		{
-			this.linkLeft(e1, e2);
-			return e1;
-		}
-		else
-		{
-			this.linkLeft(e2, e1);
-			return e2;
-		}
-	}
-
-	/**
-	 * Link <code>newleft</code> with parent, making <code>newleft</code> the
-	 * new left side of <code>parent</code> (if possible). Otherwise,
-	 * <code>newleft</code> will be linked with <code>parent</code>'s right
-	 * side.
-	 * 
-	 * @param parent the parent node.
-	 * @param newleft the new left side.
-	 * @throws NullPointerException If <code>parent</code> or
-	 *             <code>newleft</code> are <code>null</code>.
-	 */
-	private void linkLeft(final LeftistHeapEntry<TKey, TValue> parent,
-			final LeftistHeapEntry<TKey, TValue> newleft)
-		throws NullPointerException
-	{
-		if (parent.left == null)
-		{
-			// The easy case...
-			parent.left = newleft;
-			newleft.parent = parent;
-		}
-		else
-		{
-			// The annoying case.
-
-			// First, link the parent's right and the new left (which isn't so
-			// left
-			// anymore).
-			LeftistHeapEntry<TKey, TValue> newright = this.link(parent.right,
-					newleft);
-
-			// Set dumb references.
-			parent.right = newright;
-			newright.parent = parent;
-
-			// Compare the null path lengths - we will want the larger null path
-			// length on the left.
-			if (parent.right.nullPathLength > parent.left.nullPathLength)
-			{
-				// Swap them!
-				LeftistHeapEntry<TKey, TValue> happy = parent.right;
-				parent.right = parent.left;
-				parent.left = happy;
-			}
-
-			// Set the parent's null path length.
-			parent.nullPathLength = (parent.right.nullPathLength + 1);
-		}
-	}
-
-	/**
-	 * Does this heap hold the specified entry?
-	 * 
-	 * @param e entry to check.
-	 * @throws NullPointerException If <code>e</code> is <code>null</code>.
-	 * @return <code>true</code> if this heap holds <code>e</code>;
-	 *         <code>false</code> otherwise.
-	 */
-	public boolean holdsEntry(final Heap.Entry<TKey, TValue> e)
-		throws NullPointerException
-	{
-		if (e == null)
-		{
-			throw new NullPointerException();
-		}
-
-		// Obvious check.
-		if (e.getClass().equals(LeftistHeapEntry.class) == false)
-		{
-			return false;
-		}
-
-		// Narrow.
-		LeftistHeapEntry<TKey, TValue> entry = (LeftistHeapEntry<TKey, TValue>) e;
-
-		// Use reference trickery.
-		return entry.isContainedBy(this);
-	}
-
+	
 	/**
 	 * Serialize the object to the specified output stream.
 	 * <p>
@@ -676,7 +632,7 @@ public class LeftistHeap<TKey, TValue>
 		out.defaultWriteObject();
 		
 		// write the size.
-		out.writeInt(this.size);
+		out.writeInt(size);
 
 		// Write out all key/value pairs.
 		Iterator<Heap.Entry<TKey, TValue>> it = new EntryIterator();
@@ -722,11 +678,11 @@ public class LeftistHeap<TKey, TValue>
 		// Read non-transient fields.
 		in.defaultReadObject();
 
-		// Create new ref object.
-		source_heap = new HeapReference(this);
-
 		// read the size.
 		int rsize = in.readInt();
+
+		// Create new ref object.
+		source_heap = new HeapReference(this);
 
 		// Read and insert all the keys and values.
 		TKey key;
@@ -737,16 +693,6 @@ public class LeftistHeap<TKey, TValue>
 			value = (TValue) in.readObject();
 			insert(key, value);
 		}
-	}
-
-	/**
-	 * Get an iterator over the entries of this heap.
-	 * 
-	 * @return an iterator over the entries of this heap.
-	 */
-	public Iterator<Heap.Entry<TKey, TValue>> iterator()
-	{
-		return new EntryIterator();
 	}
 
 	/**
@@ -773,7 +719,7 @@ public class LeftistHeap<TKey, TValue>
 		/**
 		 * The mod count.
 		 */
-		private int my_mod_count;
+		private final int my_mod_count;
 
 		/**
 		 * Constructor.
@@ -783,71 +729,52 @@ public class LeftistHeap<TKey, TValue>
 			super();
 
 			// Pay no attention to this line.
-			this.next = LeftistHeap.this.minimum;
+			next = LeftistHeap.this.minimum;
 
 			// Traverse down to leftmost.
-			if (this.next != null)
+			if (next != null)
 			{
-				while (this.next.left != null)
+				while (next.left != null)
 				{
-					this.next = this.next.left;
+					next = next.left;
 				}
 			}
 
 			// Copy mod count.
-			this.my_mod_count = LeftistHeap.this.mod_count;
+			my_mod_count = LeftistHeap.this.mod_count;
 		}
-
+		
 		/**
-		 * Does this iterator have another object?
-		 * 
-		 * @return <code>true</code> if this iterator has another entry;
-		 *         <code>false</code> otherwise.
-		 * @throws ConcurrentModificationException If concurrent modification
-		 *             occurs.
+		 * @see java.util.Iterator#hasNext()
 		 */
+		@Override
 		public boolean hasNext()
 			throws ConcurrentModificationException
 		{
-			if (this.my_mod_count != LeftistHeap.this.mod_count)
+			if (my_mod_count != LeftistHeap.this.mod_count)
 			{
 				throw new ConcurrentModificationException();
 			}
 
-			return (this.next != null);
+			return (next != null);
 		}
 
 		/**
-		 * Get the next object from this iterator.
-		 * 
-		 * @return the next object.
-		 * @throws NoSuchElementException If the iterator has no more elements.
-		 * @throws ConcurrentModificationException If concurrent modification
-		 *             occurs.
+		 * @see java.util.Iterator#next()
 		 */
+		@Override
 		public Heap.Entry<TKey, TValue> next()
 			throws NoSuchElementException, ConcurrentModificationException
 		{
-			if (this.hasNext() == false)
+			if (hasNext() == false)
 			{
 				throw new NoSuchElementException();
 			}
 
 			// Get the next node.
-			LeftistHeapEntry<TKey, TValue> n = this.next;
-			this.next = this.getSuccessor(this.next);
+			LeftistHeapEntry<TKey, TValue> n = next;
+			next = getSuccessor(next);
 			return n;
-		}
-
-		/**
-		 * Not supported.
-		 * 
-		 * @throws UnsupportedOperationException Always.
-		 */
-		public void remove()
-			throws UnsupportedOperationException
-		{
-			throw new UnsupportedOperationException();
 		}
 
 		/**
@@ -885,6 +812,16 @@ public class LeftistHeap<TKey, TValue>
 
 				return p;
 			}
+		}
+		
+		/**
+		 * @see java.util.Iterator#remove()
+		 */
+		@Override
+		public void remove()
+			throws UnsupportedOperationException
+		{
+			throw new UnsupportedOperationException();
 		}
 
 	}
