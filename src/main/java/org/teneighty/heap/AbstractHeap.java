@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2010 Fran Lattanzio
+ * Copyright (c) 2005-2011 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -445,25 +445,16 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Get the size of this collection.
-		 * <p>
-		 * Defers to the enclosing heap.
-		 * 
-		 * @return the size.
+		 * @see java.util.AbstractCollection#size()
 		 */
 		@Override
 		public final int size()
 		{
 			return getSize();
 		}
-
+		
 		/**
-		 * Add the specified element to this collection.
-		 * 
-		 * @param objectToAdd the object to add.
-		 * @return <code>true</code> if the specified element was added.
-		 * @throws UnsupportedOperationException always - this collection is
-		 *             readonly.
+		 * @see java.util.AbstractCollection#add(java.lang.Object)
 		 */
 		@Override
 		public boolean add(final TElement objectToAdd)
@@ -473,12 +464,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Add all elements in the specified collection.
-		 * 
-		 * @param collectionToAdd the collection to add.
-		 * @return <code>true</code> if any elements were added.
-		 * @throws UnsupportedOperationException always - this collection is
-		 *             readonly.
+		 * @see java.util.AbstractCollection#addAll(java.util.Collection)
 		 */
 		@Override
 		public boolean addAll(final Collection<? extends TElement> collectionToAdd)
@@ -488,10 +474,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Clear this collection.
-		 * 
-		 * @throws UnsupportedOperationException always - this collection is
-		 *             readonly.
+		 * @see java.util.AbstractCollection#clear()
 		 */
 		@Override
 		public final void clear()
@@ -501,13 +484,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Remove the specified object from this collection.
-		 * 
-		 * @param objectToRemove the object to remove.
-		 * @return <code>true</code> if <code>objectToRemove</code> was actually
-		 *         removed.
-		 * @throws UnsupportedOperationException always - this collection is
-		 *             readonly.
+		 * @see java.util.AbstractCollection#remove(java.lang.Object)
 		 */
 		@Override
 		public final boolean remove(final Object objectToRemove)
@@ -517,15 +494,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Remove all object in the specifed collection from this collection.
-		 * 
-		 * @param objectsToRemove the objects to remove.
-		 * @return <code>true</code> if all were removed; <code>false</code>
-		 *         otherwise.
-		 * @throws NullPointerException If <code>objectsToRemove</code> is
-		 *             <code>null</code>.
-		 * @throws UnsupportedOperationException If the aforementioned
-		 *             <code>NullPointerException</code> isn't thrown.
+		 * @see java.util.AbstractCollection#removeAll(java.util.Collection)
 		 */
 		@Override
 		public final boolean removeAll(final Collection<?> objectsToRemove)
@@ -540,15 +509,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Retain only the objects in the specified collection.
-		 * 
-		 * @param objectsToRetain the objects to retain.
-		 * @return <code>true</code> if this collection is modified;
-		 *         <code>false</code> otherwise.
-		 * @throws NullPointerException If <code>objectsToRetain</code> is
-		 *             <code>null</code>.
-		 * @throws UnsupportedOperationException If the aforementioned
-		 *             <code>NullPointerException</code> isn't thrown.
+		 * @see java.util.AbstractCollection#retainAll(java.util.Collection)
 		 */
 		@Override
 		public final boolean retainAll(final Collection<?> objectsToRetain)
@@ -563,11 +524,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Check is this collection contains the specified element.
-		 * 
-		 * @param objectToCheck the element to check.
-		 * @return <code>true</code> if this collection contains the specified
-		 *         element.
+		 * @see java.util.AbstractCollection#contains(java.lang.Object)
 		 */
 		@Override
 		public boolean contains(final Object objectToCheck)
@@ -588,31 +545,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Get the hashcode for this collection.
-		 * 
-		 * @return the hashcode.
-		 */
-		@Override
-		public final int hashCode()
-		{
-			int hashCode = 0;
-
-			Iterator<TElement> iterator = iterator();
-			TElement next;
-			while (iterator.hasNext())
-			{
-				next = iterator.next();
-				hashCode ^= objectHashCode(next);
-			}
-
-			return hashCode;
-		}
-
-		/**
-		 * Compare with the specifed object for eqaulity.
-		 * 
-		 * @param other the object to which to compare.
-		 * @return <code>true</code> if equal; <code>false</code> otherwise.
+		 * @see java.lang.Object#equals(java.lang.Object)
 		 */
 		@SuppressWarnings("unchecked")
 		@Override
@@ -693,6 +626,25 @@ public abstract class AbstractHeap<TKey, TValue>
 			// they must be equal!
 			return true;
 		}
+		
+		/**
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public final int hashCode()
+		{
+			int hashCode = 0;
+
+			Iterator<TElement> iterator = iterator();
+			TElement next;
+			while (iterator.hasNext())
+			{
+				next = iterator.next();
+				hashCode ^= objectHashCode(next);
+			}
+
+			return hashCode;
+		}
 
 	}
 
@@ -724,9 +676,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Get an iterator over this heap's entries.
-		 * 
-		 * @return Iterator {@literal <Heap.Entry<K,V>>}
+		 * @see java.util.AbstractCollection#iterator()
 		 */
 		@Override
 		public Iterator<Heap.Entry<TKey, TValue>> iterator()
@@ -735,13 +685,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Check if this heap contains the specified entry.
-		 * <p>
-		 * Defers to enclosing heap, since if the enclosing heap holds the
-		 * specified entry, we'll (probably) get much better performance.
-		 * 
-		 * @param o the object to check.
-		 * @return boolean true if contained.
+		 * @see org.teneighty.heap.AbstractHeap.AbstractHeapCollection#contains(java.lang.Object)
 		 */
 		@SuppressWarnings("unchecked")
 		@Override
@@ -787,9 +731,7 @@ public abstract class AbstractHeap<TKey, TValue>
 		}
 
 		/**
-		 * Get the iterator over the elements in this collection.
-		 * 
-		 * @return an iterator over the keys.
+		 * @see java.util.AbstractCollection#iterator()
 		 */
 		@Override
 		public Iterator<TKey> iterator()
@@ -812,7 +754,7 @@ public abstract class AbstractHeap<TKey, TValue>
 			/**
 			 * Backing iterator.
 			 */
-			private Iterator<Heap.Entry<TKey, TValue>> backingIterator;
+			private final Iterator<Heap.Entry<TKey, TValue>> backingIterator;
 
 			/**
 			 * Constructor.
@@ -825,28 +767,27 @@ public abstract class AbstractHeap<TKey, TValue>
 			}
 
 			/**
-			 * Does this iterator contain another entry?
-			 * 
-			 * @return <code>true</code> if more.
+			 * @see java.util.Iterator#hasNext()
 			 */
+			@Override
 			public boolean hasNext()
 			{
 				return backingIterator.hasNext();
 			}
 
 			/**
-			 * Get the next key.
-			 * 
-			 * @return the next key.
+			 * @see java.util.Iterator#next()
 			 */
+			@Override
 			public TKey next()
 			{
 				return backingIterator.next().getKey();
 			}
 
 			/**
-			 * Remove the previously iterated entry.
+			 * @see java.util.Iterator#remove()
 			 */
+			@Override
 			public void remove()
 			{
 				backingIterator.remove();
@@ -904,7 +845,7 @@ public abstract class AbstractHeap<TKey, TValue>
 			/**
 			 * Backing iterator.
 			 */
-			private Iterator<Heap.Entry<TKey, TValue>> backingIterator;
+			private final Iterator<Heap.Entry<TKey, TValue>> backingIterator;
 
 			/**
 			 * Constructor.
@@ -918,19 +859,16 @@ public abstract class AbstractHeap<TKey, TValue>
 			}
 
 			/**
-			 * Has next?
-			 * 
-			 * @return true if next.
+			 * @see java.util.Iterator#hasNext()
 			 */
+			@Override
 			public boolean hasNext()
 			{
 				return backingIterator.hasNext();
 			}
 
 			/**
-			 * Get the next value.
-			 * 
-			 * @return the next value.
+			 * @see java.util.Iterator#next()
 			 */
 			@Override
 			public TValue next()
@@ -939,7 +877,7 @@ public abstract class AbstractHeap<TKey, TValue>
 			}
 
 			/**
-			 * Remove the previously iterated value.
+			 * @see java.util.Iterator#remove()
 			 */
 			@Override
 			public void remove()
