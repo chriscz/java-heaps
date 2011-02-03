@@ -1,7 +1,7 @@
 /*
  * $Id: SkewHeapTest.java,v 1.1.2.1 2008/05/15 23:59:59 fran Exp $
  * 
- * Copyright (c) 2005, 2006, 2007, 2008 Fran Lattanzio
+ * Copyright (c) 2005-2011 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
