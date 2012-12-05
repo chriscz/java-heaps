@@ -1,7 +1,7 @@
 /*
  * $Id: PerformanceTest.java,v 1.1.2.3 2008/06/24 01:59:49 fran Exp $
  * 
- * Copyright (c) 2005-2011 Fran Lattanzio
+ * Copyright (c) 2005-2013 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,7 +72,7 @@ public final class PerformanceTest
 	 * Operation ratio: <br>
 	 * <code>getMin:extractMin:decreaseKey:delete:insert:union</code>
 	 */
-	private static final int[] RATIO = { 100, 25, 50, 25, 100, 0 };
+	private static final int[] RATIO = { 10, 25, 50, 25, 150, 0 };
 
 	/**
 	 * Total operations.
@@ -174,10 +174,8 @@ public final class PerformanceTest
 	/**
 	 * A rancid overload, because I am extremely lazy.
 	 * 
-	 * @param heap
-	 *            the heap.
-	 * @param unioner
-	 *            the unioner.
+	 * @param heap The heap.
+	 * @param unioner The unioner.
 	 */
 	private void doPerf(final Heap<Integer, Integer> heap,
 			final Heap<Integer, Integer> unioner)
@@ -209,8 +207,7 @@ public final class PerformanceTest
 		{
 			for (index = 0; index < OPERATIONS; index++)
 			{
-				this.entries[index] = heap.insert(Math.abs(this.random
-						.nextInt()), 1);
+				this.entries[index] = heap.insert(Math.abs(this.random.nextInt()), 1);
 			}
 
 			for (index = 0; index < OPERATIONS; index++)
@@ -267,12 +264,10 @@ public final class PerformanceTest
 					unioner.clear();
 
 					// Fill unioner... A wee bit lame, but unioning clears other
-					// heap, so
-					// we need to make new one.
+					// heap, so we need to make new one.
 					for (int jindex = 0; jindex < UNION; jindex++)
 					{
-						unioner.insert(this.random.nextInt(), this.random
-								.nextInt());
+						unioner.insert(this.random.nextInt(), this.random.nextInt());
 					}
 
 					heap.union(unioner);

@@ -1,7 +1,7 @@
 /*
  * $Id$
  * 
- * Copyright (c) 2005-2011 Fran Lattanzio
+ * Copyright (c) 2005-2013 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -623,16 +623,6 @@ public class PairingHeap<TKey, TValue>
 
 	/**
 	 * Do a two-pass merge on the siblings of the specified node.
-	 * <p>
-	 * Very similiar to code in "Algorithms and Datastructures in Java" by Mark
-	 * Allen Weiss. The main difference here is that we don't save an array
-	 * between calls to this method. This is because it could potentially mean
-	 * the heap allocates an extra <code>O(n)</code> space and could interfere
-	 * with garbage collection of removed/deleted/extracted nodes. It should not
-	 * significantly effect the running time (I hope).
-	 * <p>
-	 * TODO: Investigate whether we should save the aforementioned hideous array
-	 * between calls (i.e. do this "Weiss-style").
 	 * 
 	 * @param consol the node to consolidate.
 	 * @return the new root of all the siblings of <code>consol</code>.
@@ -715,29 +705,21 @@ public class PairingHeap<TKey, TValue>
 	private PairingHeapEntry<TKey, TValue> multiPassMerge(
 			final PairingHeapEntry<TKey, TValue> consol)
 	{
-		// Happy scrappy hero pup FIFO queue. Or a List. But that's just, like,
-		// my opinion, man.
 		LinkedList<PairingHeapEntry<TKey, TValue>> queue = new LinkedList<PairingHeapEntry<TKey, TValue>>();
-
-		// By the way I'm on drugs right now, so this code might not
-		// make too much sense or work.
 
 		if (consol.next == null)
 		{
 			return consol;
 		}
 
-		// "Iterator" node.
+		// poor man's/hobo's/wino's interator.
 		PairingHeapEntry<TKey, TValue> iter = consol;
 		while (iter != null)
 		{
-			// Store in happy queue.
 			queue.addFirst(iter);
 
 			// Cut link.
 			iter.previous.next = null;
-
-			// It's like an iterator. Only not.
 			iter = iter.next;
 		}
 
