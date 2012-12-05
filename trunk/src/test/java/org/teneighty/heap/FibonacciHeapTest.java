@@ -1,7 +1,7 @@
 /*
  * $Id: FibonacciHeapTest.java,v 1.1.2.2 2008/02/18 02:45:01 fran Exp $
  * 
- * Copyright (c) 2005-2011 Fran Lattanzio
+ * Copyright (c) 2005-2013 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

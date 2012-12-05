@@ -1,7 +1,7 @@
 /*
  * $Id: EqualityTest.java,v 1.1.2.3 2008/11/08 22:53:36 fran Exp $
  * 
- * Copyright (c) 2005-2011 Fran Lattanzio
+ * Copyright (c) 2005-2013 Fran Lattanzio
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ import org.junit.Test;
  * For now, this is an extremely dumb test, because none of the heaps actually
  * implements custom <code>Equals()</code> methods. However, as I start writing
  * additional heap implementations, there may be cases where we CAN write
- * <code>Equals()</code> overrides that don't use the (generic and
+ * <code>equals()</code> overrides that don't use the (generic and
  * <code>O(n<sup>2</sup>)</code> in supplied in <code>AbstractHeap</code>.
  * 
  * @author Fran Lattanzio
@@ -73,11 +73,8 @@ public final class EqualityTest
 		try
 		{
 			// yay for erased cast warning. Say what you will about M$, but C#
-			// retains
-			// the generic types at runtime... this also the reason for the
-			// stupid,
-			// insane
-			// warning suppression above.
+			// retains the generic types at runtime... this also the reason for
+			// the stupid, insane warning suppression above.
 			return ((Heap<Integer, Integer>) heapClazz.newInstance());
 		}
 		catch (final IllegalAccessException iae)
@@ -111,10 +108,8 @@ public final class EqualityTest
 			for (int jindex = index; jindex < heapTypes.length; jindex++)
 			{
 				// create the two heap types.
-				Heap<Integer, Integer> firstHeap = this
-						.reflectivelyCreateHeap(heapTypes[index]);
-				Heap<Integer, Integer> secondHeap = this
-						.reflectivelyCreateHeap(heapTypes[jindex]);
+				Heap<Integer, Integer> firstHeap = reflectivelyCreateHeap(heapTypes[index]);
+				Heap<Integer, Integer> secondHeap = reflectivelyCreateHeap(heapTypes[jindex]);
 
 				// perpare to equal heaps.
 				this.prepareTwoEqualHeaps(firstHeap, secondHeap);
