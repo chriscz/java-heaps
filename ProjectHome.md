@@ -1,0 +1,3 @@
+This package currently contains binary, binomial, Fibonacci, pairing, skew, and leftist implementations. The heaps have been carefully crafted to interact with the Java Collections API and throughly tested (with JUnit) for industrial strength robustness.
+
+The first version of this package is now available for download on Google Code! The download area includes a pre-built JAR (built against Java 1.5), as well as tarballs for the source and javadocs.
